@@ -33,7 +33,10 @@
       position:fixed;
       inset:0;
       isolation:isolate;
-      background:#05090b url('assets/aurora-hangar-backdrop.jpg') center center / cover no-repeat;
+      background:
+        radial-gradient(circle at 50% 48%,rgba(118,238,255,.16) 0%,rgba(35,132,158,.14) 42%,transparent 78%),
+        #05090b url('assets/aurora-hangar-backdrop.jpg') center center / cover no-repeat;
+      background-blend-mode:screen,normal;
     }
     #stage::before{
       content:"";
@@ -41,8 +44,8 @@
       inset:0;
       z-index:-1;
       background:
-        radial-gradient(circle at 50% 52%,transparent 0 22%,rgba(1,5,7,.06) 48%,rgba(1,4,6,.63) 100%),
-        linear-gradient(90deg,rgba(2,7,9,.68) 0%,rgba(2,7,9,.18) 31%,transparent 53%,rgba(2,7,9,.18) 100%);
+        radial-gradient(circle at 50% 52%,transparent 0 22%,rgba(1,5,7,.04) 48%,rgba(1,4,6,.38) 100%),
+        linear-gradient(90deg,rgba(2,7,9,.42) 0%,rgba(2,7,9,.10) 31%,transparent 53%,rgba(2,7,9,.10) 100%);
       pointer-events:none;
     }
     #stage canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
@@ -433,7 +436,7 @@
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.08;
+    renderer.toneMappingExposure = 1.18;
     stage.appendChild(renderer.domElement);
 
     const labelsRenderer = new CSS2DRenderer();
@@ -882,8 +885,8 @@
     const padRing=torus('pad',[0,0,0],1.76,.018,M.cyan,true);padRing.position.y=.01;padRing.material=padRing.material.clone();padRing.material.opacity=.48;padRing.material.transparent=true;platform.add(padRing);
 
     // Luz cinematográfica: reflexos frios, recorte âmbar e glow do anel inferior.
-    scene.add(new THREE.HemisphereLight(0xb8f3f0,0x081012,.82));
-    const key=new THREE.DirectionalLight(0xd8ffff,3.7);key.position.set(-4.5,7,5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-4;key.shadow.camera.right=4;key.shadow.camera.top=4;key.shadow.camera.bottom=-4;scene.add(key);
+    scene.add(new THREE.HemisphereLight(0xb8f3f0,0x081012,1.08));
+    const key=new THREE.DirectionalLight(0xd8ffff,4.15);key.position.set(-4.5,7,5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-4;key.shadow.camera.right=4;key.shadow.camera.top=4;key.shadow.camera.bottom=-4;scene.add(key);
     const rim=new THREE.SpotLight(0x31dce2,55,14,Math.PI/5,.55,1.1);rim.position.set(4.5,3,-4);rim.target.position.set(0,.6,0);scene.add(rim,rim.target);
     const warm=new THREE.PointLight(0xff7138,8,5,2);warm.position.set(-2,1.8,-1.8);scene.add(warm);
     const lift=new THREE.PointLight(0x53ffff,9,4,2);lift.position.set(0,-.2,0);scene.add(lift);
