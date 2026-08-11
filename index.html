@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#050b0e" />
-  <title>AURORA GT/2 — Laboratório de voo</title>
-  <meta name="description" content="Experiência 3D interativa e cinematográfica da cápsula turbogravimagnética AURORA GT/2." />
+  <title>AURORA GT/2 Mk.III — Laboratório de engenharia</title>
+  <meta name="description" content="AURORA GT/2 Mk.III: cápsula 3D paramétrica com modo Engenharia, física newtoniana, vetores de força e telemetria em SI." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -18,6 +18,9 @@
       --teal:#1aa3a9;
       --amber:#ff9d57;
       --violet:#c79de2;
+      --lime:#a8f58f;
+      --red:#ff6f61;
+      --blue:#63a9ff;
       --paper:#edf9f8;
       --muted:#8ea5a6;
       --hair:rgba(213,251,249,.16);
@@ -62,6 +65,7 @@
     .top-meta{display:flex;align-items:center;gap:24px;color:#a8babb;font:400 10px/1 DM Mono,monospace;letter-spacing:.12em;text-transform:uppercase}
     .live{display:flex;align-items:center;gap:8px;color:#c4f5f2}
     .live::before{content:"";width:6px;height:6px;border-radius:50%;background:#71f4d0;box-shadow:0 0 10px #71f4d0;animation:pulse 2s ease-in-out infinite}
+    .live.alert{color:#ffc0a2}.live.alert::before{background:var(--red);box-shadow:0 0 10px var(--red)}
     @keyframes pulse{50%{opacity:.38}}
 
     .hero{
@@ -140,15 +144,65 @@
     .orientation::before{left:20px;top:0;width:1px;height:42px}.orientation::after{left:0;top:20px;width:42px;height:1px}
     .orientation i{position:absolute;left:17px;top:17px;width:7px;height:7px;border:1px solid var(--cyan);border-radius:50%}
 
+
+    /* Mk.III engineering console */
+    .engineering-panel{
+      position:fixed;z-index:10;right:24px;top:88px;bottom:104px;width:326px;display:flex;flex-direction:column;
+      border:1px solid rgba(151,242,239,.2);border-radius:5px;background:rgba(3,11,14,.9);
+      box-shadow:0 26px 70px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.04);backdrop-filter:blur(22px) saturate(1.2);
+      opacity:0;visibility:hidden;transform:translateX(24px);transition:opacity .28s ease,transform .28s ease,visibility .28s;
+    }
+    body.engineering-mode .engineering-panel{opacity:1;visibility:visible;transform:none}
+    body.engineering-mode .rail{opacity:0;visibility:hidden;transform:translateX(15px)}
+    body.engineering-mode .telemetry{opacity:0;visibility:hidden}
+    body.engineering-mode .hero{opacity:.42;filter:saturate(.72);transform:translateX(-5px)}
+    .rail,.hero{transition:opacity .3s ease,transform .3s ease,filter .3s ease}
+    .eng-head{padding:15px 16px 13px;border-bottom:1px solid var(--hair);background:linear-gradient(115deg,rgba(72,219,223,.09),transparent 65%)}
+    .eng-kicker{display:flex;align-items:center;justify-content:space-between;color:var(--cyan);font:500 8px/1 DM Mono,monospace;letter-spacing:.15em;text-transform:uppercase}
+    .eng-kicker span:last-child{display:flex;align-items:center;gap:6px;color:#82a1a2}.eng-kicker span:last-child::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime)}
+    .eng-head h2{margin:10px 0 5px;font-size:17px;line-height:1.1;letter-spacing:-.025em}.eng-head p{margin:0;color:#779091;font:400 8px/1.55 DM Mono,monospace;letter-spacing:.035em}
+    .eng-scroll{padding:13px 15px 16px;overflow:auto;scrollbar-width:thin;scrollbar-color:rgba(138,234,240,.25) transparent}
+    .eng-section{margin:0 0 16px}.eng-section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;color:#8ca5a6;font:500 8px/1 DM Mono,monospace;letter-spacing:.14em;text-transform:uppercase}
+    .eng-section-title::after{content:"";height:1px;flex:1;margin-left:11px;background:rgba(211,252,249,.1)}
+    .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+    .preset{border:1px solid rgba(205,248,246,.13);border-radius:2px;background:rgba(255,255,255,.015);padding:7px 4px;color:#718889;font:500 7px DM Mono,monospace;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:.2s}
+    .preset:hover,.preset.active{border-color:rgba(138,234,240,.42);color:var(--cyan-bright);background:rgba(59,196,202,.1)}
+    .parameter{margin:0 0 11px}.param-copy{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.param-copy label{color:#a6b8b8;font-size:9px;font-weight:600}.param-copy output{color:var(--cyan-bright);font:500 9px DM Mono,monospace}.param-copy output small{margin-left:3px;color:#607a7b;font-size:7px}
+    .parameter input{display:block;width:100%;height:12px;margin:0;appearance:none;background:transparent;cursor:ew-resize}
+    .parameter input::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:linear-gradient(90deg,var(--cyan) 0 var(--range,50%),rgba(255,255,255,.1) var(--range,50%));box-shadow:0 0 8px rgba(76,218,222,.12)}
+    .parameter input::-webkit-slider-thumb{appearance:none;width:9px;height:9px;margin-top:-3.5px;border:1px solid #caffff;border-radius:50%;background:#0c3d41;box-shadow:0 0 8px rgba(117,244,245,.7)}
+    .parameter input::-moz-range-track{height:2px;background:rgba(255,255,255,.1)}.parameter input::-moz-range-progress{height:2px;background:var(--cyan)}.parameter input::-moz-range-thumb{width:8px;height:8px;border:1px solid #caffff;border-radius:50%;background:#0c3d41}
+    .balance-card{padding:11px;border:1px solid rgba(138,234,240,.16);border-radius:3px;background:linear-gradient(120deg,rgba(24,111,116,.13),rgba(0,0,0,.07))}
+    .balance-top{display:flex;align-items:end;justify-content:space-between}.balance-top span{color:#71898a;font:400 7px DM Mono,monospace;text-transform:uppercase;letter-spacing:.1em}.balance-top strong{font:500 22px/1 DM Mono,monospace;color:var(--paper)}.balance-top strong small{font-size:8px;color:#769293}
+    .balance-track{position:relative;height:3px;margin:11px 0 7px;background:linear-gradient(90deg,rgba(255,111,97,.35),rgba(168,245,143,.4));overflow:visible}.balance-track::after{content:"1g";position:absolute;left:50%;top:6px;transform:translateX(-50%);color:#536e6f;font:400 6px DM Mono,monospace}.balance-track i{position:absolute;left:0;top:-2px;width:7px;height:7px;border:1px solid white;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);transform:translateX(-50%)}
+    .balance-note{display:flex;justify-content:space-between;margin-top:13px;color:#779091;font:400 7px DM Mono,monospace}.balance-note b{color:#c8d9d8;font-weight:400}
+    .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.metric{padding:8px 9px;border:1px solid rgba(210,250,248,.1);background:rgba(255,255,255,.018)}.metric span{display:block;margin-bottom:5px;color:#5e797a;font:400 6px DM Mono,monospace;text-transform:uppercase;letter-spacing:.1em}.metric b{color:#c9dada;font:400 10px DM Mono,monospace}.metric b em{color:var(--cyan);font-style:normal}
+    .equation{padding:9px 10px;border-left:1px solid var(--violet);background:rgba(118,75,143,.08);color:#8ea2a3;font:400 7px/1.55 DM Mono,monospace}.equation b{display:block;color:#cbb6d8;font-weight:500;letter-spacing:.06em}
+
+    .vector-legend{position:fixed;z-index:7;left:34px;bottom:83px;display:flex;align-items:center;gap:12px;padding:8px 10px;border:1px solid var(--hair);border-radius:3px;background:rgba(3,10,13,.64);backdrop-filter:blur(10px);opacity:0;visibility:hidden;transform:translateY(5px);transition:.25s;pointer-events:none}
+    body.vectors-on .vector-legend{opacity:1;visibility:visible;transform:none}
+    .vector-legend>span{color:#607879;font:500 7px DM Mono,monospace;text-transform:uppercase;letter-spacing:.11em}.vector-key{display:flex;align-items:center;gap:5px;color:#a5b9b9;font:400 7px DM Mono,monospace}.vector-key i{display:block;width:14px;height:2px;background:var(--key);box-shadow:0 0 6px var(--key)}
+    .vector-label{min-width:max-content;padding:4px 6px;border:1px solid color-mix(in srgb,var(--vector-color) 38%,transparent);border-radius:2px;background:rgba(3,10,13,.82);color:var(--vector-color);font:500 7px/1 DM Mono,monospace;letter-spacing:.05em;box-shadow:0 4px 14px rgba(0,0,0,.25);text-transform:uppercase}
+    .dimension-label{padding:4px 6px;border:1px solid rgba(138,234,240,.24);background:rgba(3,12,15,.78);color:#aef5f4;font:400 7px DM Mono,monospace;letter-spacing:.08em;white-space:nowrap}
+
+    .telemetry{bottom:92px;padding:7px 10px;border-top:1px solid rgba(203,248,246,.12);background:linear-gradient(90deg,transparent,rgba(3,10,12,.56));backdrop-filter:blur(6px)}
+    .telemetry div{min-width:65px}.telemetry .telemetry-wide{min-width:86px}.telemetry b.positive em{color:var(--lime)}.telemetry b.negative em{color:var(--red)}
+    .telemetry-scope{width:52px;height:25px;overflow:visible}.telemetry-scope polyline{fill:none;stroke:var(--cyan);stroke-width:1;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 3px rgba(138,234,240,.5))}.telemetry-scope line{stroke:rgba(255,255,255,.1);stroke-width:.5}
+
+    .icon-btn[data-active-color="force"].active{color:var(--lime);background:rgba(134,233,119,.09)}
+    .mode[data-mode="engineering"] b{color:#b7cecd}.mode[data-mode="engineering"].active b{color:var(--lime)}
+    .mode[data-mode="engineering"].active::after{background:var(--lime);box-shadow:0 0 9px var(--lime)}
+
     @media (max-width:1050px){
-      .rail,.orientation{display:none}.hero{width:43vw}.telemetry{right:18px}.dock{bottom:20px}.mode{min-width:105px}
+      .rail,.orientation{display:none}.hero{width:43vw}.telemetry{right:18px}.dock{bottom:20px}.mode{min-width:96px}.engineering-panel{right:16px;width:310px}
     }
     @media (max-width:720px){
       .topbar{height:58px;padding:0 17px}.top-meta span:not(.live){display:none}.top-meta{gap:0}.brand{font-size:10px}.brand-mark{width:21px;height:21px}
-      .hero{left:18px;top:82px;width:calc(100vw - 36px)}h1{font-size:58px;line-height:.78}.eyebrow{margin-bottom:11px}.intro{display:none}.hero-index{top:calc(100% + 22px);gap:19px}.hero-index div:nth-child(3){display:none}
-      .dock{left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));transform:none;display:block;min-height:0}.mode-group{display:grid;grid-template-columns:repeat(3,1fr)}.mode{min-width:0;padding:9px 10px}.mode small{display:none}.mode b{font-size:8px}.dock-actions{position:absolute;right:0;bottom:calc(100% + 9px);border:1px solid var(--hair);padding:3px;background:rgba(3,10,13,.72);backdrop-filter:blur(12px)}.icon-btn{width:34px;height:34px}
-      .view-pills{left:18px;bottom:84px}.telemetry{display:none}
+      .hero{left:18px;top:82px;width:calc(100vw - 36px)}body.engineering-mode .hero{opacity:0;visibility:hidden}h1{font-size:58px;line-height:.78}.eyebrow{margin-bottom:11px}.intro{display:none}.hero-index{top:calc(100% + 22px);gap:19px}.hero-index div:nth-child(3){display:none}
+      .dock{left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));transform:none;display:block;min-height:0}.mode-group{display:grid;grid-template-columns:repeat(4,1fr)}.mode{min-width:0;padding:9px 6px}.mode small{display:none}.mode b{font-size:7px}.dock-actions{position:absolute;right:0;bottom:calc(100% + 9px);border:1px solid var(--hair);padding:3px;background:rgba(3,10,13,.72);backdrop-filter:blur(12px)}.icon-btn{width:32px;height:32px}
+      .view-pills{left:18px;bottom:84px}.telemetry,.vector-legend{display:none}
       .hotspot-copy small{display:none}.hotspot-copy{padding:5px 6px}.hotspot-copy strong{font-size:7px}
+      .engineering-panel{left:10px;right:10px;top:67px;bottom:122px;width:auto}.eng-head{padding:12px 14px 10px}.eng-head h2{font-size:15px;margin-top:7px}.eng-scroll{padding:11px 13px 14px}.metric-grid{grid-template-columns:repeat(4,1fr)}.metric{padding:7px 5px}.metric b{font-size:8px}
     }
     @media (prefers-reduced-motion:reduce){.noise,.live::before,.load-orbit,.load-bar::after{animation:none}}
   </style>
@@ -163,14 +217,14 @@
   </script>
 </head>
 <body class="labels-on">
-  <div id="stage" aria-label="Visualização 3D interativa da cápsula AURORA GT/2"></div>
+  <div id="stage" aria-label="Visualização 3D paramétrica da cápsula AURORA GT/2 Mk.III"></div>
   <div class="noise"></div>
 
   <div id="loader">
     <div class="load-wrap">
       <div class="load-orbit"></div>
-      <strong>Inicializando GT/2</strong>
-      <span>Materiais PBR · núcleo · telemetria</span>
+      <strong>Inicializando GT/2 Mk.III</strong>
+      <span>Casco paramétrico · solver SI · telemetria</span>
       <div class="load-bar"></div>
       <div id="fallback">A visualização interativa precisa de WebGL habilitado.<br>A imagem conceitual continua disponível ao fundo.</div>
     </div>
@@ -178,27 +232,27 @@
 
   <header class="topbar">
     <div class="brand"><span class="brand-mark"></span>AURORA / LAB</div>
-    <div class="top-meta"><span>protótipo ficcional — BR 2046</span><span class="live">sistema nominal</span></div>
+    <div class="top-meta"><span>MK.III · solver newtoniano / SI</span><span class="live" id="solverStatus">modelo convergente</span></div>
   </header>
 
   <main class="hero">
-    <div class="eyebrow">cápsula turbogravimagnética</div>
-    <h1>AURORA<span>GT / 2 — MK.II</span></h1>
-    <p class="intro">Um habitáculo monolugar esculpido em titânio teal, vidro eletrocrômico âmbar e um anel Gravium-7. Concebido como uma peça de engenharia especulativa — preciso, tátil e intensamente humano.</p>
+    <div class="eyebrow">plataforma de engenharia paramétrica</div>
+    <h1>AURORA<span>GT / 2 — MK.III</span></h1>
+    <p class="intro">A terceira iteração transforma a cápsula em instrumento: casco redimensionável, balanço de forças em SI e telemetria derivada de mecânica clássica. A propulsão segue ficcional; os cálculos, não.</p>
     <div class="hero-index">
-      <div>classe<strong>VTOL / 01</strong></div>
-      <div>estado<strong>HOVER</strong></div>
-      <div>serial<strong>AGT-2046.07</strong></div>
+      <div>classe<strong>eVTOL / EXP</strong></div>
+      <div>regime<strong id="flightRegime">CRUISE</strong></div>
+      <div>serial<strong>AGT-M3.2046</strong></div>
     </div>
   </main>
 
-  <aside class="rail" aria-label="Especificações conceituais">
-    <div class="rail-title"><span>arquitetura</span><span>GT/2</span></div>
-    <div class="spec"><span class="spec-n">01</span><div class="spec-copy"><strong>Casco aeroespacial</strong>Ti-cerâmica + trama de carbono<div class="meter"><i style="width:86%"></i></div></div></div>
-    <div class="spec"><span class="spec-n">02</span><div class="spec-copy"><strong>Canopy eletrocrômico</strong>Âmbar multicamada / 42%<div class="meter"><i style="width:68%"></i></div></div></div>
-    <div class="spec"><span class="spec-n">03</span><div class="spec-copy"><strong>Núcleo toroidal</strong>Fluxo gravimagnético ativo<div class="meter"><i style="width:92%"></i></div></div></div>
-    <div class="spec"><span class="spec-n">04</span><div class="spec-copy"><strong>Propulsão vetorial</strong>EDF cerâmico de 12 fases<div class="meter"><i style="width:78%"></i></div></div></div>
-    <div class="warning">Conceito artístico ficcional.<br>Não representa aeronave fabricável.</div>
+  <aside class="rail" aria-label="Resumo da arquitetura Mk.III">
+    <div class="rail-title"><span>arquitetura paramétrica</span><span>MK.III</span></div>
+    <div class="spec"><span class="spec-n">01</span><div class="spec-copy"><strong>Envelope paramétrico</strong><span id="railDimensions">4.80 × 3.10 × 1.82 m</span><div class="meter"><i id="volumeMeter" style="width:72%"></i></div></div></div>
+    <div class="spec"><span class="spec-n">02</span><div class="spec-copy"><strong>Massa de cálculo</strong><span id="railMass">1.240 kg · 12,16 kN</span><div class="meter"><i id="massMeter" style="width:52%"></i></div></div></div>
+    <div class="spec"><span class="spec-n">03</span><div class="spec-copy"><strong>Disco atuador equivalente</strong><span id="railDisk">4,40 m² · FM 0,72</span><div class="meter"><i id="liftMeter" style="width:74%"></i></div></div></div>
+    <div class="spec"><span class="spec-n">04</span><div class="spec-copy"><strong>Balanço vertical</strong><span id="railBalance">T/P 1,06 · +0,59 m/s²</span><div class="meter"><i id="balanceMeter" style="width:56%"></i></div></div></div>
+    <div class="warning">Propulsão e materiais são ficcionais.<br>Forças usam mecânica clássica e teoria de disco atuador.</div>
   </aside>
 
   <div class="orientation"><i></i></div>
@@ -210,10 +264,104 @@
     <button class="view" data-view="rear" aria-label="Vista traseira">03</button>
   </div>
 
-  <div class="telemetry" aria-hidden="true">
-    <div>fluxo<b><em id="flux">87.4</em> kΦ</b></div>
-    <div>núcleo<b><em id="temp">624</em> °K</b></div>
-    <div>altura<b><em id="hover">1.20</em> m</b></div>
+  <aside class="engineering-panel" aria-label="Console de engenharia paramétrica">
+    <div class="eng-head">
+      <div class="eng-kicker"><span>ENG / configuração viva</span><span>SI ativo</span></div>
+      <h2>Casco &amp; dinâmica</h2>
+      <p>Entradas alteram a geometria 3D e recalculam o balanço físico sem tabelas pré-computadas.</p>
+    </div>
+    <div class="eng-scroll">
+      <section class="eng-section">
+        <div class="eng-section-title">Perfil de missão</div>
+        <div class="presets">
+          <button class="preset" data-preset="hover">pairado</button>
+          <button class="preset active" data-preset="cruise">cruzeiro</button>
+          <button class="preset" data-preset="climb">subida</button>
+        </div>
+      </section>
+
+      <section class="eng-section" aria-label="Parâmetros do casco">
+        <div class="eng-section-title">Envelope paramétrico</div>
+        <div class="parameter">
+          <div class="param-copy"><label for="lengthInput">Comprimento</label><output id="lengthOutput">4,80<small>m</small></output></div>
+          <input id="lengthInput" data-param="lengthM" data-output="lengthOutput" data-unit="m" data-decimals="2" type="range" min="4.20" max="5.80" step="0.05" value="4.80" />
+        </div>
+        <div class="parameter">
+          <div class="param-copy"><label for="beamInput">Boca máxima</label><output id="beamOutput">3,10<small>m</small></output></div>
+          <input id="beamInput" data-param="beamM" data-output="beamOutput" data-unit="m" data-decimals="2" type="range" min="2.60" max="3.80" step="0.05" value="3.10" />
+        </div>
+        <div class="parameter">
+          <div class="param-copy"><label for="heightInput">Altura total</label><output id="heightOutput">1,82<small>m</small></output></div>
+          <input id="heightInput" data-param="heightM" data-output="heightOutput" data-unit="m" data-decimals="2" type="range" min="1.50" max="2.30" step="0.02" value="1.82" />
+        </div>
+        <div class="parameter">
+          <div class="param-copy"><label for="massInput">Massa operacional</label><output id="massOutput">1.240<small>kg</small></output></div>
+          <input id="massInput" data-param="massKg" data-output="massOutput" data-unit="kg" data-decimals="0" type="range" min="900" max="1800" step="10" value="1240" />
+        </div>
+      </section>
+
+      <section class="eng-section" aria-label="Condição de voo">
+        <div class="eng-section-title">Condição de contorno</div>
+        <div class="parameter">
+          <div class="param-copy"><label for="speedInput">Velocidade aerodinâmica</label><output id="speedOutput">36,0<small>m/s</small></output></div>
+          <input id="speedInput" data-param="airspeedMs" data-output="speedOutput" data-unit="m/s" data-decimals="1" type="range" min="0" max="90" step="1" value="36" />
+        </div>
+        <div class="parameter">
+          <div class="param-copy"><label for="densityInput">Densidade do ar</label><output id="densityOutput">1,225<small>kg/m³</small></output></div>
+          <input id="densityInput" data-param="airDensityKgM3" data-output="densityOutput" data-unit="kg/m³" data-decimals="3" type="range" min="0.75" max="1.30" step="0.005" value="1.225" />
+        </div>
+        <div class="parameter">
+          <div class="param-copy"><label for="liftInput">Potência de sustentação</label><output id="liftOutput">86<small>%</small></output></div>
+          <input id="liftInput" data-param="liftThrottle" data-output="liftOutput" data-unit="%" data-decimals="0" data-percent="true" type="range" min="0.55" max="1" step="0.01" value="0.86" />
+        </div>
+        <div class="parameter">
+          <div class="param-copy"><label for="propulsionInput">Potência propulsiva</label><output id="propulsionOutput">46<small>%</small></output></div>
+          <input id="propulsionInput" data-param="propulsionThrottle" data-output="propulsionOutput" data-unit="%" data-decimals="0" data-percent="true" type="range" min="0" max="1" step="0.01" value="0.46" />
+        </div>
+      </section>
+
+      <section class="eng-section">
+        <div class="eng-section-title">Balanço instantâneo</div>
+        <div class="balance-card">
+          <div class="balance-top"><span>empuxo / peso</span><strong id="thrustWeight">1,06<small> T/P</small></strong></div>
+          <div class="balance-track"><i id="balanceIndicator"></i></div>
+          <div class="balance-note"><span>ΣF vertical</span><b id="verticalForce">+0,73 kN</b></div>
+        </div>
+      </section>
+
+      <section class="eng-section">
+        <div class="eng-section-title">Telemetria calculada</div>
+        <div class="metric-grid">
+          <div class="metric"><span>acel. vertical</span><b><em id="metricVerticalAcceleration">+0,59</em> m/s²</b></div>
+          <div class="metric"><span>acel. longitudinal</span><b><em id="metricHorizontalAcceleration">+1,10</em> m/s²</b></div>
+          <div class="metric"><span>arrasto</span><b><em id="metricDrag">1,02</em> kN</b></div>
+          <div class="metric"><span>pressão dinâmica</span><b><em id="metricQ">0,79</em> kPa</b></div>
+          <div class="metric"><span>potência total</span><b><em id="metricPower">812</em> kW</b></div>
+          <div class="metric"><span>autonomia ideal</span><b><em id="metricEndurance">13,3</em> min</b></div>
+          <div class="metric"><span>volume envelope</span><b><em id="metricVolume">14,2</em> m³</b></div>
+          <div class="metric"><span>Reynolds</span><b><em id="metricReynolds">11,7</em> M</b></div>
+        </div>
+      </section>
+
+      <div class="equation"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
+    </div>
+  </aside>
+
+  <div class="vector-legend" aria-hidden="true">
+    <span>vetores / escala relativa</span>
+    <div class="vector-key" style="--key:#a8f58f"><i></i>L sustentação</div>
+    <div class="vector-key" style="--key:#ff6f61"><i></i>W peso</div>
+    <div class="vector-key" style="--key:#63a9ff"><i></i>T tração</div>
+    <div class="vector-key" style="--key:#ff9d57"><i></i>D arrasto</div>
+    <div class="vector-key" style="--key:#f2f8f7"><i></i>ΣF</div>
+  </div>
+
+  <div class="telemetry" aria-label="Telemetria física em tempo real">
+    <svg class="telemetry-scope" viewBox="0 0 52 25" aria-hidden="true"><line x1="0" y1="12.5" x2="52" y2="12.5"/><polyline id="telemetryTrace" points="0,13 8,13 16,13 24,13 32,13 40,13 52,13"/></svg>
+    <div>peso<b><em id="telemetryWeight">12,16</em> kN</b></div>
+    <div>sustentação<b><em id="telemetryLift">12,89</em> kN</b></div>
+    <div>arrasto<b><em id="telemetryDrag">1,02</em> kN</b></div>
+    <div class="telemetry-wide">Σ aceleração<b id="telemetryAcceleration"><em>1,25</em> m/s²</b></div>
   </div>
 
   <nav class="dock" aria-label="Controles da experiência">
@@ -221,8 +369,12 @@
       <button class="mode active" data-mode="external"><small>01 /</small><b>Exterior</b></button>
       <button class="mode" data-mode="systems"><small>02 /</small><b>Sistemas</b></button>
       <button class="mode" data-mode="exploded"><small>03 /</small><b>Explodido</b></button>
+      <button class="mode" data-mode="engineering"><small>04 /</small><b>Engenharia</b></button>
     </div>
     <div class="dock-actions">
+      <button id="forceToggle" class="icon-btn" data-active-color="force" aria-label="Alternar vetores de força" title="Vetores de força">
+        <svg viewBox="0 0 24 24"><path d="M4 19L19 4M13 4h6v6"/><path d="M4 5v14h14"/></svg>
+      </button>
       <button id="fieldToggle" class="icon-btn active" aria-label="Alternar campo magnético" title="Campo magnético">
         <svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="4"/><ellipse cx="12" cy="12" rx="4" ry="9"/><circle cx="12" cy="12" r="1.5"/></svg>
       </button>
@@ -257,12 +409,15 @@
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-
-    window.__AURORA_READY__ = true;
+    import { calculateFlightPhysics, DEFAULT_CONFIG, clamp } from './src/physics.js';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, view:'hero' };
+    const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero' };
+    const design = { ...DEFAULT_CONFIG };
+    const BASE_DIMENSIONS = { lengthM:DEFAULT_CONFIG.lengthM, beamM:DEFAULT_CONFIG.beamM, heightM:DEFAULT_CONFIG.heightM };
+    let physics = calculateFlightPhysics(design);
+    const telemetryHistory = Array(20).fill(physics.performance.resultantAccelerationMs2);
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x071012, .037);
@@ -374,13 +529,11 @@
       obj.userData.target=obj.position.clone();
       obj.userData.opacity=1;
       obj.traverse(o=>{
-        if(o.isMesh){
-          o.castShadow=true;o.receiveShadow=true;
-          if(o.material){
-            o.material=o.material.clone();
-            o.material.userData.baseOpacity=o.material.opacity;
-            o.material.transparent=o.material.transparent||category==='shell';
-          }
+        if(o.isMesh){o.castShadow=true;o.receiveShadow=true}
+        if((o.isMesh||o.isPoints)&&o.material){
+          o.material=o.material.clone();
+          o.material.userData.baseOpacity=o.material.opacity;
+          o.material.transparent=o.material.transparent||category==='shell';
         }
       });
       aurora.add(obj);parts.push(obj);
@@ -564,10 +717,163 @@
     }
     const hotspots={
       canopy:hotspot('Canopy âmbar','vidro eletrocrômico',[.75,1.65,.7]),
-      core:hotspot('Núcleo toroidal','12 fases · kΦ 87.4',[.52,.87,-1.02]),
-      ring:hotspot('Anel Gravium-7','estabilidade vetorial',[-1.3,-.18,.75]),
-      edf:hotspot('EDF cerâmico','exaustão adaptativa',[.5,.7,-2.17])
+      core:hotspot('Núcleo toroidal','720 kW · FM 0,72',[.52,.87,-1.02]),
+      ring:hotspot('Anel Gravium-7','Aeq 4,40 m²',[-1.3,-.18,.75]),
+      edf:hotspot('EDF cerâmico','disco atuador 0,72 m²',[.5,.7,-2.17])
     };
+
+    // Sobreposição Mk.III: cotas paramétricas e diagrama de corpo livre.
+    const engineeringOverlay=new THREE.Group();scene.add(engineeringOverlay);
+    const dimensionGroup=new THREE.Group();engineeringOverlay.add(dimensionGroup);
+    const forceGroup=new THREE.Group();engineeringOverlay.add(forceGroup);
+    const dimensionMaterial=new THREE.LineBasicMaterial({color:0x8aeaf0,transparent:true,opacity:.52,depthTest:false});
+    const dimensionLines=new THREE.LineSegments(new THREE.BufferGeometry(),dimensionMaterial);dimensionLines.renderOrder=20;dimensionGroup.add(dimensionLines);
+    const envelope=new THREE.LineSegments(
+      new THREE.EdgesGeometry(new THREE.BoxGeometry(1,1,1)),
+      new THREE.LineBasicMaterial({color:0x4acdd2,transparent:true,opacity:.2,depthTest:false})
+    );envelope.renderOrder=19;dimensionGroup.add(envelope);
+
+    function dimensionLabel(text){
+      const el=document.createElement('div');el.className='dimension-label';el.textContent=text;
+      const label=new CSS2DObject(el);dimensionGroup.add(label);return label;
+    }
+    const dimensionLabels={length:dimensionLabel('L 4,80 m'),beam:dimensionLabel('B 3,10 m'),height:dimensionLabel('H 1,82 m')};
+
+    function forceVector(id,color,label){
+      const arrow=new THREE.ArrowHelper(new THREE.Vector3(0,1,0),new THREE.Vector3(),1,color,.16,.09);
+      arrow.line.material.transparent=true;arrow.line.material.opacity=.9;arrow.line.material.depthTest=false;
+      arrow.cone.material.transparent=true;arrow.cone.material.opacity=.95;arrow.cone.material.depthTest=false;
+      arrow.traverse(o=>o.renderOrder=22);forceGroup.add(arrow);
+      const el=document.createElement('div');el.className='vector-label';el.style.setProperty('--vector-color',`#${color.toString(16).padStart(6,'0')}`);el.textContent=label;
+      const tag=new CSS2DObject(el);forceGroup.add(tag);
+      return {id,arrow,tag,el};
+    }
+    const forceVectors={
+      lift:forceVector('lift',0xa8f58f,'L · 0,00 kN'),
+      weight:forceVector('weight',0xff6f61,'W · 0,00 kN'),
+      thrust:forceVector('thrust',0x63a9ff,'T · 0,00 kN'),
+      drag:forceVector('drag',0xff9d57,'D · 0,00 kN'),
+      net:forceVector('net',0xf2f8f7,'ΣF · 0,00 kN')
+    };
+
+    const numberFormatter=(value,decimals=1)=>Number(value).toLocaleString('pt-BR',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+    const signed=(value,decimals=2)=>`${value>=0?'+':'−'}${numberFormatter(Math.abs(value),decimals)}`;
+    const vectorLength=value=>clamp(.48+Math.abs(value)/6200,.48,2.65);
+
+    function setVector(vector,origin,direction,magnitudeN,shortLabel){
+      const safeDirection=direction.lengthSq()<1e-8?new THREE.Vector3(0,1,0):direction.clone().normalize();
+      const length=vectorLength(magnitudeN),visible=Math.abs(magnitudeN)>1;
+      vector.arrow.visible=visible;vector.tag.visible=visible;
+      vector.arrow.position.copy(origin);vector.arrow.setDirection(safeDirection);vector.arrow.setLength(length,Math.min(.19,length*.22),Math.min(.105,length*.13));
+      vector.tag.position.copy(origin).addScaledVector(safeDirection,length+.16);
+      vector.el.textContent=`${shortLabel} · ${numberFormatter(Math.abs(magnitudeN)/1000,2)} kN`;
+    }
+
+    function updateEngineeringGeometry(){
+      const sx=design.beamM/BASE_DIMENSIONS.beamM,sy=design.heightM/BASE_DIMENSIONS.heightM,sz=design.lengthM/BASE_DIMENSIONS.lengthM;
+      aurora.scale.set(sx,sy,sz);
+      const halfX=1.76*sx,halfZ=2.35*sz,minY=-.32*sy,maxY=1.76*sy;
+      const xGuide=halfX+.22,zGuide=halfZ+.18,yGuide=maxY+.18,tick=.09;
+      const segments=[
+        // comprimento e terminais
+        new THREE.Vector3(xGuide,minY, -halfZ),new THREE.Vector3(xGuide,minY,halfZ),
+        new THREE.Vector3(xGuide-tick,minY,-halfZ),new THREE.Vector3(xGuide+tick,minY,-halfZ),
+        new THREE.Vector3(xGuide-tick,minY, halfZ),new THREE.Vector3(xGuide+tick,minY, halfZ),
+        // boca e terminais
+        new THREE.Vector3(-halfX,yGuide,.1),new THREE.Vector3(halfX,yGuide,.1),
+        new THREE.Vector3(-halfX,yGuide-tick,.1),new THREE.Vector3(-halfX,yGuide+tick,.1),
+        new THREE.Vector3( halfX,yGuide-tick,.1),new THREE.Vector3( halfX,yGuide+tick,.1),
+        // altura e terminais
+        new THREE.Vector3(-xGuide,minY,0),new THREE.Vector3(-xGuide,maxY,0),
+        new THREE.Vector3(-xGuide-tick,minY,0),new THREE.Vector3(-xGuide+tick,minY,0),
+        new THREE.Vector3(-xGuide-tick,maxY,0),new THREE.Vector3(-xGuide+tick,maxY,0)
+      ];
+      dimensionLines.geometry.dispose();dimensionLines.geometry=new THREE.BufferGeometry().setFromPoints(segments);
+      envelope.position.set(0,(minY+maxY)/2,0);envelope.scale.set(halfX*2,maxY-minY,halfZ*2);
+      dimensionLabels.length.position.set(xGuide,minY,-.05);
+      dimensionLabels.beam.position.set(0,yGuide,.1);
+      dimensionLabels.height.position.set(-xGuide,(minY+maxY)/2,0);
+      dimensionLabels.length.element.textContent=`L ${numberFormatter(design.lengthM,2)} m`;
+      dimensionLabels.beam.element.textContent=`B ${numberFormatter(design.beamM,2)} m`;
+      dimensionLabels.height.element.textContent=`H ${numberFormatter(design.heightM,2)} m`;
+
+      setVector(forceVectors.lift,new THREE.Vector3(.5*sx,minY+.05,0),new THREE.Vector3(0,1,0),physics.forces.liftN,'L');
+      setVector(forceVectors.weight,new THREE.Vector3(-.5*sx,.78*sy,0),new THREE.Vector3(0,-1,0),physics.forces.weightN,'W');
+      setVector(forceVectors.thrust,new THREE.Vector3(0,.44*sy,-halfZ),new THREE.Vector3(0,0,1),physics.forces.forwardThrustN,'T');
+      setVector(forceVectors.drag,new THREE.Vector3(.36*sx,.9*sy,halfZ),new THREE.Vector3(0,0,-1),physics.forces.dragN,'D');
+      const netDirection=new THREE.Vector3(0,physics.forces.verticalNetForceN,physics.forces.horizontalNetForceN);
+      setVector(forceVectors.net,new THREE.Vector3(halfX+.18,.42*sy,0),netDirection,physics.forces.netForceN,'ΣF');
+    }
+
+    function setText(id,text){const el=document.getElementById(id);if(el)el.textContent=text}
+    function updateRange(input){
+      const range=(Number(input.value)-Number(input.min))/(Number(input.max)-Number(input.min))*100;
+      input.style.setProperty('--range',`${range}%`);
+      const raw=Number(input.value),shown=input.dataset.percent==='true'?raw*100:raw;
+      const output=document.getElementById(input.dataset.output);
+      if(output)output.innerHTML=`${numberFormatter(shown,Number(input.dataset.decimals))}<small>${input.dataset.unit}</small>`;
+    }
+    function updateTelemetryTrace(value){
+      telemetryHistory.push(value);telemetryHistory.shift();
+      const max=Math.max(2,...telemetryHistory.map(Math.abs));
+      const points=telemetryHistory.map((sample,index)=>`${(index/(telemetryHistory.length-1)*52).toFixed(1)},${(12.5-sample/max*10).toFixed(1)}`).join(' ');
+      document.getElementById('telemetryTrace').setAttribute('points',points);
+    }
+    function updatePhysics(){
+      physics=calculateFlightPhysics(design);
+      const {forces:f,performance:p,geometry:g}=physics;
+      updateEngineeringGeometry();
+      setText('railDimensions',`${numberFormatter(design.lengthM,2)} × ${numberFormatter(design.beamM,2)} × ${numberFormatter(design.heightM,2)} m`);
+      setText('railMass',`${numberFormatter(design.massKg,0)} kg · ${numberFormatter(f.weightN/1000,2)} kN`);
+      setText('railDisk',`${numberFormatter(design.liftActuatorAreaM2,2)} m² · FM ${numberFormatter(design.liftFigureOfMerit,2)}`);
+      setText('railBalance',`T/P ${numberFormatter(p.thrustToWeight,2)} · ${signed(p.verticalAccelerationMs2,2)} m/s²`);
+      document.getElementById('volumeMeter').style.width=`${clamp((g.hullVolumeM3-8)/16*100,8,100)}%`;
+      document.getElementById('massMeter').style.width=`${clamp((design.massKg-700)/13,8,100)}%`;
+      document.getElementById('liftMeter').style.width=`${design.liftThrottle*100}%`;
+      document.getElementById('balanceMeter').style.width=`${clamp((p.thrustToWeight-.7)/.6*100,4,100)}%`;
+
+      document.getElementById('thrustWeight').innerHTML=`${numberFormatter(p.thrustToWeight,2)}<small> T/P</small>`;
+      document.getElementById('balanceIndicator').style.left=`${clamp((p.thrustToWeight-.7)/.6*100,0,100)}%`;
+      setText('verticalForce',`${signed(f.verticalNetForceN/1000,2)} kN`);
+      setText('metricVerticalAcceleration',signed(p.verticalAccelerationMs2,2));
+      setText('metricHorizontalAcceleration',signed(p.horizontalAccelerationMs2,2));
+      setText('metricDrag',numberFormatter(f.dragN/1000,2));
+      setText('metricQ',numberFormatter(p.dynamicPressurePa/1000,2));
+      setText('metricPower',numberFormatter(p.totalPowerKw,0));
+      setText('metricEndurance',numberFormatter(p.enduranceMinutes,1));
+      setText('metricVolume',numberFormatter(g.hullVolumeM3,1));
+      setText('metricReynolds',numberFormatter(p.reynoldsNumber/1e6,1));
+      setText('telemetryWeight',numberFormatter(f.weightN/1000,2));
+      setText('telemetryLift',numberFormatter(f.liftN/1000,2));
+      setText('telemetryDrag',numberFormatter(f.dragN/1000,2));
+      setText('telemetryAcceleration',`${numberFormatter(p.resultantAccelerationMs2,2)} m/s²`);
+      const accelNode=document.getElementById('telemetryAcceleration');accelNode.innerHTML=`<em>${numberFormatter(p.resultantAccelerationMs2,2)}</em> m/s²`;accelNode.classList.toggle('negative',p.verticalAccelerationMs2<0);accelNode.classList.toggle('positive',p.verticalAccelerationMs2>=0);
+      setText('flightRegime',design.airspeedMs<3?'HOVER':p.verticalAccelerationMs2>1?'CLIMB':'CRUISE');
+      setText('solverStatus',p.thrustToWeight<.94?'déficit de sustentação':p.thrustToWeight>1.22?'carga elevada':'modelo convergente');
+      document.getElementById('solverStatus').classList.toggle('alert',p.thrustToWeight<.94||p.thrustToWeight>1.22);
+      updateTelemetryTrace(p.resultantAccelerationMs2);
+    }
+
+    const parameterInputs=[...document.querySelectorAll('input[data-param]')];
+    parameterInputs.forEach(input=>{
+      updateRange(input);
+      input.addEventListener('input',()=>{
+        design[input.dataset.param]=Number(input.value);updateRange(input);
+        document.querySelectorAll('.preset').forEach(button=>button.classList.remove('active'));
+        updatePhysics();
+      });
+    });
+    const presets={
+      hover:{airspeedMs:0,liftThrottle:.80,propulsionThrottle:0},
+      cruise:{airspeedMs:36,liftThrottle:.86,propulsionThrottle:.46},
+      climb:{airspeedMs:24,liftThrottle:.97,propulsionThrottle:.60}
+    };
+    document.querySelectorAll('.preset').forEach(button=>button.addEventListener('click',()=>{
+      Object.assign(design,presets[button.dataset.preset]);
+      parameterInputs.forEach(input=>{if(input.dataset.param in design){input.value=design[input.dataset.param];updateRange(input)}});
+      document.querySelectorAll('.preset').forEach(item=>item.classList.toggle('active',item===button));
+      updatePhysics();
+    }));
 
     // Plataforma transparente e luzes de contato integram o modelo ao backdrop renderizado.
     const platform=new THREE.Group();platform.position.y=-.55;scene.add(platform);
@@ -585,7 +891,8 @@
     const views={
       hero:{pos:new THREE.Vector3(5.1,3.05,7.7),target:new THREE.Vector3(.15,.57,0)},
       side:{pos:new THREE.Vector3(8.2,2.15,.3),target:new THREE.Vector3(0,.55,0)},
-      rear:{pos:new THREE.Vector3(-4.7,2.55,-7.1),target:new THREE.Vector3(0,.58,-.35)}
+      rear:{pos:new THREE.Vector3(-4.7,2.55,-7.1),target:new THREE.Vector3(0,.58,-.35)},
+      engineering:{pos:new THREE.Vector3(7.2,3.5,7.4),target:new THREE.Vector3(0,.48,0)}
     };
     let camTarget=views.hero.pos.clone(),lookTarget=views.hero.target.clone(),cameraTween=0;
     function setView(name){
@@ -596,7 +903,7 @@
     function setOpacity(obj,target){
       obj.userData.targetOpacity=target;
       obj.visible=target>.005;
-      obj.traverse(o=>{if(o.isMesh&&o.material){o.material.transparent=o.material.transparent||target<.999;o.material.depthWrite=target>.55}});
+      obj.traverse(o=>{if((o.isMesh||o.isPoints)&&o.material){o.material.transparent=o.material.transparent||target<.999;o.material.depthWrite=target>.55}});
     }
     function applyMode(){
       for(const obj of parts){
@@ -611,14 +918,25 @@
           if(c==='engine'||c==='levitation'||c==='internal')visible=1;
         }else if(state.mode==='exploded'){
           visible=c==='shell'?.36:1;
+        }else if(state.mode==='engineering'){
+          if(c==='shell')visible=.2;
+          if(c==='external')visible=.62;
+          if(c==='internal')visible=.32;
+          if(c==='engine'||c==='levitation')visible=1;
         }
-        if(c==='field')visible=state.fields?(state.mode==='systems'?.75:.45):0;
+        if(c==='field')visible=state.fields?(state.mode==='systems'?.75:state.mode==='engineering'?.14:.45):0;
         setOpacity(obj,visible);
+        obj.traverse(o=>{if(o.isMesh&&o.material)o.material.wireframe=state.mode==='engineering'&&c==='shell'});
         const factor=state.mode==='exploded'?1:0;
         obj.userData.target.copy(obj.userData.base).addScaledVector(obj.userData.explode,factor);
       }
       labelRoot.visible=state.labels;
       hotspots.core.visible=state.mode!=='external';
+      dimensionGroup.visible=state.mode==='engineering';
+      forceGroup.visible=state.vectors;
+      engineeringOverlay.visible=dimensionGroup.visible||forceGroup.visible;
+      document.body.classList.toggle('engineering-mode',state.mode==='engineering');
+      document.body.classList.toggle('vectors-on',state.vectors);
     }
 
     document.querySelectorAll('.mode').forEach(btn=>btn.addEventListener('click',()=>{
@@ -626,10 +944,16 @@
       document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b===btn));
       if(state.mode==='systems')setView('side');
       if(state.mode==='exploded')setView('hero');
+      if(state.mode==='engineering'){
+        state.vectors=true;state.motion=false;aurora.rotation.y=0;setView('engineering');
+        forceToggle.classList.add('active');motionToggle.classList.remove('active');
+      }
       applyMode();
     }));
     document.querySelectorAll('.view').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.view)));
 
+    const forceToggle=document.getElementById('forceToggle');
+    forceToggle.addEventListener('click',()=>{state.vectors=!state.vectors;forceToggle.classList.toggle('active',state.vectors);applyMode()});
     const fieldToggle=document.getElementById('fieldToggle');
     fieldToggle.addEventListener('click',()=>{state.fields=!state.fields;fieldToggle.classList.toggle('active',state.fields);applyMode()});
     const labelToggle=document.getElementById('labelToggle');
@@ -666,7 +990,9 @@
     }
     addEventListener('resize',resize);
 
+    updatePhysics();
     applyMode();
+    window.__AURORA_READY__=true;
     setTimeout(()=>document.getElementById('loader').classList.add('done'),850);
 
     const clock=new THREE.Clock();let elapsed=0;
@@ -677,20 +1003,17 @@
       for(const obj of parts){
         obj.position.lerp(obj.userData.target,.075);
         if(obj.userData.targetOpacity!==undefined)obj.traverse(o=>{
-          if(o.isMesh&&o.material){const base=o.material.userData.baseOpacity??1;o.material.opacity=THREE.MathUtils.lerp(o.material.opacity,Math.min(base,obj.userData.targetOpacity),.09)}
+          if((o.isMesh||o.isPoints)&&o.material){const base=o.material.userData.baseOpacity??1;o.material.opacity=THREE.MathUtils.lerp(o.material.opacity,Math.min(base,obj.userData.targetOpacity),.09)}
         });
       }
       if(cameraTween>.002){camera.position.lerp(camTarget,.055);controls.target.lerp(lookTarget,.055);cameraTween*=.94}
       engine.userData.fan.rotation.z-=dt*(state.mode==='external'?1.8:4.8);
       core.rotation.z+=dt*.7;
       fieldParts.forEach((f,i)=>{f.rotation.z+=dt*(i%2?-.08:.055)});
-      aurora.position.y=.1+Math.sin(elapsed*.85)*.022;
+      aurora.position.y=state.mode==='engineering'?.1:.1+Math.sin(elapsed*.85)*.018;
+      engineeringOverlay.position.copy(aurora.position);engineeringOverlay.rotation.y=aurora.rotation.y;
       lift.intensity=7.7+Math.sin(elapsed*2.1)*1.1;
       warm.intensity=7+Math.sin(elapsed*1.4)*.7;
-
-      document.getElementById('flux').textContent=(87.4+Math.sin(elapsed*1.7)*1.8).toFixed(1);
-      document.getElementById('temp').textContent=Math.round(624+Math.sin(elapsed*.9)*7);
-      document.getElementById('hover').textContent=(1.20+Math.sin(elapsed*.85)*.02).toFixed(2);
 
       controls.update();composer.render();labelsRenderer.render(scene,camera);requestAnimationFrame(animate);
     }
