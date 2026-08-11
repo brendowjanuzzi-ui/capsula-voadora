@@ -65,7 +65,7 @@
             line-height: 1.4;
         }
     </style>
-    <!-- Three.js e OrbitControls via CDN para renderização 3D nativa do navegador -->
+    <!-- Bibliotecas estáveis via CDN do CDNJS -->
     <script src="https://cloudflare.com"></script>
     <script src="https://jsdelivr.net"></script>
 </head>
@@ -108,7 +108,7 @@
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
-        controls.maxPolarAngle = Math.PI / 2 + 0.1; // Não deixa a câmera passar muito debaixo do chão
+        controls.maxPolarAngle = Math.PI / 2 + 0.1; 
         controls.minDistance = 2;
         controls.maxDistance = 10;
 
@@ -120,20 +120,17 @@
         sunLight.position.set(10, 20, 10);
         scene.add(sunLight);
 
-        // Luz azul tecnológica vinda do chão (Efeito do LED de levitação)
         const ledJetLight = new THREE.PointLight(0x00ffff, 3, 8);
         ledJetLight.position.set(0, -1, 0);
         scene.add(ledJetLight);
 
-        // --- ELEMENTOS DO CENÁRIO (Chão e Estrelas) ---
-        // Criação de um chão quadriculado digital futurista
+        // --- ELEMENTOS DO CENÁRIO ---
         const gridHelper = new THREE.GridHelper(60, 60, 0x45f3ff, 0x1f2833);
         gridHelper.position.y = -1.2;
         gridHelper.material.opacity = 0.2;
         gridHelper.material.transparent = true;
         scene.add(gridHelper);
 
-        // Fundo estrelado de poeira cósmica
         const starsGeometry = new THREE.BufferGeometry();
         const starsCount = 1000;
         const starPositions = new Float32Array(starsCount * 3);
@@ -162,13 +159,12 @@
             color: 0x00ffff 
         });
 
-        // Grupo principal que junta todas as partes da cápsula voadora
         const capsulaNave = new THREE.Group();
 
         // 1. Corpo Redondo Principal (Cockpit)
         const geoCorpo = new THREE.SphereGeometry(1.0, 32, 32);
         const corpo = new THREE.Mesh(geoCorpo, matCarcaça);
-        corpo.scale.set(1, 0.9, 1.1); // Estica levemente para formato aerodinâmico de gota
+        corpo.scale.set(1, 0.9, 1.1); 
         capsulaNave.add(corpo);
 
         // 2. Vidro Frontal Alaranjado
@@ -178,7 +174,7 @@
         vidro.position.set(0, 0.15, 0.15);
         capsulaNave.add(vidro);
 
-        // 3. Turbina Turbojato Traseira Oculta (Estilo Caça)
+        // 3. Turbina Turbojato Traseira Oculta
         const geoTurbina = new THREE.CylinderGeometry(0.35, 0.28, 0.8, 32);
         const turbina = new THREE.Mesh(geoTurbina, matMetalEscovado);
         turbina.rotation.x = Math.PI / 2;
@@ -190,12 +186,12 @@
             const dutoGeom = new THREE.CylinderGeometry(0.12, 0.15, 1.2, 16);
             const duto = new THREE.Mesh(dutoGeom, matDutos);
             duto.position.set(0.85 * lado, -0.3, -0.1);
-            duto.rotation.z = mathToRad(-15 * lado);
-            duto.rotation.x = mathToRad(20);
+            duto.rotation.z = (-15 * lado) * (Math.PI / 180);
+            duto.rotation.x = (20) * (Math.PI / 180);
             return duto;
         };
-        capsulaNave.add(criarDutoLateral(1));  // Direito
-        capsulaNave.add(criarDutoLateral(-1)); // Esquerdo
+        capsulaNave.add(criarDutoLateral(1));  
+        capsulaNave.add(criarDutoLateral(-1)); 
 
         // 5. Garras Estabilizadoras Curvas Superiores
         const criarGarraEstabilizadora = (lado) => {
@@ -208,8 +204,8 @@
             const geoGarra = new THREE.TubeGeometry(caminhoCurva, 30, 0.09, 16, false);
             return new THREE.Mesh(geoGarra, matCarcaça);
         };
-        capsulaNave.add(criarGarraEstabilizadora(1));  // Direita
-        capsulaNave.add(criarGarraEstabilizadora(-1)); // Esquerda
+        capsulaNave.add(criarGarraEstabilizadora(1));  
+        capsulaNave.add(criarGarraEstabilizadora(-1)); 
 
         // 6. Anel de Levitação de LED Azul na Base
         const geoAnelLED = new THREE.TorusGeometry(0.65, 0.05, 16, 100);
@@ -221,19 +217,34 @@
         // 7. Trem de Pouso Triciclo Retrátil (Metal Escovado Aeronáutico)
         const criarPernaPouso = (x, z, rotZ) => {
             const pernaGrupo = new THREE.Group();
-            // Haste telescópica principal
             const geoHaste = new THREE.CylinderGeometry(0.04, 0.04, 0.5, 16);
             const haste = new THREE.Mesh(geoHaste, matMetalEscovado);
             haste.position.y = -0.25;
             pernaGrupo.add(haste);
-            // Sapata articulada da ponta
+            
             const geoSapata = new THREE.CylinderGeometry(0.12, 0.12, 0.03, 16);
             const sapata = new THREE.Mesh(geoSapata, matMetalEscovado);
             sapata.position.y = -0.5;
             pernaGrupo.add(sapata);
 
             pernaGrupo.position.set(x, -0.7, z);
-            pernaGrupo.rotation.z = mathToRad(rotZ);
+            pernaGrupo.rotation.z = rotZ * (Math.PI / 180);
             return pernaGrupo;
         };
-        // Posicionando as 3 pernas em triângulo sob a cápsula
+        capsulaNave.add(criarPernaPouso(0, 0.5, 0));      
+        capsulaNave.add(criarPernaPouso(0.5, -0.4, -15));  
+        capsulaNave.add(criarPernaPouso(-0.5, -0.4, 15)); 
+
+        scene.add(capsulaNave);
+
+        // --- RESPONSIVIDADE ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- LOOP DE ANIMAÇÃO ---
+        const clock = new THREE.Clock();
+        const altHudElement = document.getElementById('hud-alt');
+
