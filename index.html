@@ -1,250 +1,1118 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cápsula Voadora VTOL - Projeto 3D</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-        }
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #050508;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        #canvas-container {
-            width: 100vw;
-            height: 100vh;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-        #interface-hud {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #45f3ff;
-            background: rgba(10, 15, 28, 0.85);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(69, 243, 255, 0.3);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
-            pointer-events: none;
-            z-index: 10;
-            backdrop-filter: blur(5px);
-            max-width: 300px;
-        }
-        h1 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-            letter-spacing: 2px;
-            color: #fff;
-            text-transform: uppercase;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 5px;
-        }
-        .hud-line {
-            display: flex;
-            justify-content: space-between;
-            margin: 6px 0;
-            font-size: 12px;
-            font-family: monospace;
-        }
-        .hud-value {
-            color: #fff;
-            font-weight: bold;
-        }
-        .instruction {
-            margin-top: 15px;
-            font-size: 11px;
-            color: #8a9ba8;
-            line-height: 1.4;
-        }
-    </style>
-    <!-- Bibliotecas estáveis via CDN do CDNJS -->
-    <script src="https://cloudflare.com"></script>
-    <script src="https://jsdelivr.net"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AURORA-GT Mk2 — Conceito 3D Realista</title>
+  <meta name="description" content="Protótipo 3D conceitual da cápsula AURORA-GT Mk2 Turbogravimagnética em Three.js." />
+  <style>
+    :root{
+      --bg:#03070b; --panel:#071923df; --panel2:#0d2b37; --cyan:#69e8f7; --coral:#ff7845;
+      --mag:#c98add; --muted:#b8d6dc; --line:#2b6471; --white:#ecfeff;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);font-family:Inter,Arial,sans-serif;color:var(--white)}
+    #stage{position:fixed;inset:0;background:radial-gradient(circle at 70% 12%,#4edff044,transparent 27%),linear-gradient(135deg,#020509,#071923 52%,#031016)}
+    canvas{display:block;width:100%;height:100%}
+    #ui{position:fixed;right:18px;top:18px;width:360px;max-width:calc(100vw - 36px);max-height:calc(100vh - 36px);overflow:auto;background:var(--panel);border:1px solid #ffffff22;border-radius:22px;box-shadow:0 18px 70px #0009, inset 0 0 26px #6be8f512;backdrop-filter:blur(12px);padding:20px 18px;z-index:5}
+    .tag{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);font-weight:900;margin-bottom:8px;text-shadow:0 0 12px #69e8f777}
+    h1{font-size:27px;line-height:1.05;margin:0 0 9px;text-shadow:0 0 18px #69e8f744}
+    p{font-size:13.5px;line-height:1.45;color:#d8f7fb;margin:0 0 12px}
+    .warn{border-left:4px solid var(--coral);background:#ffffff12;border-radius:10px;padding:10px 11px;color:#fff;margin:12px 0 14px;font-size:13px;line-height:1.35}
+    .buttons{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0}
+    button{border:1px solid #5fe4f080;background:#0d4350;color:#ecfeff;border-radius:13px;padding:10px 12px;font-weight:900;cursor:pointer;text-align:left;transition:.18s ease;font-size:13px}
+    button:hover{transform:translateY(-1px);box-shadow:0 8px 24px #0005}
+    button.active{background:#0a7489;border-color:#94f6ff;box-shadow:0 0 22px #55dff044}
+    .toggle{display:flex;gap:9px;align-items:center;margin:9px 0;color:#d5f3f7;font-size:13px}.toggle input{accent-color:#55dff0}
+    .legend{display:grid;gap:7px;margin-top:12px}.row{display:flex;gap:9px;align-items:center;color:#d5f3f7;font-size:12.5px}.sw{width:14px;height:14px;border-radius:50%;box-shadow:0 0 14px currentColor;flex:0 0 auto}
+    .hint{position:fixed;left:18px;bottom:18px;background:#03141dca;border:1px solid #ffffff25;color:#dffbff;border-radius:999px;padding:9px 14px;font-size:13px;z-index:4;box-shadow:0 8px 28px #0008}
+    .credits{border-top:1px solid #ffffff1e;margin-top:14px;padding-top:12px;color:#9fc6cc;font-size:12px;line-height:1.4}
+    .label{padding:5px 8px;border:1px solid rgba(105,232,247,.45);background:rgba(3,18,26,.68);color:#dcfbff;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap;text-shadow:0 0 8px #000;box-shadow:0 0 16px rgba(105,232,247,.20);pointer-events:none}
+    #loader{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle,#123743,#02070b 65%);z-index:10;color:#eaffff;text-align:center;padding:30px}.spinner{width:54px;height:54px;border-radius:50%;border:3px solid #ffffff22;border-top-color:var(--cyan);margin:0 auto 14px;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:760px){#ui{left:12px;right:12px;top:auto;bottom:12px;width:auto;max-height:48vh}.hint{display:none}h1{font-size:22px}}
+  </style>
+
+  <!-- Three.js via CDN. Funciona no GitHub Pages. -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
+  <div id="stage"></div>
 
-    <!-- Interface HUD Estilo Vidro de Caça -->
-    <div id="interface-hud">
-        <h1>SISTEMA VTOL ATIVO</h1>
-        <div class="hud-line"><span>ALTITUDE:</span><span class="hud-value" id="hud-alt">1.50m</span></div>
-        <div class="hud-line"><span>BATERIA:</span><span class="hud-value" style="color: #00ff88;">98.4%</span></div>
-        <div class="hud-line"><span>ÂNGULO GARRAS:</span><span class="hud-value">90.0° (LIFT)</span></div>
-        <div class="hud-line"><span>PRESSÃO ATM:</span><span class="hud-value">1013 hPa</span></div>
-        <div class="hud-line"><span>RADAR GPS:</span><span class="hud-value" style="color: #ff5500;">CONECTADO</span></div>
-        
-        <div class="instruction">
-             Arraste com o <b>botão esquerdo</b> para girar a nave.<br>
-             Use a <b>roda do mouse</b> para dar zoom.<br>
-             Arraste com o <b>botão direito</b> para mover a câmera.
-        </div>
+  <div id="loader">
+    <div>
+      <div class="spinner"></div>
+      <strong>Carregando AURORA-GT Mk2...</strong><br>
+      <span style="color:#b8d6dc;font-size:13px">Se estiver abrindo fora do GitHub Pages, use um servidor local.</span>
+    </div>
+  </div>
+
+  <aside id="ui">
+    <div class="tag">Conceito 3D realista</div>
+    <h1>AURORA-GT Mk2</h1>
+    <p>Cápsula turbogravimagnética ficcional com casco metálico, canopy âmbar, turbina EDF visual, dutos internos, anel de levitação, arcos de campo e braços estabilizadores.</p>
+    <div class="warn"><b>Nota:</b> projeto artístico/ficcional. Não é aeronave real, não contém medidas, cálculos ou instruções de fabricação/voo.</div>
+
+    <div class="buttons">
+      <button class="mode active" data-mode="external">Visual externo realista</button>
+      <button class="mode" data-mode="xray">Raio-X / dentro para fora</button>
+      <button class="mode" data-mode="exploded">Explodido técnico</button>
+      <button id="resetCam">Resetar câmera</button>
     </div>
 
-    <div id="canvas-container"></div>
+    <label class="toggle"><input id="showFields" type="checkbox" checked> Mostrar campos magnéticos</label>
+    <label class="toggle"><input id="showLabels" type="checkbox" checked> Mostrar etiquetas</label>
+    <label class="toggle"><input id="autoRotate" type="checkbox" checked> Rotação automática</label>
 
-    <script>
-        // --- CONFIGURAÇÃO DA CENA E AMBIENTE ---
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x050508, 0.015);
+    <div class="legend">
+      <div class="row"><span class="sw" style="background:#0b6673;color:#54d6e9"></span> Casco: liga teal metálica</div>
+      <div class="row"><span class="sw" style="background:#ff7845;color:#ff7845"></span> Núcleo/turbina: brilho quente</div>
+      <div class="row"><span class="sw" style="background:#61e6f6;color:#61e6f6"></span> Fluxo azul: levitação</div>
+      <div class="row"><span class="sw" style="background:#c487d6;color:#c487d6"></span> Gravium-7: placas e arcos</div>
+    </div>
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.5, 4.5);
+    <div class="credits">
+      GitHub Pages: envie este arquivo como <b>index.html</b> para o repositório e ative Pages em <b>Settings → Pages</b>.
+    </div>
+  </aside>
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
-        container.appendChild(renderer.domElement);
+  <div class="hint">Mouse: girar • Scroll: zoom • Botão direito: mover câmera</div>
 
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.maxPolarAngle = Math.PI / 2 + 0.1; 
-        controls.minDistance = 2;
-        controls.maxDistance = 10;
-
-        // --- ILUMINAÇÃO ---
-        const ambientLight = new THREE.AmbientLight(0x0a1128, 1.5);
-        scene.add(ambientLight);
-
-        const sunLight = new THREE.DirectionalLight(0xffffff, 2.5);
-        sunLight.position.set(10, 20, 10);
-        scene.add(sunLight);
-
-        const ledJetLight = new THREE.PointLight(0x00ffff, 3, 8);
-        ledJetLight.position.set(0, -1, 0);
-        scene.add(ledJetLight);
-
-        // --- ELEMENTOS DO CENÁRIO ---
-        const gridHelper = new THREE.GridHelper(60, 60, 0x45f3ff, 0x1f2833);
-        gridHelper.position.y = -1.2;
-        gridHelper.material.opacity = 0.2;
-        gridHelper.material.transparent = true;
-        scene.add(gridHelper);
-
-        const starsGeometry = new THREE.BufferGeometry();
-        const starsCount = 1000;
-        const starPositions = new Float32Array(starsCount * 3);
-        for(let i=0; i<starsCount*3; i++) {
-            starPositions[i] = (Math.random() - 0.5) * 100;
+  <script>
+    setTimeout(() => {
+      if (!window.__AURORA_THREE_STARTED__) {
+        const loader = document.getElementById('loader');
+        if (loader) {
+          loader.innerHTML = '<div><strong>Preview 3D precisa de internet/CDN.</strong><br><span style="color:#b8d6dc;font-size:13px">Suba este arquivo no GitHub Pages ou abra por um servidor local com internet.</span></div>';
         }
-        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-        const starsMaterial = new THREE.PointsMaterial({color: 0x8a9ba8, size: 0.1});
-        const starField = new THREE.Points(starsGeometry, starsMaterial);
-        scene.add(starField);
+      }
+    }, 5000);
+  </script>
 
-        // --- MATERIAIS DA AERONAVE ---
-        const matCarcaça = new THREE.MeshStandardMaterial({ 
-            color: 0x1a233a, roughness: 0.25, metalness: 0.95 
-        });
-        const matVidro = new THREE.MeshStandardMaterial({ 
-            color: 0xff4500, transparent: true, opacity: 0.35, roughness: 0.05, metalness: 0.1
-        });
-        const matMetalEscovado = new THREE.MeshStandardMaterial({ 
-            color: 0xcccccc, roughness: 0.4, metalness: 0.9 
-        });
-        const matDutos = new THREE.MeshStandardMaterial({ 
-            color: 0x0f1424, roughness: 0.5, metalness: 0.8 
-        });
-        const matLED = new THREE.MeshBasicMaterial({ 
-            color: 0x00ffff 
-        });
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+    import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 
-        const capsulaNave = new THREE.Group();
+    window.__AURORA_THREE_STARTED__ = true;
 
-        // 1. Corpo Redondo Principal (Cockpit)
-        const geoCorpo = new THREE.SphereGeometry(1.0, 32, 32);
-        const corpo = new THREE.Mesh(geoCorpo, matCarcaça);
-        corpo.scale.set(1, 0.9, 1.1); 
-        capsulaNave.add(corpo);
+    const stage = document.getElementById('stage');
+    const loader = document.getElementById('loader');
 
-        // 2. Vidro Frontal Alaranjado
-        const geoVidro = new THREE.SphereGeometry(0.99, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2.2);
-        const vidro = new THREE.Mesh(geoVidro, matVidro);
-        vidro.rotation.x = Math.PI / 3.2;
-        vidro.position.set(0, 0.15, 0.15);
-        capsulaNave.add(vidro);
+    const state = {
+      mode: 'external',
+      showFields: true,
+      showLabels: true,
+      autoRotate: true
+    };
 
-        // 3. Turbina Turbojato Traseira Oculta
-        const geoTurbina = new THREE.CylinderGeometry(0.35, 0.28, 0.8, 32);
-        const turbina = new THREE.Mesh(geoTurbina, matMetalEscovado);
-        turbina.rotation.x = Math.PI / 2;
-        turbina.position.set(0, 0, -0.9);
-        capsulaNave.add(turbina);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x03080c);
+    scene.fog = new THREE.Fog(0x03080c, 7, 18);
 
-        // 4. Dutos Laterais de Vento Dividido
-        const criarDutoLateral = (lado) => {
-            const dutoGeom = new THREE.CylinderGeometry(0.12, 0.15, 1.2, 16);
-            const duto = new THREE.Mesh(dutoGeom, matDutos);
-            duto.position.set(0.85 * lado, -0.3, -0.1);
-            duto.rotation.z = (-15 * lado) * (Math.PI / 180);
-            duto.rotation.x = (20) * (Math.PI / 180);
-            return duto;
-        };
-        capsulaNave.add(criarDutoLateral(1));  
-        capsulaNave.add(criarDutoLateral(-1)); 
+    const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(4.2, -6.6, 3.0);
 
-        // 5. Garras Estabilizadoras Curvas Superiores
-        const criarGarraEstabilizadora = (lado) => {
-            const pontosCurva = [
-                new THREE.Vector3(0.9 * lado, 0.2, -0.2),
-                new THREE.Vector3(1.3 * lado, 0.8, -0.4),
-                new THREE.Vector3(0.8 * lado, 1.4, -0.6)
-            ];
-            const caminhoCurva = new THREE.CatmullRomCurve3(pontosCurva);
-            const geoGarra = new THREE.TubeGeometry(caminhoCurva, 30, 0.09, 16, false);
-            return new THREE.Mesh(geoGarra, matCarcaça);
-        };
-        capsulaNave.add(criarGarraEstabilizadora(1));  
-        capsulaNave.add(criarGarraEstabilizadora(-1)); 
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    stage.appendChild(renderer.domElement);
 
-        // 6. Anel de Levitação de LED Azul na Base
-        const geoAnelLED = new THREE.TorusGeometry(0.65, 0.05, 16, 100);
-        const anelLED = new THREE.Mesh(geoAnelLED, matLED);
-        anelLED.rotation.x = Math.PI / 2;
-        anelLED.position.set(0, -0.85, 0);
-        capsulaNave.add(anelLED);
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(innerWidth, innerHeight);
+    labelRenderer.domElement.style.position = 'fixed';
+    labelRenderer.domElement.style.inset = '0';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    stage.appendChild(labelRenderer.domElement);
 
-        // 7. Trem de Pouso Triciclo Retrátil (Metal Escovado Aeronáutico)
-        const criarPernaPouso = (x, z, rotZ) => {
-            const pernaGrupo = new THREE.Group();
-            const geoHaste = new THREE.CylinderGeometry(0.04, 0.04, 0.5, 16);
-            const haste = new THREE.Mesh(geoHaste, matMetalEscovado);
-            haste.position.y = -0.25;
-            pernaGrupo.add(haste);
-            
-            const geoSapata = new THREE.CylinderGeometry(0.12, 0.12, 0.03, 16);
-            const sapata = new THREE.Mesh(geoSapata, matMetalEscovado);
-            sapata.position.y = -0.5;
-            pernaGrupo.add(sapata);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.target.set(0, -0.25, 0.42);
+    controls.maxDistance = 11;
+    controls.minDistance = 2.6;
 
-            pernaGrupo.position.set(x, -0.7, z);
-            pernaGrupo.rotation.z = rotZ * (Math.PI / 180);
-            return pernaGrupo;
-        };
-        capsulaNave.add(criarPernaPouso(0, 0.5, 0));      
-        capsulaNave.add(criarPernaPouso(0.5, -0.4, -15));  
-        capsulaNave.add(criarPernaPouso(-0.5, -0.4, 15)); 
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.72, 0.38, 0.18);
+    composer.addPass(bloom);
 
-        scene.add(capsulaNave);
+    const model = new THREE.Group();
+    model.name = 'AURORA-GT Mk2 Turbogravimagnética';
+    scene.add(model);
 
-        // --- RESPONSIVIDADE ---
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+    const labelRoot = new THREE.Group();
+    model.add(labelRoot);
 
-        // --- LOOP DE ANIMAÇÃO ---
-        const clock = new THREE.Clock();
-        const altHudElement = document.getElementById('hud-alt');
+    const registered = [];
 
+    function makeNoiseTexture(size=256, contrast=30){
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const img = ctx.createImageData(size, size);
+      for(let i=0;i<img.data.length;i+=4){
+        const v = 128 + (Math.random()*2-1)*contrast;
+        img.data[i]=img.data[i+1]=img.data[i+2]=v;
+        img.data[i+3]=255;
+      }
+      ctx.putImageData(img,0,0);
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(4,4);
+      return tex;
+    }
+
+    function makeCarbonTexture(){
+      const c = document.createElement('canvas');
+      c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#101619';
+      ctx.fillRect(0,0,256,256);
+      for(let i=-256;i<512;i+=14){
+        ctx.strokeStyle = 'rgba(120,160,170,.18)';
+        ctx.lineWidth=5;
+        ctx.beginPath();
+        ctx.moveTo(i,0);
+        ctx.lineTo(i+256,256);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(0,0,0,.25)';
+        ctx.lineWidth=3;
+        ctx.beginPath();
+        ctx.moveTo(i+7,0);
+        ctx.lineTo(i+263,256);
+        ctx.stroke();
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(2.5,2.5);
+      return tex;
+    }
+
+    const metalNoise = makeNoiseTexture(256, 22);
+    const carbonTex = makeCarbonTexture();
+
+    const mats = {
+      hullShell: new THREE.MeshPhysicalMaterial({
+        color:0x073e48,
+        metalness:.86,
+        roughness:.25,
+        clearcoat:.55,
+        clearcoatRoughness:.18,
+        roughnessMap: metalNoise,
+        transparent:true,
+        opacity:.94,
+        side:THREE.DoubleSide
+      }),
+      hull: new THREE.MeshPhysicalMaterial({
+        color:0x073944,
+        metalness:.88,
+        roughness:.28,
+        clearcoat:.45,
+        clearcoatRoughness:.22,
+        roughnessMap: metalNoise
+      }),
+      graphite: new THREE.MeshPhysicalMaterial({
+        color:0x171c1f,
+        metalness:.82,
+        roughness:.24,
+        clearcoat:.25
+      }),
+      carbon: new THREE.MeshPhysicalMaterial({
+        color:0x15191c,
+        metalness:.35,
+        roughness:.38,
+        map:carbonTex
+      }),
+      canopy: new THREE.MeshPhysicalMaterial({
+        color:0xff9a42,
+        metalness:0,
+        roughness:.035,
+        transmission:.45,
+        thickness:.25,
+        transparent:true,
+        opacity:.48,
+        clearcoat:1,
+        clearcoatRoughness:.02,
+        side:THREE.DoubleSide
+      }),
+      hot: new THREE.MeshPhysicalMaterial({
+        color:0xff6b2f,
+        emissive:0xff3a08,
+        emissiveIntensity:2.7,
+        metalness:.2,
+        roughness:.18
+      }),
+      cyan: new THREE.MeshPhysicalMaterial({
+        color:0x4ee7ff,
+        emissive:0x23cfff,
+        emissIntensity:2.4,
+        emissiveIntensity:2.4,
+        metalness:.05,
+        roughness:.18
+      }),
+      magenta: new THREE.MeshPhysicalMaterial({
+        color:0xbd74d8,
+        emissive:0x6b1b9a,
+        emissiveIntensity:.7,
+        metalness:.62,
+        roughness:.23
+      }),
+      duct: new THREE.MeshPhysicalMaterial({
+        color:0x1889c8,
+        emissive:0x0869ff,
+        emissiveIntensity:.65,
+        transparent:true,
+        opacity:.55,
+        metalness:.1,
+        roughness:.12,
+        side:THREE.DoubleSide
+      }),
+      seat: new THREE.MeshPhysicalMaterial({
+        color:0x6b3518,
+        metalness:.05,
+        roughness:.58,
+        clearcoat:.12
+      }),
+      field: new THREE.MeshBasicMaterial({
+        color:0x62e6ff,
+        transparent:true,
+        opacity:.38,
+        blending:THREE.AdditiveBlending,
+        depthWrite:false
+      }),
+      redFlow: new THREE.MeshBasicMaterial({
+        color:0xff5c30,
+        transparent:true,
+        opacity:.82,
+        blending:THREE.AdditiveBlending,
+        depthWrite:false
+      }),
+      blueFlow: new THREE.MeshBasicMaterial({
+        color:0x32d9ff,
+        transparent:true,
+        opacity:.82,
+        blending:THREE.AdditiveBlending,
+        depthWrite:false
+      }),
+      floor: new THREE.MeshStandardMaterial({
+        color:0x050b0f,
+        metalness:.35,
+        roughness:.62
+      })
+    };
+
+    function prepareMaterial(mat){
+      if(!mat.userData.baseOpacity) mat.userData.baseOpacity = mat.opacity ?? 1;
+      return mat;
+    }
+
+    Object.values(mats).forEach(prepareMaterial);
+
+    function register(obj, category='external', explode=[0,0,0]){
+      obj.userData.category = category;
+      obj.userData.basePosition = obj.position.clone();
+      obj.userData.explodeOffset = new THREE.Vector3(...explode);
+      obj.userData.targetPosition = obj.position.clone();
+
+      obj.traverse(o=>{
+        if(o.isMesh){
+          o.castShadow = true;
+          o.receiveShadow = true;
+          if(o.material){
+            if(Array.isArray(o.material)) o.material.forEach(prepareMaterial);
+            else prepareMaterial(o.material);
+          }
+        }
+      });
+
+      model.add(obj);
+      registered.push(obj);
+      return obj;
+    }
+
+    function ellipsoid(name, pos, scale, mat, seg=64){
+      const g = new THREE.SphereGeometry(1, seg, Math.max(16, seg/2));
+      const m = new THREE.Mesh(g, mat);
+      m.name = name;
+      m.position.copy(pos);
+      m.scale.copy(scale);
+      return m;
+    }
+
+    function cylinderBetween(name, a, b, radius, mat, radial=32){
+      const start = new THREE.Vector3(...a);
+      const end = new THREE.Vector3(...b);
+      const dir = end.clone().sub(start);
+      const len = dir.length();
+
+      const g = new THREE.CylinderGeometry(radius, radius, len, radial, 1, false);
+      const m = new THREE.Mesh(g, mat);
+      m.name = name;
+      m.position.copy(start.clone().add(end).multiplyScalar(.5));
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.normalize());
+      return m;
+    }
+
+    function tube(name, pts, radius, mat, tubular=72){
+      const curve = new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));
+      const g = new THREE.TubeGeometry(curve, tubular, radius, 12, false);
+      const m = new THREE.Mesh(g, mat);
+      m.name = name;
+      return m;
+    }
+
+    function torusXY(name, pos, major, minor, mat, seg=128){
+      const m = new THREE.Mesh(new THREE.TorusGeometry(major, minor, seg, 18), mat);
+      m.name = name;
+      m.position.copy(pos);
+      return m;
+    }
+
+    function torusY(name, pos, major, minor, mat, seg=96){
+      const m = torusXY(name, pos, major, minor, mat, seg);
+      m.rotation.x = Math.PI/2;
+      return m;
+    }
+
+    function box(name, pos, scale, mat){
+      const m = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), mat);
+      m.name = name;
+      m.position.copy(pos);
+      m.scale.copy(scale);
+      return m;
+    }
+
+    function coneY(name, pos, radiusTop, radiusBottom, height, mat, radial=64){
+      const g = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radial, 1, true);
+      const m = new THREE.Mesh(g, mat);
+      m.name = name;
+      m.position.copy(pos);
+      return m;
+    }
+
+    function makeLabel(text, pos){
+      const div = document.createElement('div');
+      div.className = 'label';
+      div.textContent = text;
+      const label = new CSS2DObject(div);
+      label.position.copy(pos);
+      labelRoot.add(label);
+      return label;
+    }
+
+    // Casco externo e formas principais
+    register(
+      ellipsoid(
+        'Casco externo semitransparente',
+        new THREE.Vector3(0,0,0.55),
+        new THREE.Vector3(1.20,1.66,.82),
+        mats.hullShell,
+        80
+      ),
+      'shell',
+      [0,0,.22]
+    );
+
+    register(
+      ellipsoid(
+        'Nariz frontal',
+        new THREE.Vector3(0,1.45,.55),
+        new THREE.Vector3(.52,.45,.35),
+        mats.hull,
+        48
+      ),
+      'external',
+      [0,.35,0]
+    );
+
+    register(
+      ellipsoid(
+        'Canopy âmbar',
+        new THREE.Vector3(0,.57,.92),
+        new THREE.Vector3(.74,.76,.44),
+        mats.canopy,
+        64
+      ),
+      'canopy',
+      [0,.18,.15]
+    );
+
+    // Painéis laterais, pods e luzes
+    for(const sx of [-1,1]){
+      const p = box(
+        'Painel lateral carbono',
+        new THREE.Vector3(sx*.82,.33,.53),
+        new THREE.Vector3(.025,.45,.20),
+        mats.carbon
+      );
+      p.rotation.z = sx*Math.PI/18;
+      register(p, 'external', [sx*.28,.12,.04]);
+
+      register(
+        ellipsoid(
+          'Pod lateral',
+          new THREE.Vector3(sx*1.28,.03,.47),
+          new THREE.Vector3(.26,.26,.26),
+          mats.hull,
+          40
+        ),
+        'external',
+        [sx*.38,0,0]
+      );
+
+      register(
+        ellipsoid(
+          'Luz coral do pod',
+          new THREE.Vector3(sx*1.54,.03,.47),
+          new THREE.Vector3(.055,.12,.12),
+          mats.hot,
+          24
+        ),
+        'external',
+        [sx*.42,0,0]
+      );
+    }
+
+    // Assento e cabine
+    register(
+      box(
+        'Assento base',
+        new THREE.Vector3(0,.32,.42),
+        new THREE.Vector3(.43,.36,.13),
+        mats.seat
+      ),
+      'internal',
+      [0,.22,.08]
+    );
+
+    const encosto = box(
+      'Encosto do piloto',
+      new THREE.Vector3(0,.09,.79),
+      new THREE.Vector3(.43,.10,.45),
+      mats.seat
+    );
+    encosto.rotation.x = -Math.PI/12;
+    register(encosto, 'internal', [0,.18,.16]);
+
+    register(
+      box(
+        'Apoio de cabeça',
+        new THREE.Vector3(0,-.02,1.20),
+        new THREE.Vector3(.28,.08,.11),
+        mats.seat
+      ),
+      'internal',
+      [0,.16,.22]
+    );
+
+    const painel = box(
+      'Painel holográfico',
+      new THREE.Vector3(0,.94,.53),
+      new THREE.Vector3(.44,.035,.16),
+      mats.cyan
+    );
+    painel.rotation.x = Math.PI/14;
+    register(painel, 'internal', [0,.28,.05]);
+
+    // Berço estrutural e células de energia
+    register(
+      tube(
+        'Berço estrutural esquerdo',
+        [[-.43,.93,.27],[-.58,.25,.14],[-.43,-.65,.27]],
+        .035,
+        mats.graphite,
+        48
+      ),
+      'internal',
+      [-.20,.05,.02]
+    );
+
+    register(
+      tube(
+        'Berço estrutural direito',
+        [[.43,.93,.27],[.58,.25,.14],[.43,-.65,.27]],
+        .035,
+        mats.graphite,
+        48
+      ),
+      'internal',
+      [.20,.05,.02]
+    );
+
+    register(
+      ellipsoid(
+        'Célula de energia esquerda',
+        new THREE.Vector3(-.55,-.12,.50),
+        new THREE.Vector3(.12,.35,.12),
+        mats.hot,
+        32
+      ),
+      'internal',
+      [-.22,0,.03]
+    );
+
+    register(
+      ellipsoid(
+        'Célula de energia direita',
+        new THREE.Vector3(.55,-.12,.50),
+        new THREE.Vector3(.12,.35,.12),
+        mats.hot,
+        32
+      ),
+      'internal',
+      [.22,0,.03]
+    );
+
+    // Turbina EDF visual traseira
+    const turbinaEDF = new THREE.Mesh(
+      new THREE.CylinderGeometry(.52,.52,1.25,72,1,false),
+      mats.graphite
+    );
+    turbinaEDF.name = 'Turbina EDF traseira';
+    turbinaEDF.position.set(0,-1.62,.55);
+    register(turbinaEDF, 'engine', [0,-.45,0]);
+
+    register(
+      torusY(
+        'Anel quente de entrada da turbina',
+        new THREE.Vector3(0,-1.00,.55),
+        .52,
+        .035,
+        mats.hot,
+        96
+      ),
+      'engine',
+      [0,-.34,0]
+    );
+
+    register(
+      torusY(
+        'Anel ciano do bocal vetorial',
+        new THREE.Vector3(0,-2.25,.55),
+        .48,
+        .045,
+        mats.cyan,
+        96
+      ),
+      'engine',
+      [0,-.55,0]
+    );
+
+    const nucleoQuente = new THREE.Mesh(
+      new THREE.CylinderGeometry(.23,.23,.78,56,1,false),
+      mats.hot
+    );
+    nucleoQuente.name = 'Núcleo turbogravimagnético quente';
+    nucleoQuente.position.set(0,-1.56,.55);
+    register(nucleoQuente, 'internal', [0,-.50,.05]);
+
+    register(
+      coneY(
+        'Bocal vetorial',
+        new THREE.Vector3(0,-2.54,.55),
+        .20,
+        .34,
+        .62,
+        mats.graphite,
+        72
+      ),
+      'engine',
+      [0,-.72,0]
+    );
+
+    register(
+      coneY(
+        'Halo de exaustão fictício',
+        new THREE.Vector3(0,-2.96,.55),
+        .05,
+        .25,
+        .64,
+        mats.hot,
+        64
+      ),
+      'engine',
+      [0,-.92,0]
+    );
+
+    const fan = new THREE.Group();
+    fan.name = 'Compressor visual radial';
+    fan.position.set(0,-2.57,.55);
+
+    const hub = new THREE.Mesh(new THREE.SphereGeometry(.12,24,12), mats.magenta);
+    hub.scale.set(1,.45,1);
+    fan.add(hub);
+
+    for(let i=0;i<20;i++){
+      const a = i*Math.PI*2/20;
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(.045,.022,.34), mats.hot);
+      blade.position.set(.25*Math.cos(a),0,.25*Math.sin(a));
+      blade.rotation.y = -a + Math.PI/2;
+      blade.rotation.z = .32;
+      fan.add(blade);
+    }
+    register(fan, 'engine', [0,-.62,0]);
+
+    // Dutos e fluxos
+    register(
+      cylinderBetween(
+        'Duto lateral esquerdo',
+        [-.65,-.78,.34],
+        [-.95,.25,-.28],
+        .16,
+        mats.duct,
+        40
+      ),
+      'internal',
+      [-.28,0,-.16]
+    );
+
+    register(
+      cylinderBetween(
+        'Duto lateral direito',
+        [.65,-.78,.34],
+        [.95,.25,-.28],
+        .16,
+        mats.duct,
+        40
+      ),
+      'internal',
+      [.28,0,-.16]
+    );
+
+    register(
+      cylinderBetween(
+        'Duto central de levitação',
+        [0,-.52,.22],
+        [0,.08,-.36],
+        .20,
+        mats.duct,
+        48
+      ),
+      'internal',
+      [0,0,-.22]
+    );
+
+    register(
+      tube(
+        'Fluxo azul esquerdo',
+        [[-.58,-.86,.52],[-.70,-.30,.12],[-.86,.18,-.36]],
+        .026,
+        mats.blueFlow,
+        64
+      ),
+      'flow',
+      [-.20,0,-.10]
+    );
+
+    register(
+      tube(
+        'Fluxo azul direito',
+        [[.58,-.86,.52],[.70,-.30,.12],[.86,.18,-.36]],
+        .026,
+        mats.blueFlow,
+        64
+      ),
+      'flow',
+      [.20,0,-.10]
+    );
+
+    register(
+      tube(
+        'Fluxo vermelho de propulsão',
+        [[0,-1.03,.78],[0,-1.72,.76],[0,-2.72,.66]],
+        .034,
+        mats.redFlow,
+        64
+      ),
+      'flow',
+      [0,-.42,.05]
+    );
+
+    // Módulo de levitação
+    register(
+      torusXY(
+        'Anel de levitação ciano',
+        new THREE.Vector3(0,0,-.52),
+        1.20,
+        .15,
+        mats.cyan,
+        160
+      ),
+      'levitation',
+      [0,0,-.45]
+    );
+
+    register(
+      ellipsoid(
+        'Domo plenum de levitação',
+        new THREE.Vector3(0,0,-.33),
+        new THREE.Vector3(.68,.68,.23),
+        mats.hull,
+        64
+      ),
+      'levitation',
+      [0,0,-.30]
+    );
+
+    for(let i=0;i<36;i++){
+      const a = i*Math.PI*2/36;
+      const led = ellipsoid(
+        'LED anel',
+        new THREE.Vector3(1.18*Math.cos(a),1.18*Math.sin(a),-.50),
+        new THREE.Vector3(.045,.045,.025),
+        i%2 ? mats.cyan : mats.hot,
+        16
+      );
+      register(led, 'levitation', [0,0,-.45]);
+    }
+
+    for(let i=0;i<14;i++){
+      const a = i*Math.PI*2/14;
+      const plate = box(
+        'Placa Gravium-7 inferior',
+        new THREE.Vector3(.82*Math.cos(a),.82*Math.sin(a),-.31),
+        new THREE.Vector3(.14,.026,.018),
+        mats.magenta
+      );
+      plate.rotation.z = a;
+      register(plate, 'levitation', [0,0,-.38]);
+    }
+
+    // Arcos gravimagnéticos laterais
+    for(const sx of [-1,1]){
+      const pts=[];
+      for(let j=0;j<34;j++){
+        const t=j/33;
+        pts.push([sx*(.72+.42*Math.sin(Math.PI*t)),-.06,.12+1.36*t]);
+      }
+
+      register(
+        tube(
+          sx<0 ? 'Arco de campo esquerdo' : 'Arco de campo direito',
+          pts,
+          .047,
+          mats.magenta,
+          80
+        ),
+        'external',
+        [sx*.26,0,.12]
+      );
+
+      register(
+        ellipsoid(
+          'Ponta do arco Gravium-7',
+          new THREE.Vector3(sx*.72,-.06,1.50),
+          new THREE.Vector3(.075,.075,.11),
+          mats.magenta,
+          24
+        ),
+        'external',
+        [sx*.28,0,.18]
+      );
+    }
+
+    // Braços estabilizadores traseiros
+    const arms = [
+      [[-.55,-1.22,.65],[-1.45,-1.82,1.05],[-.36,-.24,.18]],
+      [[ .55,-1.22,.65],[ 1.45,-1.82,1.05],[ .36,-.24,.18]],
+      [[-.52,-1.16,.36],[-1.35,-1.76,.08],[-.32,-.24,-.12]],
+      [[ .52,-1.16,.36],[ 1.35,-1.76,.08],[ .32,-.24,-.12]]
+    ];
+
+    arms.forEach((a)=>{
+      register(
+        cylinderBetween(
+          'Braço estabilizador Gravium-7',
+          a[0],
+          a[1],
+          .055,
+          mats.magenta,
+          22
+        ),
+        'external',
+        a[2]
+      );
+
+      register(
+        ellipsoid(
+          'Micro bocal estabilizador',
+          new THREE.Vector3(...a[1]),
+          new THREE.Vector3(.12,.12,.12),
+          mats.hot,
+          20
+        ),
+        'external',
+        a[2]
+      );
+    });
+
+    // Linhas de painel e costuras
+    register(
+      torusY(
+        'Costura frontal do casco',
+        new THREE.Vector3(0,.78,.55),
+        .78,
+        .008,
+        mats.cyan,
+        96
+      ),
+      'external',
+      [0,.10,0]
+    );
+
+    register(
+      torusY(
+        'Costura traseira do casco',
+        new THREE.Vector3(0,-.82,.55),
+        .72,
+        .008,
+        mats.cyan,
+        96
+      ),
+      'external',
+      [0,-.10,0]
+    );
+
+    register(
+      torusXY(
+        'Campo magnético externo 01',
+        new THREE.Vector3(0,0,.18),
+        1.75,
+        .010,
+        mats.field,
+        180
+      ),
+      'field',
+      [0,0,0]
+    );
+
+    register(
+      torusXY(
+        'Campo magnético externo 02',
+        new THREE.Vector3(0,0,.55),
+        1.96,
+        .008,
+        mats.field,
+        180
+      ),
+      'field',
+      [0,0,0]
+    );
+
+    register(
+      torusXY(
+        'Campo magnético externo 03',
+        new THREE.Vector3(0,0,-.22),
+        2.10,
+        .006,
+        mats.field,
+        180
+      ),
+      'field',
+      [0,0,0]
+    );
+
+    // Etiquetas
+    makeLabel('canopy âmbar', new THREE.Vector3(0,1.30,1.55));
+    makeLabel('cabine e assento', new THREE.Vector3(-.95,.70,1.08));
+    makeLabel('núcleo turbogravimagnético', new THREE.Vector3(.55,-1.60,1.22));
+    makeLabel('turbina EDF visual', new THREE.Vector3(0,-2.88,1.25));
+    makeLabel('dutos azuis de levitação', new THREE.Vector3(-1.55,-.25,.15));
+    makeLabel('anel de levitação', new THREE.Vector3(0,1.70,-.32));
+    makeLabel('placas Gravium-7', new THREE.Vector3(1.58,.70,.02));
+    makeLabel('braços estabilizadores', new THREE.Vector3(1.82,-1.80,1.25));
+
+    // Ambiente / hangar
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(18,18), mats.floor);
+    floor.position.z = -.78;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const grid = new THREE.GridHelper(18, 36, 0x2be2ff, 0x12303a);
+    grid.rotation.x = Math.PI/2;
+    grid.position.z = -.765;
+    scene.add(grid);
+
+    const backWall = new THREE.Mesh(
+      new THREE.PlaneGeometry(18,7),
+      new THREE.MeshStandardMaterial({
+        color:0x06121a,
+        metalness:.25,
+        roughness:.8
+      })
+    );
+    backWall.position.set(0,2.9,2.2);
+    backWall.rotation.x = Math.PI/2;
+    backWall.receiveShadow = true;
+    scene.add(backWall);
+
+    // Luzes realistas
+    RectAreaLightUniformsLib.init();
+
+    scene.add(new THREE.HemisphereLight(0xbdf7ff, 0x020307, .58));
+
+    const area1 = new THREE.RectAreaLight(0xbef7ff, 4.0, 5.5, 4.0);
+    area1.position.set(-3.5,-4.5,5.0);
+    area1.lookAt(0,0,.4);
+    scene.add(area1);
+
+    const area2 = new THREE.RectAreaLight(0xff8a4a, 2.4, 3.0, 2.5);
+    area2.position.set(3.2,-3.0,2.0);
+    area2.lookAt(0,-1.6,.5);
+    scene.add(area2);
+
+    const spot = new THREE.SpotLight(0x8ff4ff, 280, 12, Math.PI/5, .45, 1.2);
+    spot.position.set(1.5,-4.2,4.0);
+    spot.target.position.set(0,-.2,.35);
+    spot.castShadow = true;
+    scene.add(spot);
+    scene.add(spot.target);
+
+    const hotLight = new THREE.PointLight(0xff4a18, 4.2, 4.5);
+    hotLight.position.set(0,-2.35,.55);
+    scene.add(hotLight);
+
+    const levLight = new THREE.PointLight(0x45e5ff, 4.2, 5.0);
+    levLight.position.set(0,0,-.35);
+    scene.add(levLight);
+
+    function setObjectOpacity(obj, opacity){
+      obj.traverse(o=>{
+        if(o.material){
+          const arr = Array.isArray(o.material) ? o.material : [o.material];
+          arr.forEach(mat=>{
+            if(mat.userData.baseOpacity === undefined) mat.userData.baseOpacity = mat.opacity ?? 1;
+            mat.transparent = opacity < 0.999 || mat.transparent;
+            mat.opacity = Math.min(mat.userData.baseOpacity, opacity);
+            mat.depthWrite = mat.opacity > .7;
+          });
+        }
+      });
+    }
+
+    function applyMode(){
+      registered.forEach(obj=>{
+        const cat = obj.userData.category;
+        let visible = true;
+        let opacity = 1;
+        let explodeFactor = state.mode === 'exploded' ? 1 : 0;
+
+        if(cat === 'field') visible = state.showFields;
+
+        if(state.mode === 'external'){
+          if(['internal','flow'].includes(cat)) visible = false;
+          if(cat === 'shell') opacity = .95;
+          if(cat === 'canopy') opacity = .48;
+        }
+
+        if(state.mode === 'xray'){
+          visible = cat === 'field' ? state.showFields : true;
+          if(cat === 'shell') opacity = .22;
+          if(cat === 'canopy') opacity = .30;
+        }
+
+        if(state.mode === 'exploded'){
+          visible = cat === 'field' ? state.showFields : true;
+          if(cat === 'shell') opacity = .32;
+          if(cat === 'canopy') opacity = .36;
+        }
+
+        obj.visible = visible;
+        setObjectOpacity(obj, opacity);
+
+        const base = obj.userData.basePosition;
+        const off = obj.userData.explodeOffset.clone().multiplyScalar(explodeFactor);
+        obj.userData.targetPosition = base.clone().add(off);
+      });
+
+      labelRoot.visible = state.showLabels;
+    }
+
+    document.querySelectorAll('.mode').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.mode').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        state.mode = btn.dataset.mode;
+        applyMode();
+      });
+    });
+
+    document.getElementById('showFields').addEventListener('change', e=>{
+      state.showFields=e.target.checked;
+      applyMode();
+    });
+
+    document.getElementById('showLabels').addEventListener('change', e=>{
+      state.showLabels=e.target.checked;
+      applyMode();
+    });
+
+    document.getElementById('autoRotate').addEventListener('change', e=>{
+      state.autoRotate=e.target.checked;
+    });
+
+    document.getElementById('resetCam').addEventListener('click',()=>{
+      camera.position.set(4.2,-6.6,3.0);
+      controls.target.set(0,-.25,.42);
+      controls.update();
+      model.rotation.y = 0;
+    });
+
+    function resize(){
+      camera.aspect = innerWidth/innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+      composer.setSize(innerWidth, innerHeight);
+      labelRenderer.setSize(innerWidth, innerHeight);
+      bloom.setSize(innerWidth, innerHeight);
+    }
+
+    addEventListener('resize', resize);
+
+    applyMode();
+    setTimeout(()=>{ loader.style.display = 'none'; }, 650);
+
+    const clock = new THREE.Clock();
+
+    function animate(){
+      const dt = clock.getDelta();
+
+      if(state.autoRotate) model.rotation.y += dt * .16;
+
+      registered.forEach(obj=>{
+        if(obj.userData.targetPosition) obj.position.lerp(obj.userData.targetPosition, .075);
+      });
+
+      const t = performance.now()*0.001;
+      mats.field.opacity = state.showFields ? (.25 + .12*Math.sin(t*1.7)) : 0;
+      hotLight.intensity = 3.7 + .8*Math.sin(t*2.4);
+      levLight.intensity = 3.8 + .7*Math.sin(t*1.8);
+
+      controls.update();
+      composer.render();
+      labelRenderer.render(scene, camera);
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
