@@ -34,6 +34,7 @@
       inset:0;
       isolation:isolate;
       background:#04080a;
+      transition:background .6s ease;
     }
     #stage::before{
       content:"";
@@ -44,7 +45,24 @@
         radial-gradient(circle at 50% 46%,transparent 0 52%,rgba(1,4,6,.34) 100%),
         linear-gradient(0deg,rgba(1,4,6,.18),transparent 22%);
       pointer-events:none;
+      transition:background .6s ease;
     }
+    /* Ambientes diurnos: o palco clareia e a vinheta recua. */
+    body.env-day #stage{background:#9dc2d8}
+    body.env-day #stage::before{
+      background:
+        radial-gradient(circle at 50% 44%,transparent 0 60%,rgba(12,38,54,.2) 100%),
+        linear-gradient(0deg,rgba(14,40,54,.1),transparent 26%);
+    }
+    body.env-day .noise{opacity:.016}
+    /* Sob céu claro a tipografia branca precisa de mais lastro para continuar legível. */
+    body.env-outdoor.env-day h1{text-shadow:0 6px 26px rgba(6,22,32,.72),0 1px 3px rgba(6,22,32,.5)}
+    body.env-outdoor.env-day .intro,
+    body.env-outdoor.env-day .hero-index{text-shadow:0 1px 10px rgba(5,20,29,.85),0 0 3px rgba(5,20,29,.6)}
+    body.env-outdoor.env-day .spec-copy,
+    body.env-outdoor.env-day .rail-title,
+    body.env-outdoor.env-day .telemetry{text-shadow:0 1px 8px rgba(5,20,29,.8)}
+    body.env-outdoor.env-day .view{background:rgba(3,10,12,.72)}
     #stage canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
     .noise{
       position:fixed;inset:-80%;z-index:2;pointer-events:none;opacity:.028;
@@ -113,6 +131,28 @@
     .view-pills span{margin-right:4px;color:#698182;font:400 8px/1 DM Mono,monospace;text-transform:uppercase;letter-spacing:.12em}
     .view{width:28px;height:28px;border:1px solid var(--hair);border-radius:50%;background:rgba(3,10,12,.58);color:#8ea5a6;font:400 8px DM Mono,monospace;cursor:pointer;transition:.2s}
     .view:hover,.view.active{border-color:rgba(138,234,240,.62);color:var(--cyan);box-shadow:inset 0 0 12px rgba(75,223,227,.09)}
+
+    /* Seletor de ambiente: cenário (hangar / campo) e período (dia / noite). */
+    .env-panel{
+      position:fixed;z-index:8;left:34px;bottom:88px;display:flex;flex-direction:column;gap:7px;
+      padding:10px 11px;border:1px solid var(--hair);border-radius:4px;background:rgba(3,10,13,.62);
+      backdrop-filter:blur(14px) saturate(1.15);box-shadow:0 12px 34px rgba(0,0,0,.28);
+      transition:background .4s ease,border-color .4s ease;
+    }
+    body.env-day .env-panel{background:rgba(6,20,26,.56);border-color:rgba(228,246,244,.24)}
+    body.vectors-on .env-panel{bottom:138px}
+    .env-row{display:flex;align-items:center;gap:10px}
+    .env-tag{min-width:44px;color:#6b8384;font:500 7px/1 DM Mono,monospace;letter-spacing:.14em;text-transform:uppercase}
+    .env-group{display:flex;gap:3px;padding:2px;border:1px solid rgba(255,255,255,.08);border-radius:3px}
+    .env-btn{
+      display:flex;align-items:center;gap:5px;padding:5px 9px;border:0;border-radius:2px;background:transparent;
+      color:#8ea5a6;font:500 8px/1 DM Mono,monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:.22s ease;
+    }
+    .env-btn svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+    .env-btn:hover{color:#ddfbfa;background:rgba(138,234,240,.08)}
+    .env-btn.active{color:var(--cyan-bright);background:rgba(75,205,209,.16);box-shadow:inset 0 -1px 0 var(--cyan)}
+    .env-btn[data-period="day"].active{color:#ffe9b8;background:rgba(255,196,102,.16);box-shadow:inset 0 -1px 0 #ffc466}
+    .env-state{color:#5f797a;font:400 6.5px/1 DM Mono,monospace;letter-spacing:.13em;text-transform:uppercase}
 
     .telemetry{
       position:fixed;z-index:7;right:30px;bottom:35px;display:flex;gap:18px;color:#6d8485;font:400 8px/1.4 DM Mono,monospace;text-transform:uppercase;letter-spacing:.08em;pointer-events:none
@@ -201,6 +241,8 @@
       .hero{left:18px;top:82px;width:calc(100vw - 36px)}body.engineering-mode .hero{opacity:0;visibility:hidden}h1{font-size:58px;line-height:.78}.eyebrow{margin-bottom:11px}.intro{display:none}.hero-index{top:calc(100% + 22px);gap:19px}.hero-index div:nth-child(3){display:none}
       .dock{left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));transform:none;display:block;min-height:0}.mode-group{display:grid;grid-template-columns:repeat(4,1fr)}.mode{min-width:0;padding:9px 6px}.mode small{display:none}.mode b{font-size:7px}.dock-actions{position:absolute;right:0;bottom:calc(100% + 9px);border:1px solid var(--hair);padding:3px;background:rgba(3,10,13,.72);backdrop-filter:blur(12px)}.icon-btn{width:32px;height:32px}
       .view-pills{left:18px;bottom:84px}.telemetry,.vector-legend{display:none}
+      .env-panel{left:18px;bottom:124px;padding:7px 8px;gap:5px}body.vectors-on .env-panel{bottom:124px}
+      .env-tag{min-width:32px;font-size:6px}.env-btn{padding:4px 6px;font-size:7px}.env-state{display:none}
       .hotspot-copy small{display:none}.hotspot-copy{padding:5px 6px}.hotspot-copy strong{font-size:7px}
       .engineering-panel{left:10px;right:10px;top:67px;bottom:122px;width:auto}.eng-head{padding:12px 14px 10px}.eng-head h2{font-size:15px;margin-top:7px}.eng-scroll{padding:11px 13px 14px}.metric-grid{grid-template-columns:repeat(4,1fr)}.metric{padding:7px 5px}.metric b{font-size:8px}
     }
@@ -262,6 +304,30 @@
     <button class="view active" data-view="hero" aria-label="Vista principal">01</button>
     <button class="view" data-view="side" aria-label="Vista lateral">02</button>
     <button class="view" data-view="rear" aria-label="Vista traseira">03</button>
+  </div>
+
+  <div class="env-panel" aria-label="Ambiente e período do dia">
+    <div class="env-row">
+      <span class="env-tag">cenário</span>
+      <div class="env-group">
+        <button class="env-btn active" data-scene="hangar" aria-label="Hangar">Hangar</button>
+        <button class="env-btn" data-scene="outdoor" aria-label="Campo aberto">Campo</button>
+      </div>
+    </div>
+    <div class="env-row">
+      <span class="env-tag">luz</span>
+      <div class="env-group">
+        <button class="env-btn active" data-period="day" aria-label="Iluminação diurna">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.4 5.4l1.8 1.8M16.8 16.8l1.8 1.8M18.6 5.4l-1.8 1.8M7.2 16.8l-1.8 1.8"/></svg>
+          Dia
+        </button>
+        <button class="env-btn" data-period="night" aria-label="Iluminação noturna">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.6A8.4 8.4 0 0 1 9.4 4a8.4 8.4 0 1 0 10.6 10.6z"/></svg>
+          Noite
+        </button>
+      </div>
+    </div>
+    <div class="env-state" id="envLabel">HANGAR BAY 07 · DIA</div>
   </div>
 
   <aside class="engineering-panel" aria-label="Console de engenharia paramétrica">
@@ -412,7 +478,7 @@
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero' };
+    const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero', scene:'hangar', period:'day' };
     const design = { ...DEFAULT_CONFIG };
     const BASE_DIMENSIONS = { lengthM:DEFAULT_CONFIG.lengthM, beamM:DEFAULT_CONFIG.beamM, heightM:DEFAULT_CONFIG.heightM };
     let physics = calculateFlightPhysics(design);
@@ -730,41 +796,270 @@
       }
     });
 
-    // --- Céu de entardecer visto pelo portão (mesh básico, sem neblina).
-    const skyMap=canvasTexture(1024,(x,s)=>{
-      const g=x.createLinearGradient(0,0,0,s);
-      g.addColorStop(0,'#0a1524');g.addColorStop(.42,'#1b3350');g.addColorStop(.68,'#7c4b3a');g.addColorStop(.82,'#d98a4e');g.addColorStop(1,'#2a1a1c');
-      x.fillStyle=g;x.fillRect(0,0,s,s);
-      // sol baixo
-      const sun=x.createRadialGradient(s*.68,s*.78,0,s*.68,s*.78,s*.3);
-      sun.addColorStop(0,'rgba(255,214,160,.95)');sun.addColorStop(.18,'rgba(255,170,110,.5)');sun.addColorStop(1,'rgba(255,150,90,0)');
-      x.fillStyle=sun;x.fillRect(0,0,s,s);
-      // nuvens finas
+    // --- Céu visto pelo portão do hangar: entardecer (noite) e meio-dia claro.
+    //     As duas variantes são pré-geradas para alternar sem custo em runtime.
+    function gateSkyTexture(period){
+      return canvasTexture(1024,(x,s)=>{
+        const g=x.createLinearGradient(0,0,0,s);
+        if(period==='day'){
+          g.addColorStop(0,'#2f6fb5');g.addColorStop(.34,'#5f9fd4');g.addColorStop(.62,'#9dc8e4');g.addColorStop(.84,'#cfe3ec');g.addColorStop(1,'#b9c9cc');
+        }else{
+          g.addColorStop(0,'#0a1524');g.addColorStop(.42,'#1b3350');g.addColorStop(.68,'#7c4b3a');g.addColorStop(.82,'#d98a4e');g.addColorStop(1,'#2a1a1c');
+        }
+        x.fillStyle=g;x.fillRect(0,0,s,s);
+        if(period==='day'){
+          // sol alto à direita, coerente com a direcional da cena
+          const sun=x.createRadialGradient(s*.66,s*.3,0,s*.66,s*.3,s*.34);
+          sun.addColorStop(0,'rgba(255,255,250,1)');sun.addColorStop(.06,'rgba(255,250,226,.95)');
+          sun.addColorStop(.22,'rgba(255,240,200,.34)');sun.addColorStop(1,'rgba(210,235,255,0)');
+          x.fillStyle=sun;x.fillRect(0,0,s,s);
+          // cúmulos volumosos: aglomerados de círculos com base plana e topo iluminado
+          for(let i=0;i<16;i++){
+            const cx=R()*s,cy=s*.16+R()*s*.34,scale=.5+R()*.85;
+            x.save();x.translate(cx,cy);x.scale(scale,scale*.62);
+            for(let k=0;k<11;k++){
+              const ox=(R()-.5)*230,oy=(R()-.5)*66,rad=32+R()*62;
+              x.fillStyle=`rgba(255,255,255,${.5+R()*.35})`;
+              x.beginPath();x.arc(ox,oy,rad,0,7);x.fill();
+            }
+            for(let k=0;k<7;k++){
+              const ox=(R()-.5)*210,rad=28+R()*46;
+              x.fillStyle=`rgba(188,206,222,${.22+R()*.2})`;
+              x.beginPath();x.arc(ox,26+R()*16,rad,0,7);x.fill();
+            }
+            x.restore();
+          }
+          // cirros finos bem alto
+          for(let i=0;i<18;i++){
+            const py=R()*s*.2,w=120+R()*320;
+            x.fillStyle=`rgba(255,255,255,${.1+R()*.16})`;
+            x.save();x.translate(R()*s,py);x.scale(1,.05+R()*.05);
+            x.beginPath();x.arc(0,0,w/2,0,7);x.fill();x.restore();
+          }
+          // névoa de horizonte
+          const haze=x.createLinearGradient(0,s*.62,0,s);
+          haze.addColorStop(0,'rgba(214,231,238,0)');haze.addColorStop(1,'rgba(222,235,240,.92)');
+          x.fillStyle=haze;x.fillRect(0,s*.62,s,s*.38);
+          // skyline distante, lavada pela atmosfera
+          let px=0;
+          while(px<s){
+            const w=22+R()*66,hgt=s*.1+R()*s*.12;
+            x.fillStyle=`rgba(${118+R()*26|0},${140+R()*24|0},${158+R()*22|0},.62)`;
+            x.fillRect(px,s-hgt,w,hgt);
+            if(R()<.5)x.fillRect(px+w*.3,s-hgt-14,w*.16,14);
+            px+=w+4+R()*26;
+          }
+          // linha de vegetação / relevo na base
+          x.fillStyle='rgba(126,146,132,.55)';
+          let bx=0;
+          while(bx<s){const w=40+R()*90,h2=s*.03+R()*s*.03;x.beginPath();x.ellipse(bx,s-h2*.2,w,h2,0,Math.PI,0);x.fill();bx+=w*.7}
+        }else{
+          // sol baixo
+          const sun=x.createRadialGradient(s*.68,s*.78,0,s*.68,s*.78,s*.3);
+          sun.addColorStop(0,'rgba(255,214,160,.95)');sun.addColorStop(.18,'rgba(255,170,110,.5)');sun.addColorStop(1,'rgba(255,150,90,0)');
+          x.fillStyle=sun;x.fillRect(0,0,s,s);
+          // nuvens finas
+          for(let i=0;i<26;i++){
+            const py=s*.18+R()*s*.5,w=90+R()*260;
+            x.fillStyle=`rgba(${30+R()*40|0},${40+R()*40|0},${66+R()*40|0},${.14+R()*.2})`;
+            x.save();x.translate(R()*s,py);x.scale(1,.12+R()*.1);
+            x.beginPath();x.arc(0,0,w/2,0,7);x.fill();x.restore();
+          }
+          // estrelas no alto
+          for(let i=0;i<200;i++){const py=R()*R()*s*.4;x.fillStyle=`rgba(235,245,255,${.25+R()*.6})`;x.fillRect(R()*s,py,1.4,1.4)}
+          // skyline distante
+          x.fillStyle='#0c0f16';
+          let px=0;
+          while(px<s){
+            const w=22+R()*66,hgt=s*.14+R()*s*.13;
+            x.fillRect(px,s-hgt,w,hgt);
+            if(R()<.5)x.fillRect(px+w*.3,s-hgt-14,w*.16,14);
+            px+=w+4+R()*26;
+          }
+          // luzes da cidade
+          for(let i=0;i<260;i++){
+            const warm=R()<.7;
+            x.fillStyle=warm?`rgba(255,${170+R()*60|0},90,${.5+R()*.5})`:`rgba(150,220,255,${.5+R()*.5})`;
+            x.fillRect(R()*s,s*.72+R()*s*.27,1.6,1.6);
+          }
+        }
+      },{repeat:[1,1]});
+    }
+    const skyMapNight=gateSkyTexture('night'),skyMapDay=gateSkyTexture('day');
+    skyMapNight.wrapS=skyMapNight.wrapT=THREE.ClampToEdgeWrapping;
+    skyMapDay.wrapS=skyMapDay.wrapT=THREE.ClampToEdgeWrapping;
+
+    /* ---------------- Texturas do cenário a céu aberto ---------------- *
+     *  Panorama equiretangular pintado em canvas: gradiente atmosférico, *
+     *  sol coerente com a direcional, cúmulos e uma linha de horizonte.  */
+    function panoCanvas(w,h,painter){
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      painter(c.getContext('2d'),w,h);
+      return c;
+    }
+    // Direção do sol no cenário aberto (azimute em U do panorama, elevação).
+    const SUN_AZIMUTH=.62,SUN_ELEVATION=.34;
+    function skyDomeTexture(period){
+      const w=2048,h=1024,day=period==='day';
+      const canvas=panoCanvas(w,h,(x)=>{
+        // gradiente zênite → horizonte
+        const g=x.createLinearGradient(0,0,0,h*.56);
+        if(day){
+          g.addColorStop(0,'#1d5ba8');g.addColorStop(.45,'#4e8fc8');g.addColorStop(.78,'#8fbcdd');g.addColorStop(1,'#c8dfe9');
+        }else{
+          g.addColorStop(0,'#030910');g.addColorStop(.45,'#071726');g.addColorStop(.78,'#0e2b3c');g.addColorStop(1,'#1b3f49');
+        }
+        x.fillStyle=g;x.fillRect(0,0,w,h*.56);
+        // abaixo do horizonte: bruma e solo distante
+        const gd=x.createLinearGradient(0,h*.5,0,h);
+        if(day){gd.addColorStop(0,'#cfe0e7');gd.addColorStop(.22,'#a9b8ab');gd.addColorStop(1,'#6b7a6f')}
+        else{gd.addColorStop(0,'#12333c');gd.addColorStop(.22,'#0d1c1e');gd.addColorStop(1,'#060d0e')}
+        x.fillStyle=gd;x.fillRect(0,h*.5,w,h*.5);
+        // estrelas antes do disco luminoso, só à noite
+        if(!day){
+          for(let i=0;i<1500;i++){
+            const py=R()*R()*h*.5,px=R()*w;
+            x.fillStyle=`rgba(226,240,255,${.2+R()*.7})`;
+            const sz=R()<.08?2.2:1.2;x.fillRect(px,py,sz,sz);
+          }
+          // faixa da Via Láctea
+          x.save();x.translate(w*.3,h*.16);x.rotate(-.28);
+          for(let i=0;i<900;i++){
+            const px=(R()-.5)*w*.7,py=(R()-.5)*h*.12*(1-Math.abs(px)/(w*.4));
+            x.fillStyle=`rgba(200,224,255,${.05+R()*.16})`;x.fillRect(px,py,1.6,1.6);
+          }
+          x.restore();
+        }
+        // disco luminoso: sol alto de dia, lua fria à noite
+        const sx=w*SUN_AZIMUTH,sy=h*(.5-SUN_ELEVATION*.5);
+        const sun=x.createRadialGradient(sx,sy,0,sx,sy,h*(day?.55:.3));
+        if(day){
+          sun.addColorStop(0,'rgba(255,255,252,1)');sun.addColorStop(.035,'rgba(255,252,236,.92)');
+          sun.addColorStop(.12,'rgba(255,246,214,.3)');sun.addColorStop(.4,'rgba(214,238,255,.1)');sun.addColorStop(1,'rgba(190,225,250,0)');
+        }else{
+          sun.addColorStop(0,'rgba(236,246,255,.98)');sun.addColorStop(.045,'rgba(206,228,255,.5)');
+          sun.addColorStop(.2,'rgba(150,196,240,.12)');sun.addColorStop(1,'rgba(120,170,220,0)');
+        }
+        x.fillStyle=sun;x.fillRect(0,0,w,h*.62);
+        // cúmulos: massas de círculos com topo claro e base cinza-azulada
+        for(let i=0;i<34;i++){
+          const cx=R()*w,cy=h*.1+R()*h*.32,scale=.45+R()*1.1;
+          const near=cy>h*.3;
+          x.save();x.translate(cx,cy);x.scale(scale,scale*(near?.34:.5));
+          for(let k=0;k<14;k++){
+            const ox=(R()-.5)*300,oy=(R()-.5)*80,rad=34+R()*74;
+            x.fillStyle=day?`rgba(255,255,255,${.42+R()*.4})`:`rgba(58,84,104,${.3+R()*.3})`;
+            x.beginPath();x.arc(ox,oy,rad,0,7);x.fill();
+          }
+          for(let k=0;k<8;k++){
+            const ox=(R()-.5)*270,rad=30+R()*54;
+            x.fillStyle=day?`rgba(176,196,214,${.18+R()*.22})`:`rgba(16,30,40,${.24+R()*.24})`;
+            x.beginPath();x.arc(ox,34+R()*20,rad,0,7);x.fill();
+          }
+          x.restore();
+        }
+        // cirros
+        for(let i=0;i<26;i++){
+          const py=h*.02+R()*h*.16,ww=200+R()*520;
+          x.fillStyle=day?`rgba(255,255,255,${.08+R()*.14})`:`rgba(90,120,146,${.05+R()*.09})`;
+          x.save();x.translate(R()*w,py);x.scale(1,.04+R()*.04);
+          x.beginPath();x.arc(0,0,ww/2,0,7);x.fill();x.restore();
+        }
+        // bruma junto ao horizonte
+        const haze=x.createLinearGradient(0,h*.36,0,h*.52);
+        if(day){haze.addColorStop(0,'rgba(226,238,244,0)');haze.addColorStop(1,'rgba(226,238,244,.95)')}
+        else{haze.addColorStop(0,'rgba(24,58,70,0)');haze.addColorStop(1,'rgba(26,62,74,.85)')}
+        x.fillStyle=haze;x.fillRect(0,h*.36,w,h*.17);
+      });
+      const t=new THREE.CanvasTexture(canvas);
+      t.colorSpace=THREE.SRGBColorSpace;t.wrapS=THREE.RepeatWrapping;t.wrapT=THREE.ClampToEdgeWrapping;
+      t.anisotropy=renderer.capabilities.getMaxAnisotropy();
+      return t;
+    }
+    const skyDomeMapDay=skyDomeTexture('day'),skyDomeMapNight=skyDomeTexture('night');
+
+    // Linha de horizonte: colinas, arvoredo e um skyline lavado pela distância.
+    const horizonMap=(()=>{
+      const w=4096,h=512;
+      const canvas=panoCanvas(w,h,(x)=>{
+        x.clearRect(0,0,w,h);
+        // colinas em três camadas de profundidade
+        const layers=[
+          {base:h*.62,amp:52,color:'rgba(150,170,186,.55)'},
+          {base:h*.72,amp:66,color:'rgba(128,152,150,.72)'},
+          {base:h*.84,amp:44,color:'rgba(104,128,110,.92)'}
+        ];
+        for(const L of layers){
+          x.fillStyle=L.color;x.beginPath();x.moveTo(0,h);
+          for(let px=0;px<=w;px+=16){
+            const n=Math.sin(px*.0026+L.base)*.5+Math.sin(px*.0071+L.amp)*.3+Math.sin(px*.017)*.2;
+            x.lineTo(px,L.base-n*L.amp);
+          }
+          x.lineTo(w,h);x.closePath();x.fill();
+        }
+        // skyline distante num setor do panorama
+        x.fillStyle='rgba(146,164,180,.6)';
+        let px=w*.06;
+        while(px<w*.3){
+          const bw=14+R()*44,bh=40+R()*150;
+          x.fillRect(px,h*.7-bh,bw,bh);
+          if(R()<.4)x.fillRect(px+bw*.4,h*.7-bh-22,3,22);
+          px+=bw+6+R()*26;
+        }
+        // arvoredo próximo
+        x.fillStyle='rgba(74,96,72,.95)';
+        for(let i=0;i<620;i++){
+          const tx=R()*w,ty=h*.86+R()*h*.1,rad=6+R()*16;
+          x.beginPath();x.arc(tx,ty,rad,0,7);x.fill();
+        }
+        // base sólida para casar com o solo
+        x.fillStyle='rgba(88,106,84,1)';x.fillRect(0,h*.94,w,h*.06);
+      });
+      const t=new THREE.CanvasTexture(canvas);
+      t.colorSpace=THREE.SRGBColorSpace;t.wrapS=THREE.RepeatWrapping;t.wrapT=THREE.ClampToEdgeWrapping;
+      t.anisotropy=renderer.capabilities.getMaxAnisotropy();
+      return t;
+    })();
+
+    // Campo ao redor do heliponto: gramado seco com trilhas e manchas.
+    const fieldMap=canvasTexture(1024,(x,s)=>{
+      x.fillStyle='#5c6b4d';x.fillRect(0,0,s,s);
+      for(let i=0;i<26000;i++){
+        const v=R();
+        x.fillStyle=v<.5?`rgba(${86+R()*40|0},${104+R()*38|0},${68+R()*30|0},.5)`:`rgba(${118+R()*46|0},${126+R()*40|0},${86+R()*34|0},.35)`;
+        x.fillRect(R()*s,R()*s,1+R()*2,1+R()*3);
+      }
+      for(let i=0;i<40;i++){
+        const px=R()*s,py=R()*s,rad=40+R()*150;
+        const g=x.createRadialGradient(px,py,0,px,py,rad);
+        g.addColorStop(0,`rgba(${150+R()*30|0},${146+R()*24|0},${104+R()*30|0},${.16+R()*.2})`);
+        g.addColorStop(1,'rgba(150,146,104,0)');
+        x.fillStyle=g;x.beginPath();x.arc(px,py,rad,0,7);x.fill();
+      }
+    },{repeat:[26,26]});
+
+    // Sprite de nuvem para os cúmulos volumétricos do céu aberto.
+    const cloudSprite=canvasTexture(256,(x,s)=>{
+      x.clearRect(0,0,s,s);
       for(let i=0;i<26;i++){
-        const py=s*.18+R()*s*.5,w=90+R()*260;
-        x.fillStyle=`rgba(${30+R()*40|0},${40+R()*40|0},${66+R()*40|0},${.14+R()*.2})`;
-        x.save();x.translate(R()*s,py);x.scale(1,.12+R()*.1);
-        x.beginPath();x.arc(0,0,w/2,0,7);x.fill();x.restore();
+        const cx=s*.5+(R()-.5)*s*.62,cy=s*.54+(R()-.5)*s*.24,rad=s*(.08+R()*.16);
+        const g=x.createRadialGradient(cx,cy-rad*.3,0,cx,cy,rad);
+        g.addColorStop(0,`rgba(255,255,255,${.5+R()*.4})`);
+        g.addColorStop(.55,`rgba(244,249,255,${.22+R()*.2})`);
+        g.addColorStop(1,'rgba(228,238,248,0)');
+        x.fillStyle=g;x.beginPath();x.arc(cx,cy,rad,0,7);x.fill();
       }
-      // estrelas no alto
-      for(let i=0;i<200;i++){const py=R()*R()*s*.4;x.fillStyle=`rgba(235,245,255,${.25+R()*.6})`;x.fillRect(R()*s,py,1.4,1.4)}
-      // skyline distante
-      x.fillStyle='#0c0f16';
-      let px=0;
-      while(px<s){
-        const w=22+R()*66,hgt=s*.14+R()*s*.13;
-        x.fillRect(px,s-hgt,w,hgt);
-        if(R()<.5)x.fillRect(px+w*.3,s-hgt-14,w*.16,14);
-        px+=w+4+R()*26;
-      }
-      // luzes da cidade
-      for(let i=0;i<260;i++){
-        const warm=R()<.7;
-        x.fillStyle=warm?`rgba(255,${170+R()*60|0},90,${.5+R()*.5})`:`rgba(150,220,255,${.5+R()*.5})`;
-        x.fillRect(R()*s,s*.72+R()*s*.27,1.6,1.6);
-      }
-    },{repeat:[1,1]});
-    skyMap.wrapS=skyMap.wrapT=THREE.ClampToEdgeWrapping;
+    });
+    cloudSprite.wrapS=cloudSprite.wrapT=THREE.ClampToEdgeWrapping;
+
+    // Halo suave reaproveitado pelo sol e pelas claraboias.
+    const glowSprite=canvasTexture(256,(x,s)=>{
+      const g=x.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+      g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.16,'rgba(255,250,232,.55)');
+      g.addColorStop(.46,'rgba(255,240,206,.14)');g.addColorStop(1,'rgba(255,236,200,0)');
+      x.fillStyle=g;x.fillRect(0,0,s,s);
+    });
+    glowSprite.wrapS=glowSprite.wrapT=THREE.ClampToEdgeWrapping;
 
     // --- Painéis de parede do hangar.
     const wallMap=canvasTexture(1024,(x,s)=>{
@@ -1208,6 +1503,8 @@
      * ------------------------------------------------------------------ */
     const hangar=new THREE.Group();hangar.name='Hangar Bay 07';
     const FLOOR_Y=-.62;
+    // Elementos que só fazem sentido em um período do dia.
+    const nightOnly=[],dayOnly=[];
     const floorMat=new THREE.MeshStandardMaterial({map:floorMap,roughnessMap:floorRoughness,normalMap:floorNormal,normalScale:new THREE.Vector2(.6,.6),metalness:.22,roughness:1,envMapIntensity:.7});
     const floor=new THREE.Mesh(new THREE.PlaneGeometry(60,44),floorMat);
     floor.rotation.x=-Math.PI/2;floor.position.y=FLOOR_Y;floor.receiveShadow=true;
@@ -1246,19 +1543,62 @@
     const lintel=new THREE.Mesh(new THREE.BoxGeometry(60,.9,1),M.graphite);
     lintel.position.set(0,7.4,-21.9);hangar.add(lintel);
 
-    // Céu de entardecer além do vão — o "fundo visível" com paralaxe real.
-    const sky=new THREE.Mesh(new THREE.PlaneGeometry(120,44),new THREE.MeshBasicMaterial({map:skyMap,fog:false,toneMapped:false}));
+    // Céu além do vão — o "fundo visível" com paralaxe real.
+    const skyMat=new THREE.MeshBasicMaterial({map:skyMapDay,fog:false,toneMapped:false});
+    const sky=new THREE.Mesh(new THREE.PlaneGeometry(120,44),skyMat);
     sky.position.set(0,14,-42);hangar.add(sky);
     // pista externa e luzes de aproximação
-    const apron=new THREE.Mesh(new THREE.PlaneGeometry(60,26),new THREE.MeshStandardMaterial({color:0x10171a,metalness:.1,roughness:.85}));
+    const apronMat=new THREE.MeshStandardMaterial({color:0x10171a,metalness:.1,roughness:.85});
+    const apron=new THREE.Mesh(new THREE.PlaneGeometry(60,26),apronMat);
     apron.rotation.x=-Math.PI/2;apron.position.set(0,FLOOR_Y-.01,-35);hangar.add(apron);
     for(let i=0;i<7;i++){
       const l=new THREE.Mesh(new THREE.SphereGeometry(.09,10,8),new THREE.MeshBasicMaterial({color:0x53e2f2,toneMapped:false}));
-      l.position.set(-9+i*3,FLOOR_Y+.22,-24.5);hangar.add(l);
+      l.position.set(-9+i*3,FLOOR_Y+.22,-24.5);hangar.add(l);nightOnly.push(l);
     }
 
-    // Teto escuro com treliças e luminárias suspensas.
-    const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(60,44),new THREE.MeshStandardMaterial({color:0x0b0f10,metalness:.3,roughness:.9}));
+    /* Luz do dia entrando pelo portão: um retângulo de sol no piso e     *
+     * feixes suaves que atravessam o vão — só visíveis no modo diurno.   */
+    const gateLightGroup=new THREE.Group();hangar.add(gateLightGroup);dayOnly.push(gateLightGroup);
+    const gatePool=new THREE.Mesh(
+      new THREE.PlaneGeometry(19,26),
+      new THREE.MeshBasicMaterial({map:canvasTexture(512,(x,s)=>{
+        const g=x.createLinearGradient(0,0,0,s);
+        g.addColorStop(0,'rgba(255,250,226,.5)');g.addColorStop(.45,'rgba(255,247,220,.24)');g.addColorStop(1,'rgba(255,244,214,0)');
+        x.fillStyle=g;x.fillRect(0,0,s,s);
+        const side=x.createLinearGradient(0,0,s,0);
+        side.addColorStop(0,'rgba(0,0,0,1)');side.addColorStop(.1,'rgba(0,0,0,0)');
+        side.addColorStop(.9,'rgba(0,0,0,0)');side.addColorStop(1,'rgba(0,0,0,1)');
+        x.globalCompositeOperation='destination-out';x.fillStyle=side;x.fillRect(0,0,s,s);
+      }),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,fog:false})
+    );
+    gatePool.rotation.x=-Math.PI/2;gatePool.position.set(0,FLOOR_Y+.012,-9);gateLightGroup.add(gatePool);
+    const gateShafts=new THREE.Mesh(
+      new THREE.PlaneGeometry(18,9.5),
+      new THREE.MeshBasicMaterial({map:beamMap,color:0xfff3d6,transparent:true,opacity:.15,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,fog:false})
+    );
+    gateShafts.position.set(0,3.4,-19);gateShafts.rotation.x=.34;gateLightGroup.add(gateShafts);
+
+    // Claraboias: fitas translúcidas no teto e seus feixes verticais.
+    const skylightGroup=new THREE.Group();hangar.add(skylightGroup);dayOnly.push(skylightGroup);
+    const skylightMat=new THREE.MeshBasicMaterial({color:0xfffaf0,toneMapped:false,fog:false});
+    for(const sz of [-11,-3.5,4,11.5]){
+      const panel=new THREE.Mesh(new THREE.PlaneGeometry(26,2.4),skylightMat);
+      panel.rotation.x=Math.PI/2;panel.position.set(0,10.36,sz);skylightGroup.add(panel);
+      const shaft=new THREE.Mesh(
+        new THREE.PlaneGeometry(24,11),
+        new THREE.MeshBasicMaterial({map:beamMap,color:0xfff6e2,transparent:true,opacity:.09,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,fog:false})
+      );
+      shaft.position.set(2.2,4.9,sz);shaft.rotation.z=.16;skylightGroup.add(shaft);
+      const pool=new THREE.Mesh(
+        new THREE.PlaneGeometry(23,3.4),
+        new THREE.MeshBasicMaterial({map:beamMap,color:0xfff4dc,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,fog:false})
+      );
+      pool.rotation.x=-Math.PI/2;pool.position.set(4.4,FLOOR_Y+.014,sz);skylightGroup.add(pool);
+    }
+
+    // Teto com treliças e luminárias suspensas.
+    const ceilingMat=new THREE.MeshStandardMaterial({color:0x0b0f10,metalness:.3,roughness:.9});
+    const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(60,44),ceilingMat);
     ceiling.rotation.x=Math.PI/2;ceiling.position.y=10.4;hangar.add(ceiling);
     const trussMat=new THREE.MeshStandardMaterial({color:0x171d1e,metalness:.6,roughness:.55,envMapIntensity:.5});
     for(let i=0;i<7;i++){
@@ -1272,7 +1612,7 @@
 
     // Luminárias: corpo, disco emissivo e cone volumétrico de luz.
     const lampPositions=[[-6,9.4,-4],[6,9.4,-4],[0,9.4,3],[-6,9.4,10],[6,9.4,10]];
-    const beamMeshes=[];
+    const beamMeshes=[],dimmable=[];
     for(const [lx,ly,lz] of lampPositions){
       const fixture=new THREE.Group();fixture.position.set(lx,ly,lz);
       const housing=new THREE.Mesh(new THREE.CylinderGeometry(.34,.5,.5,20),trussMat);fixture.add(housing);
@@ -1282,6 +1622,8 @@
       hangar.add(fixture);
       const cone=new THREE.Mesh(new THREE.ConeGeometry(3.1,9.4,28,1,true),new THREE.MeshBasicMaterial({map:beamMap,color:0x9feef2,transparent:true,opacity:.34,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}));
       cone.position.set(lx,ly-4.95,lz);beamMeshes.push(cone);hangar.add(cone);
+      // De dia as luminárias ficam apagadas: só o corpo e o cone somem.
+      dimmable.push({disk,cone});
     }
 
     // Fitas de LED nas paredes laterais — recorte ciano característico.
@@ -1297,7 +1639,7 @@
       strip.position.set(0,y,21.7);hangar.add(strip);
     }
     const doorGlow=new THREE.Mesh(new THREE.BoxGeometry(17,.14,.06),new THREE.MeshBasicMaterial({color:0xff9d57,toneMapped:false}));
-    doorGlow.position.set(0,7.05,-21.85);hangar.add(doorGlow);
+    doorGlow.position.set(0,7.05,-21.85);hangar.add(doorGlow);nightOnly.push(doorGlow);
 
     // Pilares com bases sinalizadas.
     for(const sx of [-1,1])for(const pz of [-16,-8,0,8,16]){
@@ -1348,14 +1690,124 @@
     }
     scene.add(hangar);
 
-    // Reflexos do casco nascem do próprio hangar: coerência total de luz.
-    const pmrem=new THREE.PMREMGenerator(renderer);
-    const envScene=new THREE.Scene();envScene.add(hangar);
-    envScene.add(new THREE.HemisphereLight(0x9fcfd0,0x14181a,.8));
-    const envSun=new THREE.DirectionalLight(0xfff0d8,.9);envSun.position.set(-5,10,6);envScene.add(envSun);
-    scene.environment=pmrem.fromScene(envScene,.12).texture;
-    scene.add(hangar);
-    pmrem.dispose();
+    /* --------------------- Cenário a céu aberto ----------------------- *
+     *  Heliponto elevado sobre um campo aberto: domo panorâmico, faixa   *
+     *  de horizonte, terreno, cúmulos volumétricos e o disco solar.      *
+     * ------------------------------------------------------------------ */
+    const outdoor=new THREE.Group();outdoor.name='Heliponto AURORA Field';
+    outdoor.visible=false;
+
+    // Domo do céu: esfera invertida, sem neblina e fora do tone mapping.
+    const skyDomeMat=new THREE.MeshBasicMaterial({map:skyDomeMapDay,side:THREE.BackSide,fog:false,toneMapped:false,depthWrite:false});
+    const skyDome=new THREE.Mesh(new THREE.SphereGeometry(150,60,40),skyDomeMat);
+    skyDome.renderOrder=-2;outdoor.add(skyDome);
+
+    // Terreno: campo amplo com leve variação de altura. A diagonal (≈130)
+    // fica logo dentro da faixa de horizonte (132), então nenhum canto do
+    // plano fura a cortina de colinas.
+    const groundGeo=new THREE.PlaneGeometry(184,184,80,80);
+    {
+      const p=groundGeo.attributes.position;
+      for(let i=0;i<p.count;i++){
+        const gx=p.getX(i),gy=p.getY(i),d=Math.hypot(gx,gy);
+        // o miolo fica plano para o pad assentar; a borda ondula.
+        const relief=Math.sin(gx*.045)*Math.cos(gy*.038)*1.5+Math.sin(gx*.011+gy*.017)*3.2;
+        p.setZ(i,relief*THREE.MathUtils.smoothstep(d,16,90));
+      }
+      groundGeo.computeVertexNormals();
+    }
+    const groundMat=new THREE.MeshStandardMaterial({map:fieldMap,color:0x9aa886,roughness:.96,metalness:0,envMapIntensity:.55});
+    // O campo fica meio metro abaixo do deck, então a laje lê como
+    // plataforma elevada e não como uma mancha pintada na grama.
+    const GROUND_Y=FLOOR_Y-.55;
+    const ground=new THREE.Mesh(groundGeo,groundMat);
+    ground.rotation.x=-Math.PI/2;ground.position.y=GROUND_Y;ground.receiveShadow=true;outdoor.add(ground);
+
+    // Faixa de horizonte cilíndrica: colinas, arvoredo e skyline lavado.
+    const horizonMat=new THREE.MeshBasicMaterial({map:horizonMap,transparent:true,side:THREE.BackSide,fog:false,depthWrite:false});
+    const horizon=new THREE.Mesh(new THREE.CylinderGeometry(132,132,34,80,1,true),horizonMat);
+    horizon.position.y=FLOOR_Y+11;horizon.renderOrder=-1;outdoor.add(horizon);
+
+    // Plataforma de pouso: laje de concreto com borda metálica e balizas.
+    const DECK_H=.62;
+    const padDeck=new THREE.Mesh(
+      new THREE.CylinderGeometry(7.4,7.7,DECK_H,72),
+      new THREE.MeshStandardMaterial({map:floorMap,roughnessMap:floorRoughness,normalMap:floorNormal,normalScale:new THREE.Vector2(.5,.5),color:0xbfc7c4,metalness:.16,roughness:.92,envMapIntensity:.7})
+    );
+    padDeck.position.y=FLOOR_Y-DECK_H/2;padDeck.receiveShadow=true;padDeck.castShadow=true;outdoor.add(padDeck);
+    const padRim=new THREE.Mesh(new THREE.TorusGeometry(7.45,.09,12,96),new THREE.MeshStandardMaterial({color:0x99a3a2,metalness:.85,roughness:.36,envMapIntensity:.9}));
+    padRim.rotation.x=Math.PI/2;padRim.position.y=FLOOR_Y+.01;outdoor.add(padRim);
+    const padMarks=new THREE.Mesh(
+      new THREE.CircleGeometry(3.3,96),
+      new THREE.MeshStandardMaterial({map:padMap,transparent:true,color:0xdfeceb,metalness:.1,roughness:.6,polygonOffset:true,polygonOffsetFactor:-1,envMapIntensity:.6})
+    );
+    padMarks.rotation.x=-Math.PI/2;padMarks.position.y=FLOOR_Y+.006;padMarks.receiveShadow=true;outdoor.add(padMarks);
+    // Sombra de contato própria do cenário externo — discreta, porque aqui
+    // o sol direcional já projeta uma sombra real e nítida no deck.
+    const outdoorAO=contactAO.clone();
+    outdoorAO.material=contactAO.material.clone();outdoorAO.material.opacity=.45;
+    outdoor.add(outdoorAO);
+    // Balizas perimetrais.
+    const balisMat=new THREE.MeshStandardMaterial({color:0xd8dedb,metalness:.5,roughness:.42,envMapIntensity:.8});
+    const balisLens=new THREE.MeshBasicMaterial({color:0xfff0c4,toneMapped:false});
+    for(let i=0;i<12;i++){
+      const a=i/12*Math.PI*2,bx=Math.cos(a)*6.9,bz=Math.sin(a)*6.9;
+      const post=new THREE.Mesh(new THREE.CylinderGeometry(.045,.06,.42,10),balisMat);
+      post.position.set(bx,FLOOR_Y+.21,bz);post.castShadow=true;outdoor.add(post);
+      const lens=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),balisLens);
+      lens.position.set(bx,FLOOR_Y+.45,bz);outdoor.add(lens);
+    }
+    // Mastro de biruta: escala e leitura de vento.
+    const mast=new THREE.Group();mast.position.set(-9.6,FLOOR_Y,6.2);
+    mast.add(new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,5.2,12),balisMat).translateY(2.6));
+    // A biruta gira num pivô próprio: o cone já nasce deitado, então a
+    // animação mexe só no pivô e não briga com a ordem dos ângulos de Euler.
+    const sockPivot=new THREE.Group();sockPivot.position.set(0,5.05,0);mast.add(sockPivot);
+    const sockMat=new THREE.MeshStandardMaterial({color:0xff8a3c,roughness:.8,side:THREE.DoubleSide,envMapIntensity:.6});
+    const windSock=new THREE.Mesh(new THREE.CylinderGeometry(.16,.34,1.5,16,1,true),sockMat);
+    windSock.rotation.z=Math.PI/2;windSock.position.x=.85;sockPivot.add(windSock);
+    outdoor.add(mast);
+    // Torre de iluminação e alguns props que dão escala ao campo.
+    for(const [tx,tz] of [[11.4,-8.6],[-12.2,-7.4]]){
+      const tower=new THREE.Group();tower.position.set(tx,FLOOR_Y,tz);
+      tower.add(new THREE.Mesh(new THREE.CylinderGeometry(.1,.16,7.4,10),balisMat).translateY(3.7));
+      const head=new THREE.Mesh(new THREE.BoxGeometry(1.5,.34,.42),trussMat);head.position.y=7.5;tower.add(head);
+      outdoor.add(tower);
+    }
+
+    // Disco solar + halo, alinhados com a direcional do cenário aberto.
+    const sunDirection=(()=>{
+      const theta=(SUN_AZIMUTH-.25)*Math.PI*2,phi=SUN_ELEVATION*Math.PI*.5;
+      return new THREE.Vector3(Math.sin(theta)*Math.cos(phi),Math.sin(phi),Math.cos(theta)*Math.cos(phi)).normalize();
+    })();
+    // depthTest permanece ligado para que o casco ocluda o disco solar
+    // quando a órbita passa na frente dele.
+    const sunSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:glowSprite,color:0xfff6df,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,fog:false}));
+    sunSprite.scale.setScalar(46);sunSprite.position.copy(sunDirection).multiplyScalar(120);
+    sunSprite.renderOrder=-1;outdoor.add(sunSprite);
+
+    // Cúmulos volumétricos: bilboards distribuídos em anel, com deriva lenta.
+    const clouds=new THREE.Group();outdoor.add(clouds);
+    for(let i=0;i<26;i++){
+      const a=R()*Math.PI*2,dist=52+R()*62,scale=16+R()*26;
+      const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:cloudSprite,color:0xffffff,transparent:true,opacity:.34+R()*.3,depthWrite:false,fog:false}));
+      sprite.position.set(Math.cos(a)*dist,20+R()*30,Math.sin(a)*dist);
+      sprite.scale.set(scale*1.9,scale*.82,1);
+      sprite.userData.drift=.12+R()*.2;sprite.userData.angle=a;sprite.userData.dist=dist;
+      clouds.add(sprite);
+    }
+    // Poeira / pólen suspenso, iluminado por trás pelo sol.
+    const motes=(()=>{
+      const n=420,pos=new Float32Array(n*3);
+      for(let i=0;i<n;i++){
+        const a=R()*Math.PI*2,r=R()*16;
+        pos[i*3]=Math.cos(a)*r;pos[i*3+1]=FLOOR_Y+.2+R()*7;pos[i*3+2]=Math.sin(a)*r;
+      }
+      const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+      return new THREE.Points(g,new THREE.PointsMaterial({color:0xfff4d8,size:.035,map:dustSprite,transparent:true,opacity:.4,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,sizeAttenuation:true}));
+    })();
+    outdoor.add(motes);
+    scene.add(outdoor);
 
     scene.add(aurora);
 
@@ -1510,9 +1962,10 @@
     }));
 
     /* ------------------------- Iluminação ------------------------- *
-     *  Esquema de hangar: key quente de teto (com sombra real),      *
-     *  recorte ciano do portão, sódio âmbar lateral e glow do anel.  */
-    scene.add(new THREE.HemisphereLight(0xa9cfce,0x0a0f10,.5));
+     *  Dois esquemas coexistem e são trocados pelo seletor de cena:   *
+     *  hangar (key de teto, recorte do portão, sódio) e céu aberto    *
+     *  (sol direcional duro + céu hemisférico + rebote do solo).      */
+    const hemi=new THREE.HemisphereLight(0xa9cfce,0x0a0f10,.5);scene.add(hemi);
     const key=new THREE.SpotLight(0xfff1da,340,44,Math.PI/3.4,.5,1.6);
     key.position.set(-7,14,7);key.target.position.set(0,0,0);key.castShadow=true;
     key.shadow.mapSize.set(2048,2048);key.shadow.bias=-.0004;key.shadow.camera.near=4;key.shadow.camera.far=34;
@@ -1523,6 +1976,143 @@
     const cyanFill=new THREE.PointLight(0x37c8cf,30,22,1.9);cyanFill.position.set(-17,4,9);scene.add(cyanFill);
     const lift=new THREE.PointLight(0x53ffff,9,4,2);lift.position.set(0,0,0);aurora.add(lift);
     const warm=new THREE.PointLight(0xff7138,6,5,2);warm.position.set(-1.4,1.6,-1.6);aurora.add(warm);
+
+    // Sol direcional: sombra nítida e paralela, como em céu aberto real.
+    const sunLight=new THREE.DirectionalLight(0xfff4e2,3.1);
+    sunLight.position.copy(sunDirection).multiplyScalar(26);
+    sunLight.target.position.set(0,.4,0);
+    sunLight.castShadow=true;
+    sunLight.shadow.mapSize.set(2048,2048);
+    sunLight.shadow.bias=-.0006;sunLight.shadow.normalBias=.02;
+    sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=70;
+    sunLight.shadow.camera.left=-14;sunLight.shadow.camera.right=14;
+    sunLight.shadow.camera.top=14;sunLight.shadow.camera.bottom=-14;
+    scene.add(sunLight,sunLight.target);
+    // Rebote frio do céu na parte de baixo do casco.
+    const skyBounce=new THREE.DirectionalLight(0xbcd8f0,.5);
+    skyBounce.position.set(-8,-4,-6);scene.add(skyBounce);
+    // Preenchimento quente vindo do solo.
+    const groundBounce=new THREE.DirectionalLight(0xd9cba4,.35);
+    groundBounce.position.set(6,-5,7);scene.add(groundBounce);
+
+    /* -------------- Ambiente: cenário × período do dia --------------- *
+     *  `scene.environment` é regerado por PMREM a partir do cenário     *
+     *  ativo, então os reflexos do casco sempre batem com o que se vê.  */
+    const pmrem=new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+    const envCache=new Map();
+    function environmentMap(sceneKey,period){
+      const cacheKey=`${sceneKey}:${period}`;
+      if(envCache.has(cacheKey))return envCache.get(cacheKey);
+      const day=period==='day';
+      let texture;
+      if(sceneKey==='hangar'){
+        // O próprio hangar vira sonda de ambiente.
+        const holder=hangar.parent;
+        const envScene=new THREE.Scene();envScene.add(hangar);
+        envScene.add(new THREE.HemisphereLight(day?0xd8ecff:0x9fcfd0,day?0x8c8467:0x14181a,day?2.4:.8));
+        const envSun=new THREE.DirectionalLight(day?0xfff3dd:0xfff0d8,day?3:.9);
+        envSun.position.copy(day?sunDirection.clone().multiplyScalar(20):new THREE.Vector3(-5,10,6));
+        envScene.add(envSun);
+        // sigma 0.04 é o teto antes do PMREM avisar que vai truncar amostras.
+        texture=pmrem.fromScene(envScene,.04).texture;
+        holder?.add(hangar);
+      }else{
+        texture=pmrem.fromEquirectangular(day?skyDomeMapDay:skyDomeMapNight).texture;
+      }
+      envCache.set(cacheKey,texture);
+      return texture;
+    }
+
+    // Paletas de neblina/fundo por combinação de cenário e período.
+    const ATMOSPHERE={
+      'hangar:night':{fog:0x070d0f,density:.021,clear:0x04080a,exposure:1.12,bloom:.38},
+      'hangar:day':{fog:0xa8bcc4,density:.006,clear:0x9dc2d8,exposure:1.02,bloom:.2},
+      'outdoor:day':{fog:0xcfe1ea,density:.0045,clear:0xbcd8ea,exposure:1,bloom:.16},
+      'outdoor:night':{fog:0x0a1620,density:.011,clear:0x061019,exposure:1.18,bloom:.42}
+    };
+
+    function applyEnvironment(){
+      const day=state.period==='day',open=state.scene==='outdoor';
+      const atmos=ATMOSPHERE[`${state.scene}:${state.period}`];
+
+      hangar.visible=!open;
+      outdoor.visible=open;
+
+      // Elementos exclusivos de um período.
+      for(const o of nightOnly)o.visible=!day;
+      for(const o of dayOnly)o.visible=day&&!open;
+      // Luminárias do hangar apagam de dia.
+      for(const {disk,cone} of dimmable){disk.visible=!day;cone.visible=!day}
+      for(const b of beamMeshes)b.visible=!day;
+      dustGroup.visible=!day;
+      // Fitas de LED perdem força sob luz natural.
+      stripMat.color.setHex(day?0x1d7f86:0x49e6ea);
+      // Céu do portão e superfícies do hangar acompanham o período.
+      skyMat.map=day?skyMapDay:skyMapNight;skyMat.needsUpdate=true;
+      skyDomeMat.map=day?skyDomeMapDay:skyDomeMapNight;skyDomeMat.needsUpdate=true;
+      sunSprite.visible=day;
+      ceilingMat.color.setHex(day?0x2a3336:0x0b0f10);
+      wallMat.color.setHex(day?0xb9c6c8:0xffffff);
+      floorMat.color.setHex(day?0xa9b4b5:0xffffff);
+      apronMat.color.setHex(day?0x6f7d80:0x10171a);
+      contactAO.material.opacity=day?.85:1;
+
+      // Luzes artificiais versus luz natural.
+      const artificial=open?0:(day?.22:1);
+      key.intensity=340*(open?0:(day?.35:1));
+      key.visible=!open;
+      doorRim.intensity=260*artificial*(day?.5:1);doorRim.visible=!open&&!day;
+      sodium.intensity=42*artificial;sodium.visible=!open&&!day;
+      cyanFill.intensity=30*artificial;cyanFill.visible=!open&&!day;
+
+      if(day){
+        hemi.color.setHex(open?0xdff0ff:0xcfe4ee);
+        hemi.groundColor.setHex(open?0x8f8b62:0x5c6466);
+        hemi.intensity=open?2.6:1.5;
+      }else{
+        hemi.color.setHex(open?0x4a6f92:0xa9cfce);
+        hemi.groundColor.setHex(0x0a0f10);
+        hemi.intensity=open?.5:.5;
+      }
+
+      sunLight.visible=day;
+      sunLight.intensity=day?(open?3.1:1.5):0;
+      // No hangar o sol entra pelo portão, quase rasante e vindo do norte.
+      if(open){
+        sunLight.position.copy(sunDirection).multiplyScalar(26);
+        sunLight.shadow.camera.left=-14;sunLight.shadow.camera.right=14;
+      }else{
+        sunLight.position.set(4,9,-20);
+        sunLight.shadow.camera.left=-16;sunLight.shadow.camera.right=16;
+      }
+      sunLight.shadow.camera.updateProjectionMatrix();
+      skyBounce.visible=day;skyBounce.intensity=day?(open?.55:.3):0;
+      groundBounce.visible=day;groundBounce.intensity=day?(open?.4:.22):0;
+
+      // As luzes de bordo da cápsula perdem protagonismo sob o sol.
+      lift.visible=!day||!open;
+      warm.visible=!day;
+
+      // Atmosfera, exposição e bloom.
+      scene.fog.color.setHex(atmos.fog);
+      scene.fog.density=atmos.density;
+      scene.background.setHex(atmos.clear);
+      renderer.setClearColor(atmos.clear,1);
+      renderer.toneMappingExposure=atmos.exposure;
+      bloom.strength=atmos.bloom;
+      scene.environment=environmentMap(state.scene,state.period);
+
+      // Sombras de contato e vinheta da UI acompanham o ambiente.
+      document.body.classList.toggle('env-day',day);
+      document.body.classList.toggle('env-outdoor',open);
+
+      // Reflete o estado nos controles.
+      document.querySelectorAll('[data-scene]').forEach(b=>b.classList.toggle('active',b.dataset.scene===state.scene));
+      document.querySelectorAll('[data-period]').forEach(b=>b.classList.toggle('active',b.dataset.period===state.period));
+      const label=document.getElementById('envLabel');
+      if(label)label.textContent=`${open?'CAMPO ABERTO':'HANGAR BAY 07'} · ${day?'DIA':'NOITE'}`;
+    }
 
     const views={
       hero:{pos:new THREE.Vector3(5.4,2.5,7.9),target:new THREE.Vector3(0,.5,0)},
@@ -1603,6 +2193,16 @@
     }));
     document.querySelectorAll('.view').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.view)));
 
+    // Troca de cenário e de período do dia.
+    document.querySelectorAll('[data-scene]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(state.scene===btn.dataset.scene)return;
+      state.scene=btn.dataset.scene;applyEnvironment();
+    }));
+    document.querySelectorAll('[data-period]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(state.period===btn.dataset.period)return;
+      state.period=btn.dataset.period;applyEnvironment();
+    }));
+
     const forceToggle=document.getElementById('forceToggle');
     forceToggle.addEventListener('click',()=>{state.vectors=!state.vectors;forceToggle.classList.toggle('active',state.vectors);applyMode()});
     const fieldToggle=document.getElementById('fieldToggle');
@@ -1636,6 +2236,28 @@
 
     updatePhysics();
     applyMode();
+    applyEnvironment();
+
+    // Sonda de inspeção do ambiente — usada por testes e depuração manual.
+    window.__AURORA_DEBUG__={
+      get envCacheSize(){return envCache.size},
+      snapshot(){
+        return {
+          scene:state.scene,period:state.period,
+          hangarVisible:hangar.visible,outdoorVisible:outdoor.visible,
+          sunVisible:sunLight.visible,sunIntensity:sunLight.intensity,
+          sunSpriteVisible:sunSprite.visible,
+          keyVisible:key.visible,
+          lampDisksVisible:dimmable.filter(d=>d.disk.visible).length,
+          beamsVisible:beamMeshes.filter(b=>b.visible).length,
+          dayOnlyVisible:dayOnly.filter(o=>o.visible).length,
+          nightOnlyVisible:nightOnly.filter(o=>o.visible).length,
+          fogDensity:scene.fog.density,exposure:renderer.toneMappingExposure,
+          bloomStrength:bloom.strength,
+          envMapPresent:!!scene.environment
+        };
+      }
+    };
     window.__AURORA_READY__=true;
     setTimeout(()=>document.getElementById('loader').classList.add('done'),850);
 
@@ -1669,11 +2291,24 @@
       beaconHalo.material.opacity=.25+Math.max(0,Math.sin(elapsed*4))*.35;
       beaconHalo.lookAt(camera.position);
       // Poeira subindo lentamente nos fachos.
-      dustGroup.children.forEach((d,i)=>{
+      if(dustGroup.visible)dustGroup.children.forEach((d,i)=>{
         d.position.y=(d.userData.phase+elapsed*d.userData.speed)%1.6;
         d.rotation.y+=dt*.02*(i?-1:1);
       });
-      beamMeshes.forEach((b,i)=>{b.material.opacity=.3+Math.sin(elapsed*.7+i*1.7)*.05});
+      if(state.period!=='day')beamMeshes.forEach((b,i)=>{b.material.opacity=.3+Math.sin(elapsed*.7+i*1.7)*.05});
+
+      // Céu aberto: deriva das nuvens, biruta ao vento e pólen subindo.
+      if(outdoor.visible){
+        clouds.children.forEach(c=>{
+          c.userData.angle+=dt*.0045*c.userData.drift;
+          c.position.x=Math.cos(c.userData.angle)*c.userData.dist;
+          c.position.z=Math.sin(c.userData.angle)*c.userData.dist;
+        });
+        sockPivot.rotation.y=Math.sin(elapsed*.6)*.22;
+        sockPivot.rotation.z=Math.sin(elapsed*.9)*.08;
+        motes.position.y=((elapsed*.09)%1.4)-.7;
+        motes.rotation.y+=dt*.012;
+      }
 
       controls.update();composer.render();labelsRenderer.render(scene,camera);requestAnimationFrame(animate);
     }
