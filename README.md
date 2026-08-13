@@ -1,6 +1,6 @@
-# AURORA GT/2 — Mk.III
+# AURORA GT/2 — Mk.V
 
-Uma experiência WebGL de engenharia especulativa para a cápsula AURORA GT/2. A Mk.III mantém o objeto cinematográfico da Mk.II e adiciona um casco paramétrico, um diagrama de corpo livre e telemetria calculada em unidades SI.
+Uma experiência WebGL de engenharia especulativa para a cápsula AURORA GT/2. A Mk.V substitui o visual ilustrado das iterações anteriores por renderização fisicamente coerente: microsuperfícies PBR procedurais, um hangar 3D completo ao redor da aeronave e reflexos gerados a partir do próprio ambiente.
 
 > A aeronave, o Gravium-7 e sua arquitetura de propulsão são ficcionais. O balanço de peso, sustentação equivalente, tração, arrasto e aceleração usa mecânica clássica e teoria de disco atuador.
 
@@ -13,13 +13,14 @@ npm run serve
 
 Não há etapa de build. O Three.js usado pela experiência está em `vendor/three`; as fontes web são opcionais e têm fallback de sistema.
 
-## Mk.III
+## Mk.V
 
-- **Casco paramétrico:** comprimento, boca e altura atualizam a escala do modelo, as cotas 3D, o volume elipsoidal, a área frontal e o arrasto.
-- **Modo Engenharia:** console responsivo com perfis de pairado, cruzeiro e subida; parâmetros de massa, atmosfera, velocidade e potência.
-- **Vetores de força:** sustentação, peso, tração, arrasto e força resultante renderizados sobre a aeronave, com magnitude em kN.
-- **Telemetria:** T/P, acelerações, pressão dinâmica, número de Reynolds, potência, autonomia ideal e histórico de aceleração.
-- **Solver determinístico:** cálculos isolados em `src/physics.js`, sem números aleatórios ou tabelas pré-computadas.
+- **Hangar volumétrico real:** o fundo deixa de ser uma imagem estática. Piso de concreto com juntas e manchas, parede de painéis, portão entrevisto ao entardecer com skyline, treliças, luminárias com cones de luz e poeira suspensa compõem a cena — com paralaxe verdadeira ao orbitar.
+- **Materiais PBR procedurais:** albedo, rugosidade e mapa de normais gerados em canvas (2048 px) para casco, titânio escovado, fibra de carbono twill, couro, piso e paredes. Determinísticos via gerador LCG interno, sem assets externos.
+- **Reflexos coerentes:** o `scene.environment` é renderizado por PMREM a partir do próprio hangar, então o casco reflete as fitas de LED, o portão e as luminárias reais da cena.
+- **Detalhe pontual por peça:** juntas de painel geométricas, 64 rebites instanciados, suíte de sensores EO/IR com tubos pitot, antenas, persianas de exaustão, estatores no intake dos pods e no EDF, pétalas de bocal, trem de pouso retrátil, decalques de resgate e registro.
+- **Sinalização aeronáutica:** luzes de navegação vermelha/verde com duplo strobe, farol anticolisão pulsante e luzes de aproximação na pista externa.
+- **Herança Mk.III/Mk.IV mantida:** casco paramétrico (comprimento, boca, altura), modo Engenharia com vetores de força em kN, cotas 3D, telemetria SI e solver determinístico em `src/physics.js`.
 
 ## Modelo físico
 
