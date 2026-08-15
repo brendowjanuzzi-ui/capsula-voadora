@@ -214,6 +214,8 @@
     .drive-note{color:#5c6f70;font:400 8px DM Mono,monospace;letter-spacing:.02em;line-height:1.6;margin:7px 0 0}
     .fusion-panel{display:none}
     body.fusion-mode .fusion-panel{display:block}
+    .orbit-status{margin-top:8px;border:1px solid rgba(165,246,143,.28);background:rgba(165,246,143,.06);color:#bff0a9;font:500 8px DM Mono,monospace;letter-spacing:.02em;padding:7px 8px;border-radius:2px;line-height:1.5}
+    .orbit-status.alert{border-color:rgba(255,159,87,.35);background:rgba(255,159,87,.07);color:#ffb27d}
     .parameter{margin:0 0 11px}.param-copy{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.param-copy label{color:#a6b8b8;font-size:9px;font-weight:600}.param-copy output{color:var(--cyan-bright);font:500 9px DM Mono,monospace}.param-copy output small{margin-left:3px;color:#607a7b;font-size:7px}
     .parameter input{display:block;width:100%;height:12px;margin:0;appearance:none;background:transparent;cursor:ew-resize}
     .parameter input::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:linear-gradient(90deg,var(--cyan) 0 var(--range,50%),rgba(255,255,255,.1) var(--range,50%));box-shadow:0 0 8px rgba(76,218,222,.12)}
@@ -437,6 +439,23 @@
         </div>
       </section>
 
+      <section class="eng-section fusion-panel" aria-label="Missão orbital ponto a ponto">
+        <div class="eng-section-title">Missão orbital · ponto a ponto (Terra)</div>
+        <div class="parameter">
+          <div class="param-copy"><label for="orbitalRangeInput">Alcance desejado</label><output id="orbitalRangeOutput">926<small>km</small></output></div>
+          <input id="orbitalRangeInput" data-param="orbitalRangeKm" data-output="orbitalRangeOutput" data-unit="km" data-decimals="0" type="range" min="50" max="3000" step="10" value="926" />
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><span>ângulo central</span><b><em id="orbitalBeta">—</em> °</b></div>
+          <div class="metric"><span>injeção</span><b><em id="orbitalDeltaV">—</em> km/s</b></div>
+          <div class="metric"><span>apogeu</span><b><em id="orbitalApogee">—</em> km</b></div>
+          <div class="metric"><span>tempo de voo</span><b><em id="orbitalTime">—</em> min</b></div>
+          <div class="metric"><span>combustível</span><b><em id="orbitalProp">—</em> kg</b></div>
+        </div>
+        <div class="orbit-status" id="orbitStatus">—</div>
+        <p class="drive-note">A subida e o pouso (atmosfera) ficam com o EDF; a transferência exoatmosférica usa o impulso de fusão — trajetória balística mínima entre dois pontos da Terra.</p>
+      </section>
+
       <div class="equation" id="equationTag"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
     </div>
   </aside>
@@ -503,11 +522,13 @@
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
     import { calculateFlightPhysics, DEFAULT_CONFIG, clamp } from './src/physics.js';
+    import { planPointToPointMission, EARTH_RADIUS_M } from './src/orbital.js';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero', scene:'hangar', period:'day' };
     const design = { ...DEFAULT_CONFIG };
+    design.orbitalRangeKm = 926;
     const BASE_DIMENSIONS = { lengthM:DEFAULT_CONFIG.lengthM, beamM:DEFAULT_CONFIG.beamM, heightM:DEFAULT_CONFIG.heightM };
     let physics = calculateFlightPhysics(design);
     const telemetryHistory = Array(20).fill(physics.performance.resultantAccelerationMs2);
@@ -1978,6 +1999,30 @@
         setText('fusionFuel',numberFormatter(fd.deuteriumFuelPerHourKg*1000,2));
         const eq=document.getElementById('equationTag');
         if(eq)eq.innerHTML='<b>IMPULSO DE FUSÃO / EQUAÇÃO DO FOGUETE</b>F = ṁ·Vₑ &nbsp;·&nbsp; P = ½ṁ·Vₑ² &nbsp;·&nbsp; Δv = Vₑ·ln(m₀/m_f)<br>Reator D+D · exaustão de plasma · combustível ≈ 1,7×10¹⁴ J/kg';
+
+        // Orbital point-to-point mission (fusion impulse, exoatmospheric phase).
+        const rangeKm = Number(design.orbitalRangeKm)||926;
+        const centralAngleDeg = (rangeKm*1000/EARTH_RADIUS_M)*(180/Math.PI);
+        const mission = planPointToPointMission({
+          centralAngleDeg,
+          fusionPowerKw: design.fusionPowerKw,
+          exhaustEfficiency: design.exhaustEfficiency,
+          exhaustVelocityMs: design.fusionExhaustVelocityMs,
+          propellantMassKg: design.propellantMassKg,
+          dryMassKg: design.massKg
+        });
+        setText('orbitalBeta',numberFormatter(mission.trajectory.centralAngleDeg,1));
+        setText('orbitalDeltaV',numberFormatter(mission.deltaVNeededMs/1000,2));
+        setText('orbitalApogee',numberFormatter(mission.trajectory.apogeeAltitudeKm,0));
+        setText('orbitalTime',numberFormatter(mission.trajectory.flightMinutes,1));
+        setText('orbitalProp',numberFormatter(mission.propellantRequiredKg,1));
+        const orbitStatus=document.getElementById('orbitStatus');
+        if(orbitStatus){
+          orbitStatus.textContent=mission.feasible
+            ? `viável · sobram ${numberFormatter(mission.propellantAfterKg,1)} kg de deutério · alcance máximo ${numberFormatter(mission.maxRange.rangeKm,0)} km`
+            : `não viável · alcance máximo do impulso: ${numberFormatter(mission.maxRange.rangeKm,0)} km`;
+          orbitStatus.classList.toggle('alert',!mission.feasible);
+        }
       }
       updateTelemetryTrace(p.resultantAccelerationMs2);
     }
