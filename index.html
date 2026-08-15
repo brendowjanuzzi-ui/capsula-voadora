@@ -682,10 +682,10 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=11';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=11';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=11';
-    import { sizeCapsule } from './src/sizing.js?v=11';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=12';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=12';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=12';
+    import { sizeCapsule } from './src/sizing.js?v=12';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1519,27 +1519,28 @@
     }
 
     // Pods laterais: intake com estatores, aletas de refrigeração e bocal vetorial.
+    // Dimensionados como motores reais — corpo ~0,5 m, visíveis nas bordas do casco.
     for(const sx of [-1,1]){
-      const pod=new THREE.Group();pod.name=`Pod vetorial ${sx<0?'esquerdo':'direito'}`;pod.position.set(sx*1.47,.55,-.12);
-      const body=cylinder('corpo pod',[0,0,0],.24,.29,1.25,M.hull,'z',56);pod.add(body);
-      const cap=ellipsoid('carenagem',[0,0,.62],[.245,.245,.3],M.hullLight,40);pod.add(cap);
-      const ring=torus('intake',[0,0,-.63],.245,.038,M.titanium);pod.add(ring);
-      for(let i=0;i<3;i++){pod.add(torus('aleta refrigeração',[0,0,.18+i*.16],.262-i*.004,.012,M.graphite))}
-      const stator=new THREE.Group();stator.name='estator de admissão';stator.position.z=-.655;
-      for(let i=0;i<9;i++){
-        const a=i/9*Math.PI*2;
-        const vane=rounded('palheta',[Math.cos(a)*.11,Math.sin(a)*.11,0],[.2,.045,.018],.008,M.titanium);
+      const pod=new THREE.Group();pod.name=`Pod vetorial ${sx<0?'esquerdo':'direito'}`;pod.position.set(sx*1.52,.6,-1.3);
+      const body=cylinder('corpo pod',[0,0,0],.5,.58,2.1,M.hull,'z',56);pod.add(body);
+      const cap=ellipsoid('carenagem',[0,0,1.05],[.5,.5,.55],M.hullLight,40);pod.add(cap);
+      const ring=torus('intake',[0,0,-1.08],.5,.07,M.titanium);pod.add(ring);
+      for(let i=0;i<4;i++){pod.add(torus('aleta refrigeração',[0,0,.3+i*.26],.52-i*.006,.02,M.graphite))}
+      const stator=new THREE.Group();stator.name='estator de admissão';stator.position.z=-1.12;
+      for(let i=0;i<11;i++){
+        const a=i/11*Math.PI*2;
+        const vane=rounded('palheta',[Math.cos(a)*.24,Math.sin(a)*.24,0],[.42,.09,.03],.012,M.titanium);
         vane.rotation.z=a;stator.add(vane);
       }
-      stator.add(ellipsoid('cone estator',[0,0,-.01],[.055,.055,.05],M.copper,18));
+      stator.add(ellipsoid('cone estator',[0,0,-.02],[.12,.12,.1],M.copper,18));
       pod.add(stator);
-      const dark=cylinder('interior intake',[0,0,-.68],.19,.19,.05,M.rubber,'z',48);pod.add(dark);
-      const nozzle=cylinder('bocal vetorial',[0,0,.78],.2,.16,.22,M.titanium,'z',48,true);pod.add(nozzle);
-      pod.add(torus('anel quente do bocal',[0,0,.86],.15,.014,M.amber));
-      for(let j=0;j<5;j++){
-        const slit=rounded('dissipador',[sx<0?-.255:.255,.04+(j-2)*.07,-.12],[.018,.035,.49],.009,M.graphite);pod.add(slit);
+      const dark=cylinder('interior intake',[0,0,-1.15],.42,.42,.06,M.rubber,'z',48);pod.add(dark);
+      const nozzle=cylinder('bocal vetorial',[0,0,1.32],.42,.34,.38,M.titanium,'z',48,true);pod.add(nozzle);
+      pod.add(torus('anel quente do bocal',[0,0,1.5],.32,.03,M.amber));
+      for(let j=0;j<7;j++){
+        const slit=rounded('dissipador',[sx<0?-.54:.54,.08+(j-3)*.1,-.1],[.03,.05,.85],.014,M.graphite);pod.add(slit);
       }
-      const lamp=ellipsoid('luz navegação',[sx<0?-.25:.25,.13,.38],[.035,.055,.11],sx<0?M.navRed:M.navGreen,20);
+      const lamp=ellipsoid('luz navegação',[sx<0?-.52:.52,.28,.6],[.06,.1,.2],sx<0?M.navRed:M.navGreen,20);
       pod.add(lamp);
       prep(pod,'external',[sx*.55,.03,-.05]);
       strobes.push({mat:lamp.material,phase:sx<0?0:1.6,kind:'nav'});
@@ -1588,33 +1589,33 @@
 
     // Turbina EDF traseira em camadas: rotor, estator, pétalas e grade.
     // Posicionada para além do casco (popa), visível por fora.
-    const engine=new THREE.Group();engine.name='EDF vetorial de 12 fases';engine.position.set(0,.62,-3.15);
-    engine.add(cylinder('carcaça EDF',[0,0,0],.66,.6,.7,M.graphite,'z',72));
-    engine.add(torus('aro externo',[0,0,-.36],.62,.07,M.titanium));
-    engine.add(torus('halo quente',[0,0,-.4],.5,.03,M.amber));
-    engine.add(cylinder('fundo',[0,0,-.42],.46,.46,.03,M.rubber,'z',64));
-    // Bocal de exaustão cônico (titânio) + anel de reforço, mais realista.
-    engine.add(cylinder('bocal exaustão',[0,0,.4],.46,.66,.42,M.titanium,'z',56,true));
-    engine.add(torus('anel reforço',[0,0,.38],.46,.04,M.tungsten));
-    const fan=new THREE.Group();fan.name='Rotor cerâmico';fan.position.z=-.45;
-    fan.add(ellipsoid('hub',[0,0,0],[.2,.2,.11],M.gravium,28));
+    const engine=new THREE.Group();engine.name='EDF vetorial de 12 fases';engine.position.set(0,.6,-3.12);
+    engine.add(cylinder('carcaça EDF',[0,0,0],.5,.45,.62,M.graphite,'z',72));
+    engine.add(torus('aro externo',[0,0,-.32],.48,.055,M.titanium));
+    engine.add(torus('halo quente',[0,0,-.36],.4,.025,M.amber));
+    engine.add(cylinder('fundo',[0,0,-.38],.36,.36,.025,M.rubber,'z',64));
+    // Bocal de exaustão cônico (titânio) + anel de reforço.
+    engine.add(cylinder('bocal exaustão',[0,0,.34],.37,.5,.36,M.titanium,'z',56,true));
+    engine.add(torus('anel reforço',[0,0,.32],.37,.03,M.tungsten));
+    const fan=new THREE.Group();fan.name='Rotor cerâmico';fan.position.z=-.38;
+    fan.add(ellipsoid('hub',[0,0,0],[.16,.16,.09],M.gravium,28));
     for(let i=0;i<18;i++){
       const a=i/18*Math.PI*2;
-      const blade2=rounded('pá',[Math.cos(a)*.31,Math.sin(a)*.31,0],[.1,.4,.03],.016,M.titanium);
+      const blade2=rounded('pá',[Math.cos(a)*.26,Math.sin(a)*.26,0],[.085,.34,.026],.014,M.titanium);
       blade2.rotation.z=a-.38;fan.add(blade2);
     }
     engine.add(fan);engine.userData.fan=fan;
-    const stator2=new THREE.Group();stator2.name='Estator endireitador';stator2.position.z=.16;
+    const stator2=new THREE.Group();stator2.name='Estator endireitador';stator2.position.z=.14;
     for(let i=0;i<12;i++){
       const a=i/12*Math.PI*2;
-      const v=rounded('pá estator',[Math.cos(a)*.36,Math.sin(a)*.36,0],[.4,.06,.025],.01,M.copper);
+      const v=rounded('pá estator',[Math.cos(a)*.3,Math.sin(a)*.3,0],[.34,.05,.022],.009,M.copper);
       v.rotation.z=a+.22;stator2.add(v);
     }
-    stator2.add(ellipsoid('núcleo estator',[0,0,0],[.15,.15,.09],M.titanium,24));
+    stator2.add(ellipsoid('núcleo estator',[0,0,0],[.12,.12,.075],M.titanium,24));
     engine.add(stator2);
     for(let i=0;i<16;i++){ // pétalas do bocal
       const a=i/16*Math.PI*2;
-      const petal=rounded('pétala',[Math.cos(a)*.62,Math.sin(a)*.62,-.38],[.06,.18,.2],.014,M.graphite);
+      const petal=rounded('pétala',[Math.cos(a)*.48,Math.sin(a)*.48,-.32],[.05,.15,.17],.012,M.graphite);
       petal.rotation.z=a;petal.rotation.y=.16;engine.add(petal);
     }
     prep(engine,'engine',[0,.05,-1.2]);
@@ -1667,19 +1668,32 @@
     cabinDoor.add(rod('soleira',[-.39,-.5,-.02],[.39,-.5,-.02],.06,M.titanium));
     prep(cabinDoor,'external',[.28,.06,.05]);
 
-    // Rampa/escada de embarque na lateral direita, à proa. Grande e visível,
-    // desce da escotilha (larga) até o chão, fora do casco — o embarque fica
-    // sempre no extremo da cabine, longe do reator no mastro.
+    // Escada de embarque realista na lateral direita, à proa — do chão até o
+    // portal da cabine. Estrutura de duas longarinas inclinadas + degraus,
+    // corrimão contínuo, plataforma e perna de apoio apoiada no solo.
     const boardingRamp=new THREE.Group();boardingRamp.name='Rampa de embarque (proa)';
-    boardingRamp.position.set(1.56,.05,.5);
-    // Guarda-corpo e estrutura.
-    for(const sx of [-1,1])boardingRamp.add(rod('trilho',[sx*.42,.78,-.02],[sx*.42,-.55,.42],.02,M.titanium));
-    for(let i=0;i<9;i++){const t=i/8;const y=.75-t*1.3;const z=-.02+t*.46;const step=rounded('degrau',[0,y,z],[.68,.04,.2],.014,M.graphite);step.rotation.x=Math.sin(i)*.05;boardingRamp.add(step);}
-    // Plataforma superior, alinhada à soleira do portal de entrada.
-    boardingRamp.add(rounded('plataforma',[0,.75,.04],[.76,.035,.42],.025,M.titanium));
-    // Marquise / estrutura de proteção da entrada.
-    boardingRamp.add(rod('suporte A',[-.38,.82,-.02],[-.38,.3,.2],.016,M.titanium));
-    boardingRamp.add(rod('suporte B',[.38,.82,-.02],[.38,.3,.2],.016,M.titanium));
+    boardingRamp.position.set(1.6,.05,.6);
+    const rampTopY=.8, rampBottomY=-.55, rampZ0=-.55, rampZ1=.5;
+    // Longarinas laterais (stringers) inclinadas do chão até a plataforma.
+    for(const sx of [-1,1])boardingRamp.add(rod('longarina',[sx*.5,rampBottomY,rampZ0],[sx*.5,rampTopY,rampZ1],.05,M.titanium));
+    // Degraus horizontais reais ao longo da inclinação.
+    const nSteps=10;
+    for(let i=0;i<=nSteps;i++){
+      const t=i/nSteps;
+      const y=rampBottomY+t*(rampTopY-rampBottomY);
+      const z=rampZ0+t*(rampZ1-rampZ0);
+      const step=rounded('degrau',[0,y,z],[1.0,.045,.3],.02,M.graphite);
+      step.rotation.x=.06;boardingRamp.add(step);
+    }
+    // Plataforma superior na soleira do portal.
+    boardingRamp.add(rounded('plataforma',[0,rampTopY+.05,rampZ1],[1.1,.05,.4],.03,M.titanium));
+    // Corrimão contínuo nas duas laterais.
+    for(const sx of [-1,1]){
+      boardingRamp.add(rod('corrimão',[sx*.55,rampTopY+.5,rampZ1-.05],[sx*.55,rampBottomY+.9,rampZ0+.05],.022,M.titanium));
+      for(let i=0;i<=nSteps;i+=2){const t=i/nSteps;const y=rampBottomY+t*(rampTopY-rampBottomY);const z=rampZ0+t*(rampZ1-rampZ0);boardingRamp.add(rod('balústre',[sx*.52,y,rampZ0+t*(rampZ1-rampZ0)],[sx*.55,y+.5,rampZ0+t*(rampZ1-rampZ0)+.02],.012,M.titanium));}
+    }
+    // Perna de apoio no chão sob a plataforma.
+    boardingRamp.add(rod('perna de apoio',[-.4,rampTopY-.1,rampZ1],[.4,rampBottomY,rampZ1],.04,M.graphite));
     prep(boardingRamp,'external',[.18,-.2,.08]);
     for(const sx of [-1,1]){
       const strip=new THREE.Mesh(new THREE.PlaneGeometry(.56,.2),new THREE.MeshBasicMaterial({map:cautionStripes(),transparent:true,depthWrite:false,toneMapped:false}));
