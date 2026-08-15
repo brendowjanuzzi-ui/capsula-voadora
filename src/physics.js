@@ -1,4 +1,4 @@
-import { calculateFusionDrive } from './fusionDrive.js?v=17';
+import { calculateFusionDrive } from './fusionDrive.js?v=18';
 
 export const G_STANDARD = 9.80665;
 export const SEA_LEVEL_DENSITY = 1.225;
