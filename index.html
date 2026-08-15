@@ -699,10 +699,10 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=15';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=15';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=15';
-    import { sizeCapsule } from './src/sizing.js?v=15';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=16';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=16';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=16';
+    import { sizeCapsule } from './src/sizing.js?v=16';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2469,8 +2469,11 @@
       }
       } catch (err) { /* telemetria orbital/fusão é opcional — nunca quebra o painel */ }
       // Tripulação e IA (sempre visível, independente do modo de propulsão).
-      setText('aiCabin','ativo · rota e monitoramento');
-      setText('aiReactor',p.performance.fusion?numberFormatter(p.performance.fusion.specificImpulseS,0)+'·'+(p.performance.fusion.burnTimeMinutes|0)+'min':'em espera (EDF)');
+      try {
+        setText('aiCabin','ativo · rota e monitoramento');
+        const fdr=physics?.performance?.fusion;
+        setText('aiReactor',fdr?numberFormatter(fdr.specificImpulseS,0)+'·'+(fdr.burnTimeMinutes|0)+'min':'em espera (EDF)');
+      } catch (err) { /* IA opcional */ }
       updateTelemetryTrace(p.resultantAccelerationMs2);
 
       // Dimensionamento físico (tamanho ideal de cada acessório).
