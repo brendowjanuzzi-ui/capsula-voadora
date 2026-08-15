@@ -699,10 +699,10 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=16';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=16';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=16';
-    import { sizeCapsule } from './src/sizing.js?v=16';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=17';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=17';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=17';
+    import { sizeCapsule } from './src/sizing.js?v=17';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1652,9 +1652,10 @@
     }
     prep(engine,'engine',[0,.05,-1.2]);
 
-    // Estabilizadores traseiros articulados (recuados junto ao EDF).
+    // Estabilizadores traseiros articulados (recuados junto ao EDF), elevados
+    // para não encontrar os pods laterais.
     for(const sx of [-1,1]){
-      const a=[sx*.82,.62,-2.3], b=[sx*1.9,.78,-3.05];
+      const a=[sx*.82,.7,-2.3], b=[sx*2.05,1.15,-3.1];
       prep(rod('Braço estabilizador',a,b,.07,M.gravium),'external',[sx*.35,.12,-.45]);
       prep(ellipsoid('Micropropulsor',[...b],[.24,.24,.3],M.graphite,32),'external',[sx*.38,.14,-.5]);
       prep(torus('Halo estabilizador',[b[0],b[1],b[2]-.18],.16,.03,M.amber),'external',[sx*.4,.14,-.55]);
@@ -1795,6 +1796,12 @@
       cockpit.add(rounded('pedal',[sx*.18,.52,1.18],[.14,.03,.2],.02,M.graphite));
     }
     for(let i=0;i<7;i++){const led=ellipsoid('controle',[(i-3)*.12,.975,1.145],[.018,.018,.018],i===2?M.amber:M.cyan,12);cockpit.add(led)}
+    // Luz de cabine: ilumina o interior tripulado (visão interna não escura).
+    const cabinLight=new THREE.PointLight(0xbfe9ff,22,5,2);
+    cabinLight.position.set(0,1.9,1.0);cockpit.add(cabinLight);
+    // Luz de painel (tom quente) para leitura das telas.
+    const panelLight=new THREE.PointLight(0xffd9a0,14,4,2);
+    panelLight.position.set(0,1.1,1.2);cockpit.add(panelLight);
     prep(cockpit,'internal',[0,.55,.56]);
 
     const cage=new THREE.Group();cage.name='Berço estrutural em carbono';
