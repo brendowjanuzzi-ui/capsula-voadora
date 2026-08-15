@@ -699,10 +699,10 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=19';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=19';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=19';
-    import { sizeCapsule } from './src/sizing.js?v=19';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=20';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=20';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=20';
+    import { sizeCapsule } from './src/sizing.js?v=20';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1759,24 +1759,24 @@
     // cintos, painel de telas e núcleo de IA de cabine. A cápsula alongada acomoda.
     const cockpit=new THREE.Group();cockpit.name='Habitáculo pressurizado';
     // Assento do piloto (central).
-    cockpit.add(rounded('assento piloto',[0,.72,.26],[.56,.18,.7],.12,M.leather));
-    const pback=rounded('encosto piloto',[0,1.04,-.13],[.55,.74,.15],.12,M.leather);pback.rotation.x=-.18;cockpit.add(pback);
-    cockpit.add(rounded('apoio de cabeça piloto',[0,1.45,-.2],[.38,.24,.17],.09,M.leather));
-    // Assento do copiloto (direita, ligeiramente recuado) — folga no canopy alargado.
-    cockpit.add(rounded('assento copiloto',[.62,.7,.34],[.56,.17,.64],.11,M.leather));
-    const cback=rounded('encosto copiloto',[.62,1.0,-.05],[.55,.68,.14],.11,M.leather);cback.rotation.x=-.18;cockpit.add(cback);
-    cockpit.add(rounded('apoio de cabeça copiloto',[.62,1.4,-.13],[.36,.22,.16],.08,M.leather));
-    // Assento do passageiro (esquerda, mais atrás) — folga no canopy alargado.
-    cockpit.add(rounded('assento passageiro',[-.62,.7,.28],[.56,.17,.64],.11,M.leather));
-    const sback=rounded('encosto passageiro',[-.62,1.0,-.01],[.55,.68,.14],.11,M.leather);sback.rotation.x=-.18;cockpit.add(sback);
-    cockpit.add(rounded('apoio de cabeça passageiro',[-.62,1.4,-.09],[.36,.22,.16],.08,M.leather));
+    cockpit.add(rounded('assento piloto',[0,.72,.26],[.5,.18,.66],.12,M.leather));
+    const pback=rounded('encosto piloto',[0,1.04,-.13],[.49,.7,.15],.12,M.leather);pback.rotation.x=-.18;cockpit.add(pback);
+    cockpit.add(rounded('apoio de cabeça piloto',[0,1.45,-.2],[.34,.22,.17],.09,M.leather));
+    // Assento do copiloto (direita, recuado) — folga clara no canopy.
+    cockpit.add(rounded('assento copiloto',[.48,.7,.34],[.44,.17,.6],.11,M.leather));
+    const cback=rounded('encosto copiloto',[.48,1.0,-.05],[.43,.64,.14],.11,M.leather);cback.rotation.x=-.18;cockpit.add(cback);
+    cockpit.add(rounded('apoio de cabeça copiloto',[.48,1.4,-.13],[.3,.2,.15],.08,M.leather));
+    // Assento do passageiro (esquerda, mais atrás) — folga clara no canopy.
+    cockpit.add(rounded('assento passageiro',[-.48,.7,.28],[.44,.17,.6],.11,M.leather));
+    const sback=rounded('encosto passageiro',[-.48,1.0,-.01],[.43,.64,.14],.11,M.leather);sback.rotation.x=-.18;cockpit.add(sback);
+    cockpit.add(rounded('apoio de cabeça passageiro',[-.48,1.4,-.09],[.3,.2,.15],.08,M.leather));
     // Apoios laterais e cintos para cada assento.
     for(const sx of [-1,1]){
       cockpit.add(rounded('apoio lateral',[sx*.34,.83,.18],[.1,.1,.5],.05,M.leather));
       const strap=tube('cinto',[[sx*.22,1.39,-.12],[sx*.17,1.05,.02],[sx*.08,.8,.26]],.025,M.amber,false,38);cockpit.add(strap);
     }
-    for(const sx of [-.62,.62]){
-      const strap=tube('cinto lateral',[[sx+.16,1.32,-.02],[sx+.12,1.0,.08],[sx+.05,.78,.28]],.02,M.amber,false,38);cockpit.add(strap);
+    for(const sx of [-.48,.48]){
+      const strap=tube('cinto lateral',[[sx+.14,1.32,-.02],[sx+.1,1.0,.08],[sx+.04,.78,.28]],.02,M.amber,false,38);cockpit.add(strap);
     }
     // Painel de telas e HUD (pilotagem por câmeras).
     const dash=rounded('painel',[0,.9,.98],[1.6,.12,.34],.08,M.graphite);dash.rotation.x=-.12;cockpit.add(dash);

@@ -18,8 +18,8 @@
  *   D+³He tanks from liquid densities, radiators from Stefan-Boltzmann.
  */
 
-import { HELIUM_BOILING_K } from './thermalProtection.js?v=19';
-import { G_STANDARD } from './physics.js?v=19';
+import { HELIUM_BOILING_K } from './thermalProtection.js?v=20';
+import { G_STANDARD } from './physics.js?v=20';
 
 // --- Reference material / system densities -----------------------------
 export const DENSITIES = Object.freeze({
