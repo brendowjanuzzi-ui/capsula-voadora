@@ -663,9 +663,9 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=8';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=8';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=8';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=9';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=9';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=9';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1435,7 +1435,7 @@
       const pts=[];
       for(let i=0;i<=26;i++){
         const a=-.45+i/26*1.85*Math.PI*.82;
-        const rx=1.42*Math.cos(a),y=.82+.455*Math.sin(a),rz=1.84*Math.cos(a);
+        const rx=1.42*Math.cos(a),y=.82+.455*Math.sin(a),rz=2.5*Math.cos(a);
         pts.push([rx*Math.sin(phi),y,rz*Math.cos(phi)-.02]);
       }
       prep(tube('Junta meridiana',pts,.0048,M.seam,false,64),'shell',[0,.18,.02]);
@@ -1459,9 +1459,9 @@
     boltMesh.instanceMatrix.needsUpdate=true;
     fasteners.add(boltMesh);
     prep(fasteners,'external',[0,.08,.09]);
-    prep(ellipsoid('Proa reforçada',[0,.59,1.72],[.76,.36,.35],M.hullLight,64),'external',[0,0,.32]);
-    prep(rounded('Placa dorsal',[0,1.28,-.48],[.76,.045,.92],.08,M.carbon),'external',[0,.28,-.08]);
-    prep(rounded('Espinha dorsal',[0,1.44,-.84],[.16,.1,1.15],.05,M.hullLight),'external',[0,.3,-.12]);
+    prep(ellipsoid('Proa reforçada',[0,.59,2.1],[.76,.36,.5],M.hullLight,64),'external',[0,0,.35]);
+    prep(rounded('Placa dorsal',[0,1.28,-.6],[.76,.045,1.4],.08,M.carbon),'external',[0,.28,-.08]);
+    prep(rounded('Espinha dorsal',[0,1.44,-.9],[.16,.1,1.7],.05,M.hullLight),'external',[0,.3,-.12]);
 
     // Suíte de sensores: domo EO/IR, pitots, antenas, radar de nariz.
     const sensors=new THREE.Group();sensors.name='Suíte de sensores ASEA';
@@ -1562,12 +1562,20 @@
     }
     prep(ringStruts,'levitation',[0,-.42,0]);
 
+    // Carenagem de transição cônica entre o casco e a turbina da popa,
+    // dando a silhueta aerodinâmica de dirigível com motor na traseira.
+    prep(cylinder('Carenagem de popa',[0,.58,-2.78],.5,.6,.5,M.hullLight,'z',72,true),'external',[0,0,-.35]);
+
     // Turbina EDF traseira em camadas: rotor, estator, pétalas e grade.
-    const engine=new THREE.Group();engine.name='EDF vetorial de 12 fases';engine.position.set(0,.58,-1.88);
+    // Posicionada para além do casco (popa), visível por fora.
+    const engine=new THREE.Group();engine.name='EDF vetorial de 12 fases';engine.position.set(0,.58,-3.05);
     engine.add(cylinder('carcaça EDF',[0,0,0],.5,.46,.58,M.graphite,'z',72));
     engine.add(torus('aro externo',[0,0,-.3],.48,.052,M.titanium));
     engine.add(torus('halo quente',[0,0,-.315],.38,.022,M.amber));
     engine.add(cylinder('fundo',[0,0,-.325],.34,.34,.025,M.rubber,'z',64));
+    // Bocal de exaustão cônico (titânio) + anel de reforço, mais realista.
+    engine.add(cylinder('bocal exaustão',[0,0,.34],.36,.5,.34,M.titanium,'z',56,true));
+    engine.add(torus('anel reforço',[0,0,.3],.36,.03,M.tungsten));
     const fan=new THREE.Group();fan.name='Rotor cerâmico';fan.position.z=-.35;
     fan.add(ellipsoid('hub',[0,0,0],[.14,.14,.09],M.gravium,28));
     for(let i=0;i<18;i++){
@@ -1589,11 +1597,11 @@
       const petal=rounded('pétala',[Math.cos(a)*.47,Math.sin(a)*.47,-.3],[.045,.14,.16],.012,M.graphite);
       petal.rotation.z=a;petal.rotation.y=.16;engine.add(petal);
     }
-    prep(engine,'engine',[0,.05,-.7]);
+    prep(engine,'engine',[0,.05,-1.2]);
 
-    // Estabilizadores traseiros articulados.
+    // Estabilizadores traseiros articulados (recuados junto ao EDF).
     for(const sx of [-1,1]){
-      const a=[sx*.82,.64,-1.32], b=[sx*1.72,.76,-2.03];
+      const a=[sx*.82,.64,-2.3], b=[sx*1.72,.76,-3.0];
       prep(rod('Braço estabilizador',a,b,.052,M.gravium),'external',[sx*.35,.12,-.45]);
       prep(ellipsoid('Micropropulsor',[...b],[.14,.14,.18],M.graphite,32),'external',[sx*.38,.14,-.5]);
       prep(torus('Halo estabilizador',[b[0],b[1],b[2]-.15],.1,.018,M.amber),'external',[sx*.4,.14,-.55]);
@@ -1602,7 +1610,7 @@
 
     // Linhas de fluxo luminescentes nas laterais.
     for(const sx of [-1,1]){
-      prep(tube('Costura lateral',[[sx*1.33,.68,1.1],[sx*1.47,.64,.05],[sx*1.23,.61,-1.22]],.008,M.cyan,false,72),'external',[sx*.16,0,0]);
+      prep(tube('Costura lateral',[[sx*1.33,.68,1.7],[sx*1.47,.64,.05],[sx*1.23,.61,-2.3]],.008,M.cyan,false,72),'external',[sx*.16,0,0]);
     }
 
     // Trem de pouso retrátil de emergência (quatro patas amortecidas).
@@ -1718,8 +1726,8 @@
      * plasma preso, radiadores de alta temperatura e blindagem de nêutrons.
      * Fica visível quando o impulso de fusão está selecionado. */
     const fusionHardware=new THREE.Group();fusionHardware.name='Reator de fusão D+³He (confinamento e blindagem)';
-    // Popa: bem atrás, no extremo oposto à cabine (proa). O mastro conecta.
-    fusionHardware.position.set(0,.56,-2.35);
+    // Popa: logo à frente do EDF, no extremo oposto à cabine (proa).
+    fusionHardware.position.set(0,.56,-2.62);
     // 1) Garrafa magnética: bobinas supercondutoras REBCO (anéis toroidais).
     const fusionCoils=new THREE.Group();fusionCoils.name='Bobinas REBCO de confinamento';
     for(const z of [-.55,-.33,-.11,.11,.33,.55])fusionCoils.add(torus('bobina REBCO',[0,0,z],.42,.04,M.magnetCoil));
@@ -2617,9 +2625,9 @@
       canopy:hotspot('Involucro blindado','pilotagem por telas · sem janelas',[.75,1.68,.72]),
       core:hotspot('Núcleo toroidal','720 kW · FM 0,72',[.52,.87,-1.02]),
       ring:hotspot('Anel Gravium-7','Aeq 4,40 m²',[-1.32,-.2,.78]),
-      edf:hotspot('EDF cerâmico','estator 12 pás',[.56,.74,-2.2]),
+      edf:hotspot('EDF cerâmico','estator 12 pás',[.56,.74,-3.05]),
       sensors:hotspot('Suíte ASEA','EO/IR + pitot digital',[.62,.62,2.2]),
-      reactor:hotspot('Reator de fusão','D+³He · popa · isolado no mastro',[.7,.9,-2.35]),
+      reactor:hotspot('Reator de fusão','D+³He · popa · isolado no mastro',[.7,.9,-2.62]),
       boarding:hotspot('Embarque','portal da cabine · proa',[1.72,.9,.5])
     };
 
