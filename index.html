@@ -682,10 +682,10 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=10';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=10';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=10';
-    import { sizeCapsule } from './src/sizing.js?v=10';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=11';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=11';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=11';
+    import { sizeCapsule } from './src/sizing.js?v=11';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1584,37 +1584,37 @@
 
     // Carenagem de transição cônica entre o casco e a turbina da popa,
     // dando a silhueta aerodinâmica de dirigível com motor na traseira.
-    prep(cylinder('Carenagem de popa',[0,.58,-2.78],.5,.6,.5,M.hullLight,'z',72,true),'external',[0,0,-.35]);
+    prep(cylinder('Carenagem de popa',[0,.58,-2.78],.62,.78,.7,M.hullLight,'z',72,true),'external',[0,0,-.35]);
 
     // Turbina EDF traseira em camadas: rotor, estator, pétalas e grade.
     // Posicionada para além do casco (popa), visível por fora.
-    const engine=new THREE.Group();engine.name='EDF vetorial de 12 fases';engine.position.set(0,.58,-3.05);
-    engine.add(cylinder('carcaça EDF',[0,0,0],.5,.46,.58,M.graphite,'z',72));
-    engine.add(torus('aro externo',[0,0,-.3],.48,.052,M.titanium));
-    engine.add(torus('halo quente',[0,0,-.315],.38,.022,M.amber));
-    engine.add(cylinder('fundo',[0,0,-.325],.34,.34,.025,M.rubber,'z',64));
+    const engine=new THREE.Group();engine.name='EDF vetorial de 12 fases';engine.position.set(0,.62,-3.15);
+    engine.add(cylinder('carcaça EDF',[0,0,0],.66,.6,.7,M.graphite,'z',72));
+    engine.add(torus('aro externo',[0,0,-.36],.62,.07,M.titanium));
+    engine.add(torus('halo quente',[0,0,-.4],.5,.03,M.amber));
+    engine.add(cylinder('fundo',[0,0,-.42],.46,.46,.03,M.rubber,'z',64));
     // Bocal de exaustão cônico (titânio) + anel de reforço, mais realista.
-    engine.add(cylinder('bocal exaustão',[0,0,.34],.36,.5,.34,M.titanium,'z',56,true));
-    engine.add(torus('anel reforço',[0,0,.3],.36,.03,M.tungsten));
-    const fan=new THREE.Group();fan.name='Rotor cerâmico';fan.position.z=-.35;
-    fan.add(ellipsoid('hub',[0,0,0],[.14,.14,.09],M.gravium,28));
+    engine.add(cylinder('bocal exaustão',[0,0,.4],.46,.66,.42,M.titanium,'z',56,true));
+    engine.add(torus('anel reforço',[0,0,.38],.46,.04,M.tungsten));
+    const fan=new THREE.Group();fan.name='Rotor cerâmico';fan.position.z=-.45;
+    fan.add(ellipsoid('hub',[0,0,0],[.2,.2,.11],M.gravium,28));
     for(let i=0;i<18;i++){
       const a=i/18*Math.PI*2;
-      const blade2=rounded('pá',[Math.cos(a)*.235,Math.sin(a)*.235,0],[.08,.31,.024],.014,M.titanium);
+      const blade2=rounded('pá',[Math.cos(a)*.31,Math.sin(a)*.31,0],[.1,.4,.03],.016,M.titanium);
       blade2.rotation.z=a-.38;fan.add(blade2);
     }
     engine.add(fan);engine.userData.fan=fan;
-    const stator2=new THREE.Group();stator2.name='Estator endireitador';stator2.position.z=.12;
+    const stator2=new THREE.Group();stator2.name='Estator endireitador';stator2.position.z=.16;
     for(let i=0;i<12;i++){
       const a=i/12*Math.PI*2;
-      const v=rounded('pá estator',[Math.cos(a)*.27,Math.sin(a)*.27,0],[.3,.05,.02],.008,M.copper);
+      const v=rounded('pá estator',[Math.cos(a)*.36,Math.sin(a)*.36,0],[.4,.06,.025],.01,M.copper);
       v.rotation.z=a+.22;stator2.add(v);
     }
-    stator2.add(ellipsoid('núcleo estator',[0,0,0],[.11,.11,.07],M.titanium,24));
+    stator2.add(ellipsoid('núcleo estator',[0,0,0],[.15,.15,.09],M.titanium,24));
     engine.add(stator2);
     for(let i=0;i<16;i++){ // pétalas do bocal
       const a=i/16*Math.PI*2;
-      const petal=rounded('pétala',[Math.cos(a)*.47,Math.sin(a)*.47,-.3],[.045,.14,.16],.012,M.graphite);
+      const petal=rounded('pétala',[Math.cos(a)*.62,Math.sin(a)*.62,-.38],[.06,.18,.2],.014,M.graphite);
       petal.rotation.z=a;petal.rotation.y=.16;engine.add(petal);
     }
     prep(engine,'engine',[0,.05,-1.2]);
@@ -1633,16 +1633,18 @@
       prep(tube('Costura lateral',[[sx*1.33,.68,1.7],[sx*1.47,.64,.05],[sx*1.23,.61,-2.3]],.008,M.cyan,false,72),'external',[sx*.16,0,0]);
     }
 
-    // Trem de pouso retrátil de emergência (quatro patas amortecidas).
+    // Trem de pouso retrátil (quatro patas amortecidas tocando o chão),
+    // distribuídas na proa e na popa do casco alongado.
     for(let i=0;i<4;i++){
       const a=i/4*Math.PI*2+Math.PI/4;
       const skid=new THREE.Group();skid.name='Pata de pouso';
       const ax=Math.cos(a),az=Math.sin(a);
-      skid.add(rod('amortecedor',[ax*.82,.16,az*.86],[ax*1.06,-.34,az*1.1],.028,M.titanium));
-      skid.add(rod('braço',[ax*.62,.1,az*.66],[ax*.9,-.3,az*.94],.02,M.graphite));
-      const foot=ellipsoid('sapata',[ax*1.08,-.36,az*1.12],[.09,.035,.13],M.rubber,20);
+      const baseZ=az<0?-2.3:2.1; // patas traseiras e dianteiras (não no meio)
+      skid.add(rod('amortecedor',[ax*.85,.6,baseZ],[ax*1.05,-.42,baseZ+az*.15],.03,M.titanium));
+      skid.add(rod('braço',[ax*.7,.5,baseZ],[ax*.95,-.42,baseZ+az*.12],.022,M.graphite));
+      const foot=ellipsoid('sapata',[ax*1.05,-.5,baseZ+az*.16],[.1,.05,.14],M.rubber,20);
       foot.rotation.y=-a;skid.add(foot);
-      prep(skid,'external',[ax*.3,-.24,az*.3]);
+      prep(skid,'external',[ax*.3,-.3,az*.35]);
     }
 
     // Decalques técnicos independentes mantêm nitidez sobre os painéis.
@@ -1777,7 +1779,13 @@
       for(const z of [.3,1.2,2.1,2.9])mastBoom.add(rod('travessa',[sx*.5,.38,z],[sx*.5,.62,z],.022,M.titanium));
     }
     fusionHardware.add(mastBoom);
-    // 9) Halo do plasma (pulsa na animação).
+    // 9) Tanques criogênicos de propelente (D2 e ³He), dimensionados em ~0,4-0,45 m.
+    const cryoTanks=new THREE.Group();cryoTanks.name='Tanques criogênicos (D2 + ³He)';
+    cryoTanks.add(ellipsoid('tanque D2',[.34,.72,-.42],[.24,.24,.3],M.titanium,32));
+    cryoTanks.add(ellipsoid('tanque ³He',[-.34,.72,-.42],[.22,.22,.26],M.graphite,32));
+    for(const sx of [-1,1])cryoTanks.add(torus('banda tanque',[sx*.34,.72,-.42],.22,.02,M.carbon));
+    fusionHardware.add(cryoTanks);
+    // 10) Halo do plasma (pulsa na animação).
     const fusionGlow=new THREE.Mesh(new THREE.SphereGeometry(.55,24,18),new THREE.MeshBasicMaterial({color:0xff7a30,transparent:true,opacity:.12,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
     fusionGlow.name='halo plasma';fusionGlow.position.set(0,0,.05);fusionHardware.add(fusionGlow);
     prep(fusionHardware,'reactor',[0,.1,-.62]);
@@ -2665,7 +2673,7 @@
       canopy:hotspot('Involucro blindado','pilotagem por telas · sem janelas',[.75,1.68,.72]),
       core:hotspot('Núcleo toroidal','720 kW · FM 0,72',[.52,.87,-1.02]),
       ring:hotspot('Anel Gravium-7','Aeq 4,40 m²',[-1.32,-.2,.78]),
-      edf:hotspot('EDF cerâmico','estator 12 pás',[.56,.74,-3.05]),
+      edf:hotspot('EDF cerâmico','estator 12 pás',[.66,.82,-3.15]),
       sensors:hotspot('Suíte ASEA','EO/IR + pitot digital',[.62,.62,2.2]),
       reactor:hotspot('Reator de fusão','D+³He · popa · isolado no mastro',[.7,.9,-2.62]),
       boarding:hotspot('Embarque','portal da cabine · proa',[1.72,.9,.5])
