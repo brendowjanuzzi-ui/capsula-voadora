@@ -101,7 +101,7 @@ Uma nave de fusão D+³He impõe uma arquitetura que nada tem a ver com as cabin
 - **IA no comando do reator:** o plasma é instável em escala de **milissegundos**; um humano (≈200 ms de reação) não controla os ímãs a tempo. Uma **IA autônoma** ajusta o campo magnético em **0,5 ms** (dezenas de milhares de correções/min), enquanto os humanos decidem rotas e destinos.
 - **Circuito de hélio líquido:** o hélio se liquefaz a **−269 °C** e corre por tubos blindados nas bobinas REBCO, mantendo-as supercondutoras. Se o He falhar, o campo colapsa, o plasma encosta na parede e a nave derrete. O modelo mostra as linhas criogênicas azuis e o reservatório.
 
-O equilíbrio é de extremos: o combustível mais quente do universo no motor, resfriado pelo líquido mais frio da estrutura, com a tripulação protegida por distância, blindagem e telas.
+O equilíbrio é de extremos: o combustível mais quente do universo no motor, resfriado pelo líquido mais frio da estrutura, com a tripulação protegida por distância, blindagem e telas. No painel, um **diagrama de escala cabine→reator** (SVG) desenha a arquitetura de mastro em escala real e é atualizado em tempo real pelo controle **Distância cabine→reator** (4–40 m), evidenciando como a exposição cai com o inverso do quadrado.
 
 ### Missão orbital · ponto a ponto (uso recomendado do impulso)
 
