@@ -586,6 +586,19 @@
         <div class="ramp-toggle"><button id="rampToggle" class="drive active">Escada estendida (solo)</button></div>
       </section>
 
+      <section class="eng-section" aria-label="Tripulação e IA">
+        <div class="eng-section-title">Tripulação, IA e sensores</div>
+        <div class="metric-grid">
+          <div class="metric"><span>assentos</span><b><em>3</em> lugares</b></div>
+          <div class="metric"><span>tripulação</span><b><em>piloto + 2</em> ocupantes</b></div>
+          <div class="metric"><span>IA de cabine</span><b><em id="aiCabin">—</em></b></div>
+          <div class="metric"><span>IA do reator</span><b><em id="aiReactor">—</em> ms</b></div>
+          <div class="metric"><span>câmeras externas</span><b><em>9</em> EO/IR</b></div>
+          <div class="metric"><span>piloto</span><b><em>telas</em> (sem janelas)</b></div>
+        </div>
+        <p class="drive-note">Cabine para <b>3 ocupantes</b> (piloto central + copiloto + passageiro). Uma <b>IA de cabine</b> assiste no planejamento de rota e monitora sistemas; a <b>IA do reator</b> controla os ímãs em milissegundos. A visão é por <b>9 câmeras EO/IR</b> externas projetadas nas telas.</p>
+      </section>
+
       <section class="eng-section" aria-label="Dimensionamento físico">
         <div class="eng-section-title">Dimensionamento físico (tamanho ideal)</div>
         <div class="metric-grid">
@@ -686,10 +699,10 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=14';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=14';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=14';
-    import { sizeCapsule } from './src/sizing.js?v=14';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=15';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=15';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=15';
+    import { sizeCapsule } from './src/sizing.js?v=15';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1514,6 +1527,21 @@
     // Fita de sensores de câmera externa (EO/IR) ao longo do nariz.
     const camStrip=tube('Barra de câmeras externas',[[-.7,1.05,1.9],[-.2,1.12,2.2],[.2,1.12,2.2],[.7,1.05,1.9]],.028,M.titanium,false,48);
     prep(camStrip,'external',[0,.44,.22]);
+    // Câmeras externas de pilotagem (EO/IR) ao longo do casco — lentes visíveis.
+    const externalCams=new THREE.Group();externalCams.name='Câmeras de pilotagem externa';
+    const camPositions=[
+      [0,1.15,2.3],[1.1,.95,1.9],[-1.1,.95,1.9],  // proa / dianteiras
+      [1.35,.9,.4],[-1.35,.9,.4],                  // laterais meio
+      [1.2,.9,-1.6],[-1.2,.9,-1.6],                // laterais traseiras
+      [.5,1.05,-2.5],[-.5,1.05,-2.5]               // traseiras
+    ];
+    for(const [cx,cy,cz] of camPositions){
+      const cam=new THREE.Group();cam.position.set(cx,cy,cz);
+      cam.add(ellipsoid('câmera',[0,0,0],[.055,.055,.12],M.graphite,16));
+      cam.add(ellipsoid('lente',[0,0,.07],[.03,.03,.03],M.glassDark,12));
+      externalCams.add(cam);
+    }
+    prep(externalCams,'external',[0,.2,.15]);
     prep(tube('Vedação interna',ringPath(.855,1.04,1.16,.34,84),.02,M.rubber,true,110),'internal',[0,.4,.2]);
     for(const sx of [-1,1]){
       const rail=tube('Trilho lateral do canopy',[[sx*.73,1.03,1.07],[sx*.9,1.21,.35],[sx*.65,1.09,-.58]],.023,M.titanium,false,64);
@@ -1726,25 +1754,47 @@
     prep(beaconGroup,'external',[0,.36,-.16]);
     strobes.push({mat:beaconGroup.children[0].material,phase:0,kind:'beacon'});
 
-    // Interior monolugar: banco, cintos, painel holográfico e comandos.
+    // Interior tripulado: três assentos (piloto central + copiloto + passageiro),
+    // cintos, painel de telas e núcleo de IA de cabine. A cápsula alongada acomoda.
     const cockpit=new THREE.Group();cockpit.name='Habitáculo pressurizado';
-    cockpit.add(rounded('assento',[0,.72,.26],[.62,.18,.72],.12,M.leather));
-    const back=rounded('encosto',[0,1.04,-.13],[.61,.74,.16],.12,M.leather);back.rotation.x=-.18;cockpit.add(back);
-    cockpit.add(rounded('apoio de cabeça',[0,1.45,-.2],[.4,.23,.18],.09,M.leather));
+    // Assento do piloto (central).
+    cockpit.add(rounded('assento piloto',[0,.72,.26],[.62,.18,.72],.12,M.leather));
+    const pback=rounded('encosto piloto',[0,1.04,-.13],[.61,.74,.16],.12,M.leather);pback.rotation.x=-.18;cockpit.add(pback);
+    cockpit.add(rounded('apoio de cabeça piloto',[0,1.45,-.2],[.4,.23,.18],.09,M.leather));
+    // Assento do copiloto (direita, ligeiramente recuado).
+    cockpit.add(rounded('assento copiloto',[.72,.7,.34],[.6,.17,.66],.11,M.leather));
+    const cback=rounded('encosto copiloto',[.72,1.0,-.05],[.59,.68,.14],.11,M.leather);cback.rotation.x=-.18;cockpit.add(cback);
+    cockpit.add(rounded('apoio de cabeça copiloto',[.72,1.4,-.13],[.38,.21,.16],.08,M.leather));
+    // Assento do passageiro (esquerda, mais atrás).
+    cockpit.add(rounded('assento passageiro',[-.72,.7,.28],[.6,.17,.66],.11,M.leather));
+    const sback=rounded('encosto passageiro',[-.72,1.0,-.01],[.59,.68,.14],.11,M.leather);sback.rotation.x=-.18;cockpit.add(sback);
+    cockpit.add(rounded('apoio de cabeça passageiro',[-.72,1.4,-.09],[.38,.21,.16],.08,M.leather));
+    // Apoios laterais e cintos para cada assento.
     for(const sx of [-1,1]){
       cockpit.add(rounded('apoio lateral',[sx*.34,.83,.18],[.1,.1,.5],.05,M.leather));
       const strap=tube('cinto',[[sx*.22,1.39,-.12],[sx*.17,1.05,.02],[sx*.08,.8,.26]],.025,M.amber,false,38);cockpit.add(strap);
     }
-    const dash=rounded('painel',[0,.9,.98],[.92,.12,.34],.08,M.graphite);dash.rotation.x=-.12;cockpit.add(dash);
-    const screen=rounded('HUD',[0,1.03,.87],[.62,.016,.22],.035,M.screen);screen.rotation.x=-.54;cockpit.add(screen);
-    const combiner=new THREE.Mesh(new THREE.PlaneGeometry(.4,.24),new THREE.MeshPhysicalMaterial({color:0x8afff6,transparent:true,opacity:.16,roughness:.05,metalness:0,side:THREE.DoubleSide}));
+    for(const sx of [-.72,.72]){
+      const strap=tube('cinto lateral',[[sx+.2,1.35,-.02],[sx+.15,1.0,.08],[sx+.06,.78,.3]],.022,M.amber,false,38);cockpit.add(strap);
+    }
+    // Painel de telas e HUD (pilotagem por câmeras).
+    const dash=rounded('painel',[0,.9,.98],[1.6,.12,.34],.08,M.graphite);dash.rotation.x=-.12;cockpit.add(dash);
+    const screen=rounded('HUD principal',[0,1.03,.87],[1.2,.016,.22],.035,M.screen);screen.rotation.x=-.54;cockpit.add(screen);
+    const combiner=new THREE.Mesh(new THREE.PlaneGeometry(.8,.24),new THREE.MeshPhysicalMaterial({color:0x8afff6,transparent:true,opacity:.16,roughness:.05,metalness:0,side:THREE.DoubleSide}));
     combiner.name='combiner HUD';combiner.position.set(0,1.22,1.02);combiner.rotation.x=-.35;cockpit.add(combiner);
+    // Núcleo de IA de cabine (assistente de voo / planejamento de rota).
+    const cabinAI=ellipsoid('IA de cabine',[0,1.5,.62],[.14,.14,.14],M.aiCore,20);
+    cabinAI.name='IA de cabine';cockpit.add(cabinAI);
+    cockpit.add(torus('anel IA',[0,1.5,.62],.2,.02,M.cyan));
+    // Comandos (manche central + manches laterais).
+    cockpit.add(rod('manche central',[0,.9,.6],[0,1.12,.5],.022,M.graphite));
+    cockpit.add(ellipsoid('empunhadura central',[0,1.12,.5],[.05,.06,.05],M.rubber,16));
     for(const sx of [-1,1]){
       cockpit.add(rod('manche',[sx*.3,.82,.62],[sx*.24,1.0,.5],.018,M.graphite));
       cockpit.add(ellipsoid('empunhadura',[sx*.24,1.0,.5],[.035,.05,.035],M.rubber,16));
       cockpit.add(rounded('pedal',[sx*.18,.52,1.18],[.14,.03,.2],.02,M.graphite));
     }
-    for(let i=0;i<5;i++){const led=ellipsoid('controle',[(i-2)*.11,.975,1.145],[.018,.018,.018],i===2?M.amber:M.cyan,12);cockpit.add(led)}
+    for(let i=0;i<7;i++){const led=ellipsoid('controle',[(i-3)*.12,.975,1.145],[.018,.018,.018],i===2?M.amber:M.cyan,12);cockpit.add(led)}
     prep(cockpit,'internal',[0,.55,.56]);
 
     const cage=new THREE.Group();cage.name='Berço estrutural em carbono';
@@ -2418,6 +2468,9 @@
         }
       }
       } catch (err) { /* telemetria orbital/fusão é opcional — nunca quebra o painel */ }
+      // Tripulação e IA (sempre visível, independente do modo de propulsão).
+      setText('aiCabin','ativo · rota e monitoramento');
+      setText('aiReactor',p.performance.fusion?numberFormatter(p.performance.fusion.specificImpulseS,0)+'·'+(p.performance.fusion.burnTimeMinutes|0)+'min':'em espera (EDF)');
       updateTelemetryTrace(p.resultantAccelerationMs2);
 
       // Dimensionamento físico (tamanho ideal de cada acessório).
@@ -2701,7 +2754,7 @@
       const o=new CSS2DObject(el);o.position.set(...pos);labelRoot.add(o);return o;
     }
     const hotspots={
-      canopy:hotspot('Involucro blindado','pilotagem por telas · sem janelas',[.75,1.68,.72]),
+      canopy:hotspot('Cabine tripulada','3 assentos · IA · telas sem janelas',[.75,1.68,.72]),
       core:hotspot('Núcleo toroidal','720 kW · FM 0,72',[.52,.87,-1.02]),
       ring:hotspot('Anel Gravium-7','Aeq 4,40 m²',[-1.32,-.2,.78]),
       edf:hotspot('EDF cerâmico','estator 12 pás',[.66,.82,-3.15]),
