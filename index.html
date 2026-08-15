@@ -539,6 +539,22 @@
     }, 6500);
   </script>
 
+  <script>
+    // Error capture overlay: makes any runtime error visible on screen so it can
+    // be reported, instead of leaving a blank page.
+    (function () {
+      function show(message) {
+        if (document.getElementById('auroraErrorOverlay')) return;
+        var el = document.createElement('div');
+        el.id = 'auroraErrorOverlay';
+        el.style.cssText = 'position:fixed;z-index:99999;top:0;left:0;right:0;background:rgba(10,10,14,.96);color:#ff8f8f;font:12px/1.6 monospace;padding:14px 18px;white-space:pre-wrap;border-bottom:1px solid #ff6f61;max-height:40vh;overflow:auto;';
+        el.textContent = message;
+        document.body.appendChild(el);
+      }
+      window.addEventListener('error', function (e) { show('ERRO: ' + (e.message || 'desconhecido') + (e.filename ? '\n' + e.filename + ':' + e.lineno : '')); });
+      window.addEventListener('unhandledrejection', function (e) { show('ERRO (promessa): ' + (e.reason && e.reason.message ? e.reason.message : e.reason)); });
+    })();
+  </script>
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -2017,6 +2033,7 @@
 
       const isFusion = p.propulsionModel==='fusion';
       document.body.classList.toggle('fusion-mode',isFusion);
+      try {
       if(isFusion&&p.fusion){
         const fd=p.fusion;
         setText('fusionVe',numberFormatter(fd.exhaustVelocityMs/1000,1));
@@ -2083,6 +2100,7 @@
           insStatus.classList.toggle('alert',!insertion.feasible);
         }
       }
+      } catch (err) { /* telemetria orbital/fusão é opcional — nunca quebra o painel */ }
       updateTelemetryTrace(p.resultantAccelerationMs2);
     }
 
