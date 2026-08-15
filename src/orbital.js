@@ -31,7 +31,7 @@
  *   - escape velocity:                  v_esc = sqrt(2μ / (R + h)) = √2·v_orb
  */
 
-import { calculateFusionDrive, DEFAULT_FUSION_CONFIG } from './fusionDrive.js?v=13';
+import { calculateFusionDrive, DEFAULT_FUSION_CONFIG } from './fusionDrive.js?v=14';
 
 export const GRAVITATIONAL_PARAMETER_M3S2 = 3.986004418e14; // μ Earth (m³/s²)
 export const EARTH_RADIUS_M = 6_371_000;                    // mean radius (m)

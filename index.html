@@ -686,10 +686,10 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=13';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=13';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=13';
-    import { sizeCapsule } from './src/sizing.js?v=13';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=14';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=14';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=14';
+    import { sizeCapsule } from './src/sizing.js?v=14';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1626,11 +1626,11 @@
 
     // Estabilizadores traseiros articulados (recuados junto ao EDF).
     for(const sx of [-1,1]){
-      const a=[sx*.82,.64,-2.3], b=[sx*1.72,.76,-3.0];
-      prep(rod('Braço estabilizador',a,b,.052,M.gravium),'external',[sx*.35,.12,-.45]);
-      prep(ellipsoid('Micropropulsor',[...b],[.14,.14,.18],M.graphite,32),'external',[sx*.38,.14,-.5]);
-      prep(torus('Halo estabilizador',[b[0],b[1],b[2]-.15],.1,.018,M.amber),'external',[sx*.4,.14,-.55]);
-      prep(cylinder('barbatana',[b[0]+sx*.1,b[1]+.1,b[2]+.28],.012,.07,.3,M.hullLight,'y',4),'external',[sx*.3,.2,-.4]);
+      const a=[sx*.82,.62,-2.3], b=[sx*1.9,.78,-3.05];
+      prep(rod('Braço estabilizador',a,b,.07,M.gravium),'external',[sx*.35,.12,-.45]);
+      prep(ellipsoid('Micropropulsor',[...b],[.24,.24,.3],M.graphite,32),'external',[sx*.38,.14,-.5]);
+      prep(torus('Halo estabilizador',[b[0],b[1],b[2]-.18],.16,.03,M.amber),'external',[sx*.4,.14,-.55]);
+      prep(cylinder('barbatana',[b[0]+sx*.16,b[1]+.18,b[2]+.4],.02,.12,.5,M.hullLight,'y',4),'external',[sx*.3,.2,-.4]);
     }
 
     // Linhas de fluxo luminescentes nas laterais.
