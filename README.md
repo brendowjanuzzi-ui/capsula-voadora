@@ -96,14 +96,14 @@ Isso é exatamente o gargalo de engenharia real: a física da propulsão existe,
 
 Uma nave de fusão D+³He impõe uma arquitetura que nada tem a ver com as cabines de vidro da ficção — e o modelo reproduz isso:
 
-- **Cápsula alongada (mastro):** a cabine fica na **ponta oposta ao reator**. O comprimento padrão subiu para **8 m** (ajustável até 20 m), e o modelo mostra a **longarina/mastro** que mantém a tripulação dezenas de metros longe do reator, explorando a queda de radiação pelo inverso do quadrado da distância.
+- **Cápsula alongada (mastro):** a cabine fica na **ponta oposta ao reator**. O comprimento padrão subiu para **12 m** (ajustável até **24 m**), e o modelo mostra a **longarina/mastro** que mantém a tripulação dezenas de metros longe do reator, explorando a queda de radiação pelo inverso do quadrado da distância.
 - **Pilotagem por telas, sem janelas:** o canopy de vidro foi substituído por um **invólucro blindado opaco** com uma **barra de câmeras externas** (EO/IR). Os pilotos veem por telas de alta definição conectadas a sensores — o vidro comum deixaria passar radiação e calor solar.
 - **IA no comando do reator:** o plasma é instável em escala de **milissegundos**; um humano (≈200 ms de reação) não controla os ímãs a tempo. Uma **IA autônoma** ajusta o campo magnético em **0,5 ms** (dezenas de milhares de correções/min), enquanto os humanos decidem rotas e destinos.
 - **Circuito de hélio líquido:** o hélio se liquefaz a **−269 °C** e corre por tubos blindados nas bobinas REBCO, mantendo-as supercondutoras. Se o He falhar, o campo colapsa, o plasma encosta na parede e a nave derrete. O modelo mostra as linhas criogênicas azuis e o reservatório.
 
 O equilíbrio é de extremos: o combustível mais quente do universo no motor, resfriado pelo líquido mais frio da estrutura, com a tripulação protegida por distância, blindagem e telas. No painel, um **diagrama de escala cabine→reator** (SVG) desenha a arquitetura de mastro em escala real e é atualizado em tempo real pelo controle **Distância cabine→reator** (4–40 m), evidenciando como a exposição cai com o inverso do quadrado.
 
-**Embarque (como você entra na cápsula):** o acesso é pela **escotilha lateral da proa** — o lado **mais distante do reator** no mastro — com uma **rampa de embarque** no modelo 3D. O procedimento (documentado no painel em **Embarque**):
+**Embarque (como você entra na cápsula):** o acesso é pelo **portal de entrada da cabine** na lateral da proa — o lado **mais distante do reator** no mastro. O modelo tem uma **abertura real no casco**: um vão escuro (interior) emoldurado por ombreiras, lintel e soleira de titânio, com luz de interior acesa e uma **rampa de embarque** que sobe até a soleira. O procedimento (documentado no painel em **Embarque**):
 1. aproxima-se pela proa e sobe a rampa lateral;
 2. o reator (popa) permanece **isolado** atrás da blindagem e do mastro — ninguém se aproxima dele em solo;
 3. entrada por **compartimento pressurizado** (equilíbrio de pressão) para a **cabine blindada** sem janelas;

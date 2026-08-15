@@ -396,8 +396,8 @@
       <section class="eng-section" aria-label="Parâmetros do casco">
         <div class="eng-section-title">Envelope paramétrico</div>
         <div class="parameter">
-          <div class="param-copy"><label for="lengthInput">Comprimento (mastro)</label><output id="lengthOutput">8,00<small>m</small></output></div>
-          <input id="lengthInput" data-param="lengthM" data-output="lengthOutput" data-unit="m" data-decimals="2" type="range" min="6.00" max="20.00" step="0.10" value="8.00" />
+          <div class="param-copy"><label for="lengthInput">Comprimento (mastro)</label><output id="lengthOutput">12,00<small>m</small></output></div>
+          <input id="lengthInput" data-param="lengthM" data-output="lengthOutput" data-unit="m" data-decimals="2" type="range" min="6.00" max="24.00" step="0.10" value="12.00" />
         </div>
         <div class="parameter">
           <div class="param-copy"><label for="beamInput">Boca máxima</label><output id="beamOutput">3,10<small>m</small></output></div>
@@ -663,9 +663,9 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=7';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=7';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=7';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=8';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=8';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=8';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1365,6 +1365,8 @@
       shieldBoron:new THREE.MeshStandardMaterial({color:0x242a2b,metalness:.35,roughness:.7,envMapIntensity:.6}),
       heliumLine:new THREE.MeshPhysicalMaterial({color:0xbfe9ff,metalness:.6,roughness:.18,emissive:0x3fc7ff,emissiveIntensity:.35,envMapIntensity:1}),
       aiCore:new THREE.MeshPhysicalMaterial({color:0x0b1b20,metalness:.5,roughness:.3,emissive:0x2fe0ff,emissiveIntensity:1.4,transparent:true,opacity:.9,toneMapped:false}),
+      darkVoid:new THREE.MeshStandardMaterial({color:0x020405,metalness:.6,roughness:.85}),
+      doorLit:new THREE.MeshBasicMaterial({color:0xbfe9ff,transparent:true,opacity:.85,toneMapped:false}),
       beacon:new THREE.MeshBasicMaterial({color:0xff6a3a,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,side:THREE.DoubleSide})
     };
 
@@ -1421,8 +1423,8 @@
     }
 
     // Silhueta monolítica em duas conchas com microsuperfície real.
-    prep(ellipsoid('Monocoque inferior',[0,.48,0],[1.48,.62,1.92],M.shell,96),'shell',[0,-.22,0]);
-    const upper=ellipsoid('Ombros aeroespaciais',[0,.82,-.02],[1.42,.66,1.84],M.shell,96);
+    prep(ellipsoid('Monocoque inferior',[0,.48,0],[1.48,.62,2.6],M.shell,96),'shell',[0,-.22,0]);
+    const upper=ellipsoid('Ombros aeroespaciais',[0,.82,-.02],[1.42,.66,2.5],M.shell,96);
     upper.scale.y=.69;prep(upper,'shell',[0,.25,.03]);
 
     // Costuras de painel reais seguindo as conchas (em vez de tinta plana).
@@ -1618,22 +1620,36 @@
     // Decalques técnicos independentes mantêm nitidez sobre os painéis.
     const decalMat=new THREE.MeshBasicMaterial({map:decalPlate(),transparent:true,depthWrite:false,toneMapped:false});
     const decal=new THREE.Mesh(new THREE.PlaneGeometry(.5,.5),decalMat);decal.position.set(-1.449,.82,.18);decal.rotation.y=-Math.PI/2;decal.rotation.z=-.06;decal.scale.y=.62;prep(decal,'external',[-.19,.05,.02]);
-    const hatch=new THREE.Mesh(new THREE.PlaneGeometry(.95,.95),new THREE.MeshBasicMaterial({map:hatchPlate(),transparent:true,depthWrite:false,toneMapped:false}));
-    hatch.position.set(1.52,.86,.5);hatch.rotation.y=Math.PI/2;hatch.rotation.z=.05;hatch.scale.y=1;prep(hatch,'external',[.28,.06,.05]);
+    // --- Abertura real da cabine (portal de entrada do piloto) ---
+    // Um vão escuro (o interior) com moldura metálica e luz de soleira no lado
+    // direito da proa, na lateral do módulo da tripulação.
+    const cabinDoor=new THREE.Group();cabinDoor.name='Portal de entrada da cabine';
+    cabinDoor.position.set(1.53,.8,.5);
+    // Interior escuro do vão (parece entrar para dentro da cabine).
+    cabinDoor.add(rounded('vão da porta',[0,0,0],[.06,1.0,.78],.03,M.darkVoid));
+    // Luz de soleira/interior (cabine pressurizada e acesa).
+    const doorInterior=rounded('luz interior',[.05,0,0],[.02,.84,.6],.01,M.doorLit);
+    doorInterior.rotation.y=.06;cabinDoor.add(doorInterior);
+    // Moldura da abertura (três lados + ombreiras).
+    cabinDoor.add(rod('ombreira A',[-.39,.5,-.02],[-.39,-.5,-.02],.045,M.titanium));
+    cabinDoor.add(rod('ombreira B',[.39,.5,-.02],[.39,-.5,-.02],.045,M.titanium));
+    cabinDoor.add(rod('lintel',[-.39,.5,-.02],[.39,.5,-.02],.05,M.titanium));
+    cabinDoor.add(rod('soleira',[-.39,-.5,-.02],[.39,-.5,-.02],.06,M.titanium));
+    prep(cabinDoor,'external',[.28,.06,.05]);
 
     // Rampa/escada de embarque na lateral direita, à proa. Grande e visível,
     // desce da escotilha (larga) até o chão, fora do casco — o embarque fica
     // sempre no extremo da cabine, longe do reator no mastro.
     const boardingRamp=new THREE.Group();boardingRamp.name='Rampa de embarque (proa)';
-    boardingRamp.position.set(1.55,.05,.5);
+    boardingRamp.position.set(1.56,.05,.5);
     // Guarda-corpo e estrutura.
-    for(const sx of [-1,1])boardingRamp.add(rod('trilho',[sx*.4,.55,-.05],[sx*.4,-.55,.42],.02,M.titanium));
-    for(let i=0;i<7;i++){const t=i/6;const y=.5-t*1.0;const z=-.05+t*.48;const step=rounded('degrau',[0,y,z],[.62,.04,.2],.014,M.graphite);step.rotation.x=Math.sin(i)*.05;boardingRamp.add(step);}
-    // Plataforma superior ao lado da escotilha.
-    boardingRamp.add(rounded('plataforma',[0,.52,.06],[.7,.035,.4],.025,M.titanium));
+    for(const sx of [-1,1])boardingRamp.add(rod('trilho',[sx*.42,.78,-.02],[sx*.42,-.55,.42],.02,M.titanium));
+    for(let i=0;i<9;i++){const t=i/8;const y=.75-t*1.3;const z=-.02+t*.46;const step=rounded('degrau',[0,y,z],[.68,.04,.2],.014,M.graphite);step.rotation.x=Math.sin(i)*.05;boardingRamp.add(step);}
+    // Plataforma superior, alinhada à soleira do portal de entrada.
+    boardingRamp.add(rounded('plataforma',[0,.75,.04],[.76,.035,.42],.025,M.titanium));
     // Marquise / estrutura de proteção da entrada.
-    boardingRamp.add(rod('suporte A',[-.34,.56,-.05],[-.34,.3,.2],.016,M.titanium));
-    boardingRamp.add(rod('suporte B',[.34,.56,-.05],[.34,.3,.2],.016,M.titanium));
+    boardingRamp.add(rod('suporte A',[-.38,.82,-.02],[-.38,.3,.2],.016,M.titanium));
+    boardingRamp.add(rod('suporte B',[.38,.82,-.02],[.38,.3,.2],.016,M.titanium));
     prep(boardingRamp,'external',[.18,-.2,.08]);
     for(const sx of [-1,1]){
       const strip=new THREE.Mesh(new THREE.PlaneGeometry(.56,.2),new THREE.MeshBasicMaterial({map:cautionStripes(),transparent:true,depthWrite:false,toneMapped:false}));
@@ -1703,7 +1719,7 @@
      * Fica visível quando o impulso de fusão está selecionado. */
     const fusionHardware=new THREE.Group();fusionHardware.name='Reator de fusão D+³He (confinamento e blindagem)';
     // Popa: bem atrás, no extremo oposto à cabine (proa). O mastro conecta.
-    fusionHardware.position.set(0,.56,-1.55);
+    fusionHardware.position.set(0,.56,-2.35);
     // 1) Garrafa magnética: bobinas supercondutoras REBCO (anéis toroidais).
     const fusionCoils=new THREE.Group();fusionCoils.name='Bobinas REBCO de confinamento';
     for(const z of [-.55,-.33,-.11,.11,.33,.55])fusionCoils.add(torus('bobina REBCO',[0,0,z],.42,.04,M.magnetCoil));
@@ -1729,8 +1745,8 @@
     //    à cabine (proa), evidenciando a separação física tripulação-reator.
     const mastBoom=new THREE.Group();mastBoom.name='Mastro de separação cabine-reator';
     for(const sx of [-1,1]){
-      mastBoom.add(rod('longarina',[sx*.5,.5,-.15],[sx*.5,.5,2.35],.032,M.titanium));
-      for(const z of [.3,1.0,1.7])mastBoom.add(rod('travessa',[sx*.5,.38,z],[sx*.5,.62,z],.022,M.titanium));
+      mastBoom.add(rod('longarina',[sx*.5,.5,-.15],[sx*.5,.5,3.3],.032,M.titanium));
+      for(const z of [.3,1.2,2.1,2.9])mastBoom.add(rod('travessa',[sx*.5,.38,z],[sx*.5,.62,z],.022,M.titanium));
     }
     fusionHardware.add(mastBoom);
     // 9) Halo do plasma (pulsa na animação).
@@ -2603,8 +2619,8 @@
       ring:hotspot('Anel Gravium-7','Aeq 4,40 m²',[-1.32,-.2,.78]),
       edf:hotspot('EDF cerâmico','estator 12 pás',[.56,.74,-2.2]),
       sensors:hotspot('Suíte ASEA','EO/IR + pitot digital',[.62,.62,2.2]),
-      reactor:hotspot('Reator de fusão','D+³He · popa · isolado no mastro',[.7,.9,-1.55]),
-      boarding:hotspot('Embarque','escotilha larga · proa',[1.72,.85,.5])
+      reactor:hotspot('Reator de fusão','D+³He · popa · isolado no mastro',[.7,.9,-2.35]),
+      boarding:hotspot('Embarque','portal da cabine · proa',[1.72,.9,.5])
     };
 
     document.querySelectorAll('.mode').forEach(btn=>btn.addEventListener('click',()=>{
