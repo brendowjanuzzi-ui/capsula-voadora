@@ -103,6 +103,13 @@ Uma nave de fusão D+³He impõe uma arquitetura que nada tem a ver com as cabin
 
 O equilíbrio é de extremos: o combustível mais quente do universo no motor, resfriado pelo líquido mais frio da estrutura, com a tripulação protegida por distância, blindagem e telas. No painel, um **diagrama de escala cabine→reator** (SVG) desenha a arquitetura de mastro em escala real e é atualizado em tempo real pelo controle **Distância cabine→reator** (4–40 m), evidenciando como a exposição cai com o inverso do quadrado.
 
+**Embarque (como você entra na cápsula):** o acesso é pela **escotilha lateral da proa** — o lado **mais distante do reator** no mastro — com uma **rampa de embarque** no modelo 3D. O procedimento (documentado no painel em **Embarque**):
+1. aproxima-se pela proa e sobe a rampa lateral;
+2. o reator (popa) permanece **isolado** atrás da blindagem e do mastro — ninguém se aproxima dele em solo;
+3. entrada por **compartimento pressurizado** (equilíbrio de pressão) para a **cabine blindada** sem janelas;
+4. tripulação senta **virada para o mastro** (pernas na direção do reator), pilotando por **telas**;
+5. desembarque só após a **reentrada via EDF** e o pouso vertical.
+
 ### Envelope atmosférico: qual motor voa onde
 
 Uma dúvida recorrente é "por que não usar a fusão na atmosfera?". A resposta está no **envelope atmosférico** (`atmosphericEnvelope` em `src/physics.js`, painel **Envelope atmosférico · quem voa onde**):
