@@ -15,11 +15,15 @@ export const FUSION_PROPULSION_CONFIG = Object.freeze({
   // Mass of the fusion reactor hardware (core + magnets + shielding + radiators)
   // that the capsule carries when fusion mode is selected. This is the honest
   // weight of the "invisible bottle" — ~15 t for a ~15 MW D+³He reactor.
-  fusionHardwareMassKg: 15_000
+  fusionHardwareMassKg: 15_000,
+  // Distance (m) between the crew cabin and the reactor. A fusion ship keeps the
+  // crew at the opposite end of a long boom so radiation falls off by the inverse
+  // square of the distance. Default ~16 m (the "mast" architecture).
+  reactorDistanceM: 16
 });
 
 export const DEFAULT_CONFIG = Object.freeze({
-  lengthM: 4.8,
+  lengthM: 8,
   beamM: 3.1,
   heightM: 1.82,
   massKg: 1240,
@@ -43,7 +47,8 @@ export const DEFAULT_CONFIG = Object.freeze({
   fusionExhaustVelocityMs: FUSION_PROPULSION_CONFIG.fusionExhaustVelocityMs,
   propellantMassKg: FUSION_PROPULSION_CONFIG.propellantMassKg,
   fuelType: FUSION_PROPULSION_CONFIG.fuelType,
-  fusionHardwareMassKg: FUSION_PROPULSION_CONFIG.fusionHardwareMassKg
+  fusionHardwareMassKg: FUSION_PROPULSION_CONFIG.fusionHardwareMassKg,
+  reactorDistanceM: FUSION_PROPULSION_CONFIG.reactorDistanceM
 });
 
 const LIMITS = Object.freeze({
@@ -76,11 +81,12 @@ function normalizedConfig(input = {}) {
     'liftPowerMaxKw', 'propulsionPowerMaxKw', 'liftActuatorAreaM2',
     'propulsionDiskAreaM2', 'energyCapacityKwh', 'gravityMs2',
     'fusionPowerKw', 'fusionExhaustVelocityMs', 'propellantMassKg',
-    'fusionHardwareMassKg'
+    'fusionHardwareMassKg', 'reactorDistanceM'
   ]) {
     config[key] = Math.max(0.0001, finiteOr(config[key], DEFAULT_CONFIG[key]));
   }
   config.fusionHardwareMassKg = clamp(config.fusionHardwareMassKg, 0, 1_000_000);
+  config.reactorDistanceM = clamp(config.reactorDistanceM, 1, 200);
 
   config.liftFigureOfMerit = clamp(finiteOr(config.liftFigureOfMerit, DEFAULT_CONFIG.liftFigureOfMerit), 0.05, 1);
   config.propulsionEfficiency = clamp(finiteOr(config.propulsionEfficiency, DEFAULT_CONFIG.propulsionEfficiency), 0.05, 1);
@@ -221,7 +227,8 @@ export function calculateFlightPhysics(input = {}) {
     mass: Object.freeze({
       baseMassKg: massKg,
       fusionHardwareMassKg,
-      effectiveMassKg
+      effectiveMassKg,
+      reactorDistanceM: config.reactorDistanceM
     }),
     geometry: Object.freeze({
       hullVolumeM3,

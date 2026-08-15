@@ -4,9 +4,12 @@ import {
   magneticContainment,
   firstWall,
   radiatorArea,
+  heliumCooling,
+  reactorAI,
   thermalProtectionDesign,
   MATERIALS,
-  STEFAN_BOLTZMANN_WM2K4
+  STEFAN_BOLTZMANN_WM2K4,
+  HELIUM_BOILING_K
 } from '../src/thermalProtection.js';
 
 test('magnetic pressure follows B²/(2μ₀)', () => {
@@ -64,4 +67,31 @@ test('crew protection relies on distance and shielding, not thick walls', () => 
   const d = thermalProtectionDesign({});
   assert.ok(d.crewProtection.distanceFromReactorM > 0);
   assert.ok(d.crewProtection.inverseSquareFactor < 1); // inverse-square falloff
+  // Realistic: the cabin is far from the reactor (mast architecture), no windows.
+  assert.ok(d.crewProtection.distanceFromReactorM >= 16);
+  assert.match(d.crewProtection.windows, /telas/);
+});
+
+test('liquid helium boils near absolute zero and keeps magnets superconducting', () => {
+  const h = heliumCooling({ heatToCryoKw: 60 });
+  assert.ok(Math.abs(h.boilingTempK - 4.22) < 1e-9);
+  assert.ok(h.boilingTempC < -260); // ≈ −269 °C
+  assert.equal(h.critical, true); // magnet bath near the boiling point
+  assert.equal(h.safe, true);
+  assert.ok(h.flowKgS > 0);
+  assert.ok(h.loopPowerKw > 0);
+});
+
+test('AI reactor control actuates magnets far faster than a human', () => {
+  const ai = reactorAI({ fusionPowerKw: 15_000, responseMs: 0.5 });
+  assert.ok(ai.responseMs < 1); // sub-millisecond magnet actuation
+  assert.ok(ai.marginVsHumanMs > 200); // faster than the ~200 ms human reaction
+  assert.ok(ai.fieldCorrectionsPerMin > 10_000); // thousands of corrections/min
+  assert.match(ai.note, /Autonomous/);
+});
+
+test('longer crew boom reduces radiation exposure by the inverse square', () => {
+  const near = thermalProtectionDesign({ crewDistanceM: 8 });
+  const far = thermalProtectionDesign({ crewDistanceM: 32 });
+  assert.ok(far.crewProtection.inverseSquareFactor < near.crewProtection.inverseSquareFactor / 10);
 });

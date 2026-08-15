@@ -92,6 +92,17 @@ O plasma D+³He queima a ~150 milhões de °C — nenhum material sólido sobrev
 
 Isso é exatamente o gargalo de engenharia real: a física da propulsão existe, mas o **tamanho/massa do reator** e o **combustível necessário** separam a cápsula ficcional da realidade.
 
+### Vida a bordo realista (diferente dos filmes)
+
+Uma nave de fusão D+³He impõe uma arquitetura que nada tem a ver com as cabines de vidro da ficção — e o modelo reproduz isso:
+
+- **Cápsula alongada (mastro):** a cabine fica na **ponta oposta ao reator**. O comprimento padrão subiu para **8 m** (ajustável até 20 m), e o modelo mostra a **longarina/mastro** que mantém a tripulação dezenas de metros longe do reator, explorando a queda de radiação pelo inverso do quadrado da distância.
+- **Pilotagem por telas, sem janelas:** o canopy de vidro foi substituído por um **invólucro blindado opaco** com uma **barra de câmeras externas** (EO/IR). Os pilotos veem por telas de alta definição conectadas a sensores — o vidro comum deixaria passar radiação e calor solar.
+- **IA no comando do reator:** o plasma é instável em escala de **milissegundos**; um humano (≈200 ms de reação) não controla os ímãs a tempo. Uma **IA autônoma** ajusta o campo magnético em **0,5 ms** (dezenas de milhares de correções/min), enquanto os humanos decidem rotas e destinos.
+- **Circuito de hélio líquido:** o hélio se liquefaz a **−269 °C** e corre por tubos blindados nas bobinas REBCO, mantendo-as supercondutoras. Se o He falhar, o campo colapsa, o plasma encosta na parede e a nave derrete. O modelo mostra as linhas criogênicas azuis e o reservatório.
+
+O equilíbrio é de extremos: o combustível mais quente do universo no motor, resfriado pelo líquido mais frio da estrutura, com a tripulação protegida por distância, blindagem e telas.
+
 ### Missão orbital · ponto a ponto (uso recomendado do impulso)
 
 Como o impulso de fusão tem **empuxo baixo e Isp alto**, ele não compete com o arrasto atmosférico — o lugar certo é a **transferência exoatmosférica**. No painel de Engenharia, em modo **Impulso de fusão**, a seção **"Missão orbital · ponto a ponto (Terra)"** (`src/orbital.js`) planeja o salto balístico entre dois pontos do planeta:

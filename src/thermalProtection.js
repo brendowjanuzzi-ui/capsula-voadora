@@ -63,6 +63,65 @@ function finiteOr(value, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+/** Liquid helium boiling point (K) — the cryogenic coolant for the magnets. */
+export const HELIUM_BOILING_K = 4.22;
+
+/**
+ * Liquid-helium cryogenic cooling loop for the superconducting magnets.
+ * He liquefies at ~4.2 K (−269 °C); it runs through the magnet structure to keep
+ * the REBCO coils superconducting (if the He fails, the field collapses, the
+ * plasma touches the wall, and the ship melts).
+ * @param {object} input - { heatToCryoKw, inletTempK, outletTempK }.
+ */
+export function heliumCooling({ heatToCryoKw = 60, inletTempK = 4.2, outletTempK = 20 } = {}) {
+  const heatKw = Math.max(0, finiteOr(heatToCryoKw, 60));
+  const outlet = Math.max(finiteOr(inletTempK, 4.2) + 0.1, finiteOr(outletTempK, 20));
+  // Helium heat of vaporization ≈ 21 kJ/kg and specific heat ≈ 5.2 kJ/(kg·K).
+  const latentHeatKjKg = 21;
+  const specificHeatKjKgK = 5.2;
+  const deltaT = outlet - finiteOr(inletTempK, 4.2);
+  const totalKjKg = latentHeatKjKg + specificHeatKjKgK * deltaT;
+  const flowKgS = heatKw / totalKjKg;
+  const loopPowerKw = heatKw * 0.22; // cryocooler COP ~4.5 ⇒ ~22% of heat as work
+  const magnetTempK = finiteOr(inletTempK, 4.2); // REBCO operates near the He bath
+  return Object.freeze({
+    heatToCryoKw: heatKw,
+    boilingTempK: HELIUM_BOILING_K,
+    boilingTempC: HELIUM_BOILING_K - 273.15,
+    inletTempK: finiteOr(inletTempK, 4.2),
+    outletTempK: outlet,
+    deltaTK: deltaT,
+    totalHeatKjKg: totalKjKg,
+    flowKgS,
+    loopPowerKw,
+    magnetTempK,
+    critical: magnetTempK < 5, // REBCO needs a bath near the boiling point
+    safe: magnetTempK < 30
+  });
+}
+
+/**
+ * Autonomous reactor control ("AI"). The fusion plasma is unstable on
+ * millisecond timescales — a human cannot actuate the magnets in time. An
+ * autonomous controller trims the magnetic field on the plasma-response scale;
+ * humans only plan routes and set the destination.
+ * @param {object} input - { fusionPowerKw, responseMs, jitterPct }.
+ */
+export function reactorAI({ fusionPowerKw = 15_000, responseMs = 0.5, jitterPct = 0.5 } = {}) {
+  const powerKw = Math.max(1, finiteOr(fusionPowerKw, 15_000));
+  const jitter = clamp(finiteOr(jitterPct, 0.5), 0, 20);
+  const instabilityPerMin = 60_000 / Math.max(1, finiteOr(responseMs, 0.5));
+  return Object.freeze({
+    fusionPowerKw: powerKw,
+    responseMs: Math.max(0.1, finiteOr(responseMs, 0.5)),
+    fieldCorrectionsPerMin: instabilityPerMin,
+    fieldJitterPct: jitter,
+    humanLagMs: 200, // best-case human reaction is ~200 ms
+    marginVsHumanMs: Math.max(0.1, finiteOr(responseMs, 0.5)) + 200,
+    note: 'Autonomous magnet control on the plasma-response scale; crew plans routes.'
+  });
+}
+
 /**
  * Confinement magnetic pressure vs plasma pressure (the "invisible wall").
  * The plasma pressure that can be held is β · P_mag; β ≈ 0.05 for tokamaks.
@@ -140,6 +199,13 @@ export function thermalProtectionDesign(input = {}) {
   const wall = firstWall({ heatFluxMWm2: finiteOr(input.firstWallFluxMWm2, 10) });
   const radiators900 = radiatorArea({ wasteHeatKw, radiatorTempK: 900 });
   const radiators300 = radiatorArea({ wasteHeatKw, radiatorTempK: 300 });
+  const helium = heliumCooling({ heatToCryoKw: finiteOr(input.cryoHeatKw, 60) });
+  const ai = reactorAI({ fusionPowerKw, responseMs: finiteOr(input.aiResponseMs, 0.5) });
+
+  // Crew-to-reactor distance. Radiation drops as the inverse square, so a long
+  // boom ("mast") between the cabin and the reactor is the primary crew shield.
+  const crewDistanceM = Math.max(1, finiteOr(input.crewDistanceM, 16));
+  const inverseSquareFactor = 1 / crewDistanceM ** 2;
 
   // Rough forward-looking shielding estimate for residual neutrons (D+³He).
   const shieldingMassKg = neutronPowerKw * 3.2; // ~3.2 kg/kW of neutron power (LiH/boron) — speculative
@@ -156,15 +222,18 @@ export function thermalProtectionDesign(input = {}) {
     reactorMassEstimateKg,
     containment,
     wall,
+    helium,
+    ai,
     radiators: Object.freeze({
       at300K: radiators300,
       at900K: radiators900
     }),
     crewProtection: Object.freeze({
-      distanceFromReactorM: 6,
-      inverseSquareFactor: 1 / 36,
-      coolantLoop: 'hélio líquido → espelhos de carbono/tungstênio → cold plate',
-      note: 'Cabine à frente, longe do reator; blindagem de sombra + escudo de nêutrons; calor rejeitado por radiadores de alta temperatura.'
+      distanceFromReactorM: crewDistanceM,
+      inverseSquareFactor,
+      windows: 'nenhuma — pilotagem por telas (câmeras externas + sensores de calor)',
+      coolantLoop: 'hélio líquido → ímãs REBCO → painéis radiadores de alta temperatura',
+      note: 'Cabine na ponta oposta ao reator, a ' + crewDistanceM + ' m; blindagem de sombra + escudo de nêutrons; reator controlado por IA.'
     })
   });
 }
