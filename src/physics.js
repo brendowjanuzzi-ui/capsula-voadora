@@ -1,5 +1,17 @@
+import { calculateFusionDrive } from './fusionDrive.js';
+
 export const G_STANDARD = 9.80665;
 export const SEA_LEVEL_DENSITY = 1.225;
+
+// Fusion impulse-drive configuration used when propulsionModel === 'fusion'.
+// These override DEFAULT_FUSION_CONFIG fields; see fusionDrive.js.
+export const FUSION_PROPULSION_CONFIG = Object.freeze({
+  propulsionModel: 'fusion',
+  fusionPowerKw: 12_000,
+  exhaustEfficiency: 0.82,
+  fusionExhaustVelocityMs: 35_000,
+  propellantMassKg: 120
+});
 
 export const DEFAULT_CONFIG = Object.freeze({
   lengthM: 4.8,
@@ -18,7 +30,13 @@ export const DEFAULT_CONFIG = Object.freeze({
   propulsionEfficiency: 0.78,
   dragCoefficient: 0.29,
   energyCapacityKwh: 180,
-  gravityMs2: G_STANDARD
+  gravityMs2: G_STANDARD,
+  // Fusion impulse drive (active only when propulsionModel === 'fusion').
+  propulsionModel: 'edf',
+  fusionPowerKw: FUSION_PROPULSION_CONFIG.fusionPowerKw,
+  exhaustEfficiency: FUSION_PROPULSION_CONFIG.exhaustEfficiency,
+  fusionExhaustVelocityMs: FUSION_PROPULSION_CONFIG.fusionExhaustVelocityMs,
+  propellantMassKg: FUSION_PROPULSION_CONFIG.propellantMassKg
 });
 
 const LIMITS = Object.freeze({
@@ -49,7 +67,8 @@ function normalizedConfig(input = {}) {
 
   for (const key of [
     'liftPowerMaxKw', 'propulsionPowerMaxKw', 'liftActuatorAreaM2',
-    'propulsionDiskAreaM2', 'energyCapacityKwh', 'gravityMs2'
+    'propulsionDiskAreaM2', 'energyCapacityKwh', 'gravityMs2',
+    'fusionPowerKw', 'fusionExhaustVelocityMs', 'propellantMassKg'
   ]) {
     config[key] = Math.max(0.0001, finiteOr(config[key], DEFAULT_CONFIG[key]));
   }
@@ -57,6 +76,8 @@ function normalizedConfig(input = {}) {
   config.liftFigureOfMerit = clamp(finiteOr(config.liftFigureOfMerit, DEFAULT_CONFIG.liftFigureOfMerit), 0.05, 1);
   config.propulsionEfficiency = clamp(finiteOr(config.propulsionEfficiency, DEFAULT_CONFIG.propulsionEfficiency), 0.05, 1);
   config.dragCoefficient = clamp(finiteOr(config.dragCoefficient, DEFAULT_CONFIG.dragCoefficient), 0.02, 2);
+  config.exhaustEfficiency = clamp(finiteOr(config.exhaustEfficiency, DEFAULT_CONFIG.exhaustEfficiency), 0.05, 1);
+  config.propulsionModel = config.propulsionModel === 'fusion' ? 'fusion' : 'edf';
   return config;
 }
 
@@ -137,7 +158,40 @@ export function calculateFlightPhysics(input = {}) {
   });
 
   const liftN = liftDisk.thrustN;
-  const forwardThrustN = propulsionDisk.thrustN;
+
+  // --- Fusion impulse drive branch (Star Trek-style) --------------------
+  // When propulsionModel === 'fusion' the forward thrust is produced by a
+  // deuterium-fusion plasma thruster instead of the electric EDF. Throttle
+  // scales reactor jet power; thrust and Isp follow the rocket relation.
+  let fusion = null;
+  let forwardThrustN = propulsionDisk.thrustN;
+  let totalPowerKw = liftPowerKw + propulsionPowerKw;
+  let enduranceMinutes = (config.energyCapacityKwh / totalPowerKw) * 60;
+  let wasteHeatKw = liftPowerKw * (1 - config.liftFigureOfMerit)
+    + propulsionPowerKw * (1 - config.propulsionEfficiency);
+
+  if (config.propulsionModel === 'fusion') {
+    const jetPowerFullKw = config.fusionPowerKw * config.exhaustEfficiency;
+    const maxThrustN = (2 * jetPowerFullKw * 1000) / config.fusionExhaustVelocityMs;
+    const drivePowerKw = config.fusionPowerKw * propulsionThrottle;
+    const designThrustN = maxThrustN * propulsionThrottle;
+    fusion = calculateFusionDrive({
+      thrustN: designThrustN,
+      fusionPowerKw: drivePowerKw,
+      exhaustEfficiency: config.exhaustEfficiency,
+      exhaustVelocityMs: config.fusionExhaustVelocityMs,
+      propellantMassKg: config.propellantMassKg,
+      dryMassKg: config.massKg,
+      gravityMs2: config.gravityMs2
+    });
+    forwardThrustN = fusion.thrustN;
+    totalPowerKw = liftPowerKw + drivePowerKw;
+    enduranceMinutes = fusion.burnTimeMinutes;
+    wasteHeatKw = liftPowerKw * (1 - config.liftFigureOfMerit)
+      + drivePowerKw * (1 - config.exhaustEfficiency);
+  }
+  // -----------------------------------------------------------------------
+
   const verticalNetForceN = liftN - weightN;
   const horizontalNetForceN = forwardThrustN - dragN;
   const netForceN = Math.hypot(verticalNetForceN, horizontalNetForceN);
@@ -145,10 +199,6 @@ export function calculateFlightPhysics(input = {}) {
   const horizontalAccelerationMs2 = horizontalNetForceN / massKg;
   const resultantAccelerationMs2 = netForceN / massKg;
   const thrustToWeight = liftN / weightN;
-  const totalPowerKw = liftPowerKw + propulsionPowerKw;
-  const enduranceMinutes = (config.energyCapacityKwh / totalPowerKw) * 60;
-  const wasteHeatKw = liftPowerKw * (1 - config.liftFigureOfMerit)
-    + propulsionPowerKw * (1 - config.propulsionEfficiency);
 
   return Object.freeze({
     config: Object.freeze(config),
@@ -182,7 +232,9 @@ export function calculateFlightPhysics(input = {}) {
       totalPowerKw,
       enduranceMinutes,
       wasteHeatKw,
-      estimatedCoreTemperatureK: 293 + wasteHeatKw * 1.45
+      estimatedCoreTemperatureK: 293 + wasteHeatKw * 1.45,
+      propulsionModel: config.propulsionModel,
+      fusion
     })
   });
 }

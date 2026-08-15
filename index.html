@@ -207,6 +207,13 @@
     .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
     .preset{border:1px solid rgba(205,248,246,.13);border-radius:2px;background:rgba(255,255,255,.015);padding:7px 4px;color:#718889;font:500 7px DM Mono,monospace;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:.2s}
     .preset:hover,.preset.active{border-color:rgba(138,234,240,.42);color:var(--cyan-bright);background:rgba(59,196,202,.1)}
+    .drive-pick{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+    .drive{border:1px solid rgba(205,248,246,.13);border-radius:2px;background:rgba(255,255,255,.015);padding:7px 4px;color:#718889;font:500 7px DM Mono,monospace;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.2s;line-height:1.5}
+    .drive:hover,.drive.active{border-color:rgba(138,234,240,.42);color:var(--cyan-bright);background:rgba(59,196,202,.1)}
+    .drive.active{border-color:var(--lime);color:var(--lime);background:rgba(165,246,143,.08)}
+    .drive-note{color:#5c6f70;font:400 8px DM Mono,monospace;letter-spacing:.02em;line-height:1.6;margin:7px 0 0}
+    .fusion-panel{display:none}
+    body.fusion-mode .fusion-panel{display:block}
     .parameter{margin:0 0 11px}.param-copy{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.param-copy label{color:#a6b8b8;font-size:9px;font-weight:600}.param-copy output{color:var(--cyan-bright);font:500 9px DM Mono,monospace}.param-copy output small{margin-left:3px;color:#607a7b;font-size:7px}
     .parameter input{display:block;width:100%;height:12px;margin:0;appearance:none;background:transparent;cursor:ew-resize}
     .parameter input::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:linear-gradient(90deg,var(--cyan) 0 var(--range,50%),rgba(255,255,255,.1) var(--range,50%));box-shadow:0 0 8px rgba(76,218,222,.12)}
@@ -346,6 +353,15 @@
         </div>
       </section>
 
+      <section class="eng-section" aria-label="Sistema propulsivo">
+        <div class="eng-section-title">Sistema propulsivo</div>
+        <div class="drive-pick">
+          <button class="drive active" data-drive="edf">EDF elétrico</button>
+          <button class="drive" data-drive="fusion">Impulso de fusão D+D</button>
+        </div>
+        <p class="drive-note">O impulso de fusão usa exaustão de plasma (deutério), com Isp alto e empuxo baixo — regime de voo orbital, não de cruzeiro atmosférico.</p>
+      </section>
+
       <section class="eng-section" aria-label="Parâmetros do casco">
         <div class="eng-section-title">Envelope paramétrico</div>
         <div class="parameter">
@@ -409,7 +425,19 @@
         </div>
       </section>
 
-      <div class="equation"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
+      <section class="eng-section fusion-panel" aria-label="Telemetria do impulso de fusão">
+        <div class="eng-section-title">Impulso de fusão (plasma de deutério)</div>
+        <div class="metric-grid">
+          <div class="metric"><span>vel. exaustão</span><b><em id="fusionVe">—</em> km/s</b></div>
+          <div class="metric"><span>impulso específico</span><b><em id="fusionIsp">—</em> s</b></div>
+          <div class="metric"><span>fluxo de massa</span><b><em id="fusionFlow">—</em> g/s</b></div>
+          <div class="metric"><span>autonomia (combustível)</span><b><em id="fusionBurn">—</em> min</b></div>
+          <div class="metric"><span>Δv (equação do foguete)</span><b><em id="fusionDeltaV">—</em> m/s</b></div>
+          <div class="metric"><span>combustível de fusão</span><b><em id="fusionFuel">—</em> g/h</b></div>
+        </div>
+      </section>
+
+      <div class="equation" id="equationTag"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
     </div>
   </aside>
 
@@ -1937,6 +1965,20 @@
       setText('flightRegime',design.airspeedMs<3?'HOVER':p.verticalAccelerationMs2>1?'CLIMB':'CRUISE');
       setText('solverStatus',p.thrustToWeight<.94?'déficit de sustentação':p.thrustToWeight>1.22?'carga elevada':'modelo convergente');
       document.getElementById('solverStatus').classList.toggle('alert',p.thrustToWeight<.94||p.thrustToWeight>1.22);
+
+      const isFusion = p.propulsionModel==='fusion';
+      document.body.classList.toggle('fusion-mode',isFusion);
+      if(isFusion&&p.fusion){
+        const fd=p.fusion;
+        setText('fusionVe',numberFormatter(fd.exhaustVelocityMs/1000,1));
+        setText('fusionIsp',numberFormatter(fd.specificImpulseS,0));
+        setText('fusionFlow',numberFormatter(fd.propellantMassFlowKgS*1000,2));
+        setText('fusionBurn',numberFormatter(fd.burnTimeMinutes,1));
+        setText('fusionDeltaV',numberFormatter(fd.deltaVMs,0));
+        setText('fusionFuel',numberFormatter(fd.deuteriumFuelPerHourKg*1000,2));
+        const eq=document.getElementById('equationTag');
+        if(eq)eq.innerHTML='<b>IMPULSO DE FUSÃO / EQUAÇÃO DO FOGUETE</b>F = ṁ·Vₑ &nbsp;·&nbsp; P = ½ṁ·Vₑ² &nbsp;·&nbsp; Δv = Vₑ·ln(m₀/m_f)<br>Reator D+D · exaustão de plasma · combustível ≈ 1,7×10¹⁴ J/kg';
+      }
       updateTelemetryTrace(p.resultantAccelerationMs2);
     }
 
@@ -1958,6 +2000,13 @@
       Object.assign(design,presets[button.dataset.preset]);
       parameterInputs.forEach(input=>{if(input.dataset.param in design){input.value=design[input.dataset.param];updateRange(input)}});
       document.querySelectorAll('.preset').forEach(item=>item.classList.toggle('active',item===button));
+      updatePhysics();
+    }));
+
+    // Propulsion model: electric EDF (actuator disk) vs deuterium-fusion impulse drive.
+    document.querySelectorAll('.drive').forEach(button=>button.addEventListener('click',()=>{
+      design.propulsionModel=button.dataset.drive;
+      document.querySelectorAll('.drive').forEach(item=>item.classList.toggle('active',item===button));
       updatePhysics();
     }));
 
