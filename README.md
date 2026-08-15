@@ -36,6 +36,7 @@ A troca é imediata: as duas variantes de cada textura são pré-geradas e os ma
 - **Herança Mk.III/Mk.IV mantida:** casco paramétrico (comprimento, boca, altura), modo Engenharia com vetores de força em kN, cotas 3D, telemetria SI e solver determinístico em `src/physics.js`.
 - **Modo Impulso de fusão (novo):** no painel de Engenharia, o seletor **Sistema propulsivo** alterna o EDF elétrico (disco atuador) para um **impulso de fusão de deutério** (`src/fusionDrive.js`), que modela exaustão de plasma com a equação do foguete — empuxo `F = ṁ·Vₑ`, potência de jato `P = ½ṁ·Vₑ²`, impulso específico `Isp = Vₑ/g`, queima `t = m_prop/ṁ` e `Δv = Vₑ·ln(m₀/m_f)`.
 - **Missão orbital ponto a ponto (novo):** `src/orbital.js` planeja o salto balístico mínimo entre dois pontos da Terra (elipse kepleriana, `v_inj`, apogeu, tempo por Kepler e deutério consumido), usado apenas na fase exoatmosférica — com indicador de viabilidade e alcance máximo do tanque.
+- **Órbita circular · escape (novo):** o mesmo módulo calcula `v_orb`, período e `v_esc = √2·v_orb` em qualquer altitude, com o Δv de injeção e o deutério exigido — evidenciando honestamente que o tanque atual (≈3,2 km/s) alcança o salto ponto a ponto, mas **não** a órbita baixa (~9 km/s).
 
 ## Modelo físico
 
@@ -78,12 +79,22 @@ Como o impulso de fusão tem **empuxo baixo e Isp alto**, ele não compete com o
 
 O controle **Alcance desejado** desliza de 50 a 3.000 km; a telemetria mostra ângulo central, velocidade de injeção, apogeu, tempo de voo e deutério consumido, com indicador de viabilidade.
 
+### Órbita circular · velocidade de escape (por que o impulso não "sai para a órbita" facilmente)
+
+A seção **"Órbita circular · escape"** (`src/orbital.js`) modela o regime de injeção orbital: `v_orb = √(μ/(R+h))`, período `2π(R+h)/v_orb` e velocidade de escape `v_esc = √2·v_orb`.
+
+- **Resultado honesto:** órbita baixa (LEO, ~7,3–7,7 km/s) somada a ~1,4 km/s de perdas de gravidade/arrasto dá um Δv total de **~9 km/s**. Com os 120 kg de deutério o impulso de fusão entrega apenas **~3,2 km/s** — ou seja, **não é viável alcançar a órbita da Terra com o tanque atual** (exigiria ~360 kg de deutério). O painel mostra isso explicitamente.
+- **Contraste físico importante:** a mesma capacidade que faz um salto ponto a ponto de ~930 km não alcança órbita — porque o salto é suborbital (∆v ≤ ~3,2 km/s), enquanto órbita exige o dobro de velocidade **e** circularização. É exatamente por isso que Star Trek usa o impulso para manobrar perto de planetas e o motor de dobra para viajar entre eles.
+- **Velocidade de escape** (≈11,2 km/s na superfície, √2× a orbital) também é mostrada; alcançá-la é ainda mais exigente.
+
+Além do painel, os controles de **Altitude-alvo** (150–36.000 km) deixam claro o perfil: a injeção orbital varia pouco com a altitude (≈7,3–7,9 km/s em todo o LEO), então a conclusão "não viável com o tanque atual" se mantém em toda a faixa.
+
 ## Testes
 
 ```bash
 npm test
 ```
 
-A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto: relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo do tanque.
+A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores).
 
 Para inspecionar o ambiente pelo console do navegador, `window.__AURORA_DEBUG__.snapshot()` devolve o estado corrente da cena — visibilidade de hangar/campo, intensidade do sol, luminárias acesas, neblina, exposição e mapa de ambiente ativo.

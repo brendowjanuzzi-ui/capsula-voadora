@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   suborbitalTrajectory,
   planPointToPointMission,
+  orbitRegime,
+  planOrbitalInsertion,
   EARTH_RADIUS_M,
   GRAVITATIONAL_PARAMETER_M3S2
 } from '../src/orbital.js';
@@ -61,4 +63,46 @@ test('clamps non-finite and out-of-range angles', () => {
   const max = suborbitalTrajectory({ centralAngleDeg: 9999 });
   assert.ok(min.centralAngleDeg >= 0.5);
   assert.ok(max.centralAngleDeg <= 180);
+});
+
+test('escape velocity is exactly √2 times circular orbital velocity', () => {
+  for (const h of [0, 200, 400, 1000]) {
+    const r = orbitRegime({ altitudeKm: h });
+    assert.ok(Math.abs(r.escapeToOrbitalRatio - Math.sqrt(2)) < 1e-9);
+  }
+});
+
+test('orbital velocity and period decrease with altitude as μ/r', () => {
+  const low = orbitRegime({ altitudeKm: 200 });
+  const high = orbitRegime({ altitudeKm: 1000 });
+  assert.ok(high.orbitalVelocityMs < low.orbitalVelocityMs);
+  assert.ok(high.periodMinutes > low.periodMinutes);
+  const expected = Math.sqrt(GRAVITATIONAL_PARAMETER_M3S2 / (EARTH_RADIUS_M + 200_000));
+  assert.ok(Math.abs(low.orbitalVelocityMs - expected) < 1e-6);
+});
+
+test('LEO insertion (≈400 km) is infeasible with the small fusion tank', () => {
+  const plan = planOrbitalInsertion({ altitudeKm: 400 });
+  assert.equal(plan.feasible, false);
+  assert.equal(plan.canReachLowEarthOrbit, false);
+  // LEO needs a few hundred kg of propellant, far above the 120 kg carried.
+  assert.ok(plan.propellantRequiredKg > 300);
+  assert.ok(plan.deltaVTotalMs > 8_000);
+  // The tank ceiling (few km/s) is below LEO orbital velocity.
+  assert.ok(plan.maxDeltaVMs < 7_000);
+});
+
+test('a very large tank could cover LEO insertion (consistent rocket equation)', () => {
+  const plan = planOrbitalInsertion({ altitudeKm: 400, propellantMassKg: 800, dryMassKg: 1240 });
+  assert.equal(plan.feasible, true);
+  // Cross-check: Δv recovered from the required propellant.
+  const recovered = plan.drive.exhaustVelocityMs * Math.log(1 + plan.propellantRequiredKg / 1240);
+  assert.ok(Math.abs(recovered - plan.deltaVTotalMs) < 1e-6);
+});
+
+test('higher altitude requires slightly less Δv but the tank ceiling stays fixed', () => {
+  const low = planOrbitalInsertion({ altitudeKm: 400 });
+  const high = planOrbitalInsertion({ altitudeKm: 1000 });
+  assert.ok(high.deltaVTotalMs < low.deltaVTotalMs);
+  assert.ok(Math.abs(low.maxDeltaVMs - high.maxDeltaVMs) < 1e-9);
 });

@@ -25,6 +25,10 @@
  * drive's Tsiolkovsky budget:
  *
  *   m_prop = m_dry · ( exp(Δv / Vₑ) − 1 )
+ *
+ * It also models two related space regimes:
+ *   - circular orbit insertion (LEO):  v_orb = sqrt(μ / (R + h))
+ *   - escape velocity:                  v_esc = sqrt(2μ / (R + h)) = √2·v_orb
  */
 
 import { calculateFusionDrive, DEFAULT_FUSION_CONFIG } from './fusionDrive.js';
@@ -146,3 +150,83 @@ export function planPointToPointMission(input = {}) {
     })
   });
 }
+
+/**
+ * Circular-orbit and escape-velocity regime at a given altitude.
+ * @param {object} input - { altitudeKm }.
+ * @returns {object} orbit velocity, orbital period, and escape velocity.
+ */
+export function orbitRegime({ altitudeKm = 0 }) {
+  const altitudeM = Math.max(0, finiteOr(altitudeKm, 0)) * 1000;
+  const radiusM = EARTH_RADIUS_M + altitudeM;
+  const orbitalVelocityMs = Math.sqrt(GRAVITATIONAL_PARAMETER_M3S2 / radiusM);
+  const escapeVelocityMs = Math.sqrt(2 * GRAVITATIONAL_PARAMETER_M3S2 / radiusM);
+  const periodMinutes = (2 * Math.PI * radiusM / orbitalVelocityMs) / 60;
+
+  return Object.freeze({
+    altitudeKm: altitudeM / 1000,
+    radiusKm: radiusM / 1000,
+    orbitalVelocityMs,
+    escapeVelocityMs,
+    escapeToOrbitalRatio: escapeVelocityMs / orbitalVelocityMs, // √2
+    periodMinutes
+  });
+}
+
+/**
+ * Plans an ascent from the surface to a circular orbit at a given altitude,
+ * using the fusion drive's rocket budget for the orbital insertion burn.
+ *
+ * The total Δv lumps the orbital velocity plus gravity/drag losses typical of a
+ * real ascent. It then reports whether the onboard propellant can cover it, and
+ * the minimum tank required to reach the target (honest feasibility readout).
+ *
+ * @param {object} input - overrides of DEFAULT_FUSION_CONFIG plus:
+ *   altitudeKm: target circular orbit altitude.
+ *   gravityLossMs: lumped gravity + drag losses for the ascent (default 1_400).
+ * @returns frozen plan for the orbital insertion mission.
+ */
+export function planOrbitalInsertion(input = {}) {
+  const altitudeKm = Math.max(0, finiteOr(input.altitudeKm, 400));
+  const gravityLossMs = Math.max(0, finiteOr(input.gravityLossMs, 1_400));
+
+  const regime = orbitRegime({ altitudeKm });
+  const deltaVTotalMs = regime.orbitalVelocityMs + gravityLossMs;
+
+  const driveConfig = { ...DEFAULT_FUSION_CONFIG, ...input };
+  const drive = calculateFusionDrive({
+    thrustN: 0, // design-exhaust-velocity mode
+    fusionPowerKw: driveConfig.fusionPowerKw,
+    exhaustEfficiency: driveConfig.exhaustEfficiency,
+    exhaustVelocityMs: driveConfig.exhaustVelocityMs,
+    propellantMassKg: driveConfig.propellantMassKg,
+    dryMassKg: driveConfig.dryMassKg
+  });
+  const exhaustVelocityMs = drive.exhaustVelocityMs;
+  const dryMassKg = driveConfig.dryMassKg;
+  const propellantAvailableKg = driveConfig.propellantMassKg;
+
+  const propellantRequiredKg = dryMassKg * (Math.exp(deltaVTotalMs / exhaustVelocityMs) - 1);
+  const feasible = propellantRequiredKg <= propellantAvailableKg;
+  const propellantAfterKg = Math.max(0, propellantAvailableKg - propellantRequiredKg);
+
+  // With the current tank, what Δv can the drive deliver? This is the honest
+  // ceiling: reaching LEO needs ≈ v_orb (≥7.3 km/s) before any losses, so a
+  // tank that only provides a few km/s cannot insert into low Earth orbit.
+  const maxDeltaVMs = exhaustVelocityMs * Math.log(1 + propellantAvailableKg / dryMassKg);
+
+  return Object.freeze({
+    altitudeKm,
+    deltaVTotalMs,
+    gravityLossMs,
+    regime,
+    drive: Object.freeze({ exhaustVelocityMs, jetPowerKw: drive.jetPowerW / 1000, thrustN: drive.thrustN }),
+    propellantRequiredKg,
+    propellantAvailableKg,
+    propellantAfterKg,
+    feasible,
+    maxDeltaVMs,
+    canReachLowEarthOrbit: feasible && altitudeKm >= 150
+  });
+}
+

@@ -456,6 +456,23 @@
         <p class="drive-note">A subida e o pouso (atmosfera) ficam com o EDF; a transferência exoatmosférica usa o impulso de fusão — trajetória balística mínima entre dois pontos da Terra.</p>
       </section>
 
+      <section class="eng-section fusion-panel" aria-label="Inserção orbital e velocidade de escape">
+        <div class="eng-section-title">Órbita circular · escape</div>
+        <div class="parameter">
+          <div class="param-copy"><label for="orbitAltInput">Altitude-alvo</label><output id="orbitAltOutput">400<small>km</small></output></div>
+          <input id="orbitAltInput" data-param="orbitAltKm" data-output="orbitAltOutput" data-unit="km" data-decimals="0" type="range" min="150" max="36000" step="50" value="400" />
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><span>vel. orbital</span><b><em id="orbitVO">—</em> km/s</b></div>
+          <div class="metric"><span>vel. de escape</span><b><em id="orbitVEsc">—</em> km/s</b></div>
+          <div class="metric"><span>período orbital</span><b><em id="orbitPeriod">—</em> min</b></div>
+          <div class="metric"><span>Δv de injeção</span><b><em id="orbitDeltaV">—</em> km/s</b></div>
+          <div class="metric"><span>deutério p/ órbita</span><b><em id="orbitProp">—</em> kg</b></div>
+        </div>
+        <div class="orbit-status" id="orbitInsertStatus">—</div>
+        <p class="drive-note">Órbita circular em LEO exige ≈ v_orb (≥7,3 km/s) + perdas. Com 120 kg de deutério o impulso entrega ≈ 3,2 km/s — suficiente para salto ponto a ponto, mas <b>não</b> para alcançar órbita baixa. Velocidade de escape = √2 × v_orb.</p>
+      </section>
+
       <div class="equation" id="equationTag"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
     </div>
   </aside>
@@ -522,13 +539,14 @@
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
     import { calculateFlightPhysics, DEFAULT_CONFIG, clamp } from './src/physics.js';
-    import { planPointToPointMission, EARTH_RADIUS_M } from './src/orbital.js';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero', scene:'hangar', period:'day' };
     const design = { ...DEFAULT_CONFIG };
     design.orbitalRangeKm = 926;
+    design.orbitAltKm = 400;
     const BASE_DIMENSIONS = { lengthM:DEFAULT_CONFIG.lengthM, beamM:DEFAULT_CONFIG.beamM, heightM:DEFAULT_CONFIG.heightM };
     let physics = calculateFlightPhysics(design);
     const telemetryHistory = Array(20).fill(physics.performance.resultantAccelerationMs2);
@@ -2022,6 +2040,29 @@
             ? `viável · sobram ${numberFormatter(mission.propellantAfterKg,1)} kg de deutério · alcance máximo ${numberFormatter(mission.maxRange.rangeKm,0)} km`
             : `não viável · alcance máximo do impulso: ${numberFormatter(mission.maxRange.rangeKm,0)} km`;
           orbitStatus.classList.toggle('alert',!mission.feasible);
+        }
+
+        // Circular orbit / escape regime at the target altitude.
+        const altKm = Number(design.orbitAltKm)||400;
+        const insertion = planOrbitalInsertion({
+          altitudeKm: altKm,
+          fusionPowerKw: design.fusionPowerKw,
+          exhaustEfficiency: design.exhaustEfficiency,
+          exhaustVelocityMs: design.fusionExhaustVelocityMs,
+          propellantMassKg: design.propellantMassKg,
+          dryMassKg: design.massKg
+        });
+        setText('orbitVO',numberFormatter(insertion.regime.orbitalVelocityMs/1000,2));
+        setText('orbitVEsc',numberFormatter(insertion.regime.escapeVelocityMs/1000,2));
+        setText('orbitPeriod',numberFormatter(insertion.regime.periodMinutes,1));
+        setText('orbitDeltaV',numberFormatter(insertion.deltaVTotalMs/1000,2));
+        setText('orbitProp',numberFormatter(insertion.propellantRequiredKg,0));
+        const insStatus=document.getElementById('orbitInsertStatus');
+        if(insStatus){
+          insStatus.textContent=insertion.feasible
+            ? `viável · sobram ${numberFormatter(insertion.propellantAfterKg,1)} kg de deutério`
+            : `não viável · tanque de ${numberFormatter(insertion.propellantAvailableKg,0)} kg entrega ${numberFormatter(insertion.maxDeltaVMs/1000,2)} km/s; órbita exige ${numberFormatter(insertion.propellantRequiredKg,0)} kg`;
+          insStatus.classList.toggle('alert',!insertion.feasible);
         }
       }
       updateTelemetryTrace(p.resultantAccelerationMs2);
