@@ -34,7 +34,7 @@ A troca é imediata: as duas variantes de cada textura são pré-geradas e os ma
 - **Detalhe pontual por peça:** juntas de painel geométricas, 64 rebites instanciados, suíte de sensores EO/IR com tubos pitot, antenas, persianas de exaustão, estatores no intake dos pods e no EDF, pétalas de bocal, trem de pouso retrátil, decalques de resgate e registro.
 - **Sinalização aeronáutica:** luzes de navegação vermelha/verde com duplo strobe, farol anticolisão pulsante e luzes de aproximação na pista externa.
 - **Herança Mk.III/Mk.IV mantida:** casco paramétrico (comprimento, boca, altura), modo Engenharia com vetores de força em kN, cotas 3D, telemetria SI e solver determinístico em `src/physics.js`.
-- **Modo Impulso de fusão (novo):** no painel de Engenharia, o seletor **Sistema propulsivo** alterna o EDF elétrico (disco atuador) para um **impulso de fusão de deutério** (`src/fusionDrive.js`), que modela exaustão de plasma com a equação do foguete — empuxo `F = ṁ·Vₑ`, potência de jato `P = ½ṁ·Vₑ²`, impulso específico `Isp = Vₑ/g`, queima `t = m_prop/ṁ` e `Δv = Vₑ·ln(m₀/m_f)`.
+- **Modo Impulso de fusão (novo):** no painel de Engenharia, o seletor **Sistema propulsivo** alterna o EDF elétrico (disco atuador) para um **impulso de fusão** (`src/fusionDrive.js`), que modela exaustão de plasma com a equação do foguete — empuxo `F = ṁ·Vₑ`, potência de jato `P = ½ṁ·Vₑ²`, impulso específico `Isp = Vₑ/g`, queima `t = m_prop/ṁ` e `Δv = Vₑ·ln(m₀/m_f)`. O **combustível é selecionável**: **D+D (deutério)** ou **D+³He (hélio-3)** — o ³He é ~4× mais energético e quase anêutronico.
 - **Missão orbital ponto a ponto (novo):** `src/orbital.js` planeja o salto balístico mínimo entre dois pontos da Terra (elipse kepleriana, `v_inj`, apogeu, tempo por Kepler e deutério consumido), usado apenas na fase exoatmosférica — com indicador de viabilidade e alcance máximo do tanque.
 - **Órbita circular · escape (novo):** o mesmo módulo calcula `v_orb`, período e `v_esc = √2·v_orb` em qualquer altitude, com o Δv de injeção e o deutério exigido — evidenciando honestamente que o tanque atual (≈3,2 km/s) alcança o salto ponto a ponto, mas **não** a órbita baixa (~9 km/s).
 
@@ -54,10 +54,12 @@ A velocidade induzida do disco atuador é encontrada por bisseção estável, in
 
 O "impulso" de Star Trek é, na mecânica clássica, um **foguete de fusão**: o reator fíde deutério e o bocal expele um plasma a alta velocidade. A física disso é real e é a da **equação do foguete** (`src/fusionDrive.js`):
 
-- **Energia do deutério:** D + D libera ≈ 3,6 MeV por reação ⇒ ≈ **1,7×10¹⁴ J/kg** (≈ 3,8 milhões de vezes a gasolina).
-- **Limite ideal:** se toda a energia fosse para o próprio combustível, a exaustão atingiria ≈ **6% de c** (`Isp ≈ 1,9×10⁶ s`). Isso é um limite teórico, não uma meta de projeto.
+- **Energia dos combustíveis:**
+  - **D + D** → libera ≈ 3,6 MeV/reação (2 deutérios) ⇒ ≈ **8,6×10¹³ J/kg** (≈ 1,9 milhão × gasolina), exaustão ideal ≈ **4,4% c** (`Isp ≈ 1,3×10⁶ s`). Emite nêutrons ⇒ blindagem pesada.
+  - **D + ³He** → libera ≈ 18,4 MeV/reação ⇒ ≈ **3,5×10¹⁴ J/kg** (**~4× o D+D**), exaustão ideal ≈ **8,9% c** (`Isp ≈ 2,7×10⁶ s`). **Quase anêutronico** (energia em partículas carregadas ⇒ jato direto, menos blindagem). A desvantagem é a escassez: ³He é raríssimo na Terra — fonte prática é mineração lunar/atmosfera de gigantes gasosos (a premissa de Star Trek).
+- **Limite ideal:** o valor acima é o teto teórico se toda a energia fosse para o próprio combustível — não é meta de projeto.
 - **Regime prático:** um impulso real adiciona **massa de reação** ao plasma. A uma `Vₑ` menor (ex.: 35 km/s), o empuxo cresce às custas do `Isp` — a troca clássica "empuxo × impulso específico" a potência de jato fixa (`F = 2P_j/Vₑ`).
-- **No AURORA (padrão):** reator de ≈ 12 MW de jato, `Vₑ ≈ 35 km/s`, `Isp ≈ 3.570 s`, fluxo de massa ≈ 7 g/s, 120 kg de massa de reação ⇒ ≈ 4,5 h de queima e `Δv ≈ 3,2 km/s`. O combustível de fusão em si é quase desprezível (gramas/hora).
+- **No AURORA (padrão):** reator de ≈ 12 MW de jato, `Vₑ ≈ 35 km/s`, `Isp ≈ 3.570 s`, fluxo de massa ≈ 7 g/s, 120 kg de massa de reação ⇒ ≈ 4,5 h de queima e `Δv ≈ 3,2 km/s`. O combustível de fusão em si é quase desprezível (gramas/hora; com D+³He ainda menos). A escolha de combustível afeta a densidade de energia e a blindagem, **não** o `Isp`/`Δv` de projeto — que dependem da `Vₑ` de exaustão escolhida.
 
 ### É "totalmente possível na realidade"?
 
@@ -95,6 +97,6 @@ Além do painel, os controles de **Altitude-alvo** (150–36.000 km) deixam clar
 npm test
 ```
 
-A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores).
+A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, energia e caráter anêutronico do D+³He, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores).
 
 Para inspecionar o ambiente pelo console do navegador, `window.__AURORA_DEBUG__.snapshot()` devolve o estado corrente da cena — visibilidade de hangar/campo, intensidade do sol, luminárias acesas, neblina, exposição e mapa de ambiente ativo.

@@ -19,16 +19,25 @@
  *   burn time        tb = m_prop / ṁ
  *   rocket Δv        Δv = Ve · ln(m₀ / m_f)
  *
- * Deuterium (D + D) fusion energetics (both branches averaged):
+ * Two fuel cycles are modeled:
  *
- *   energy per reaction ≈ 3.60 MeV
- *   deuteron mass       ≈ 2.014 u
- *   specific energy     ≈ 1.7 × 10¹⁴ J/kg   (~3.8 million × gasoline)
+ *   D + D      →  (T + p) / (³He + n), Q ≈ 3.60 MeV, 2 deuterons/reaction
+ *                specific energy ≈ 8.6 × 10¹³ J/kg (~1.9 million × gasoline)
+ *   D + ³He    →  ⁴He + p,          Q ≈ 18.35 MeV, 1 deuteron + 1 ³He/reaction
+ *                specific energy ≈ 3.5 × 10¹⁴ J/kg (~4 × D+D)
  *
- * That specific energy bounds the *ideal* self-propelled exhaust at ≈ 6% c
- * (Isp ≈ 1.9×10⁶ s) if every joule were to accelerate only the fusion products.
- * Realistic "impulse" designs add reaction mass so the exhaust is slower, denser
- * and delivers more thrust per watt — which is exactly the Star Trek trade.
+ * ³He is ~4× more energetic per mass than D+D and, crucially, almost
+ * aneutronic: almost all of the energy is released as charged particles
+ * (⁴He + proton), so the exhaust can be a direct, steerable plasma jet with far
+ * less neutron shielding. Its catch is scarcity — ³He is essentially absent on
+ * Earth and is a practical source of the lunar regolith / gas-giant mining (the
+ * very premise Star Trek uses).
+ *
+ * These energy densities bound the *ideal* self-propelled exhaust: ≈ 4.4% c for
+ * D+D (Isp ≈ 1.3×10⁶ s) and ≈ 8.9% c for D+³He (Isp ≈ 2.7×10⁶ s), if every joule
+ * were to accelerate only the fusion products. Realistic "impulse" designs add
+ * reaction mass so the exhaust is slower, denser and delivers more thrust per
+ * watt — which is exactly the Star Trek trade.
  */
 
 // --- Physical constants (CODATA / NIST) --------------------------------
@@ -36,6 +45,27 @@ const G_STANDARD = 9.80665; // kept local to avoid a circular import with physic
 const ELECTRONVOLT_J = 1.602176634e-19;
 const ATOMIC_MASS_UNIT_KG = 1.66053906660e-27;
 export const SPEED_OF_LIGHT_MS = 299_792_458;
+
+/**
+ * Fusion fuel cycles. `reactantMassU` is the total reactant mass per reaction
+ * (which is why D+D divides the deuteron mass by two reactions per two atoms).
+ */
+export const FUSION_FUELS = Object.freeze({
+  d2: Object.freeze({
+    name: 'D + D',
+    energyPerReactionJ: 3.60e6 * ELECTRONVOLT_J,                  // ≈ 5.77e-13 J
+    reactantMassU: 2 * 2.014101778,                               // 4.028 u
+    neutrons: true,                                               // D+D emits neutrons
+    source: 'deutério (abundante na água)'
+  }),
+  dhe3: Object.freeze({
+    name: 'D + ³He',
+    energyPerReactionJ: 18.35e6 * ELECTRONVOLT_J,                 // ≈ 2.95e-12 J
+    reactantMassU: 2.014101778 + 3.016029321,                     // 5.030 u
+    neutrons: false,                                              // almost aneutronic
+    source: 'deutério + hélio-3 (raro na Terra; Lua / gigantes gasosos)'
+  })
+});
 
 export const DEFAULT_FUSION_CONFIG = Object.freeze({
   // Reactor jet power (thermal power that actually reaches the plasma as kinetic
@@ -50,7 +80,9 @@ export const DEFAULT_FUSION_CONFIG = Object.freeze({
   propellantMassKg: 120,
   // Dry structural mass used for the rocket Δv computation.
   dryMassKg: 1240,
-  gravityMs2: G_STANDARD
+  gravityMs2: G_STANDARD,
+  // Fuel cycle: 'd2' (deuterium) or 'dhe3' (deuterium + helium-3).
+  fuelType: 'd2'
 });
 
 const LIMITS = Object.freeze({
@@ -78,29 +110,44 @@ function normalizedConfig(input = {}) {
   }
   config.exhaustEfficiency = clamp(finiteOr(config.exhaustEfficiency, DEFAULT_FUSION_CONFIG.exhaustEfficiency), 0.05, 1);
   config.exhaustVelocityMs = clamp(finiteOr(config.exhaustVelocityMs, DEFAULT_FUSION_CONFIG.exhaustVelocityMs), LIMITS.exhaustVelocityMs[0], LIMITS.exhaustVelocityMs[1]);
+  config.fuelType = config.fuelType === 'dhe3' ? 'dhe3' : 'd2';
   return config;
 }
 
 /**
- * Computes the deuterium D+D fusion energetics.
- * @returns {object} energy per reaction (J), deuterons per kg, specific energy (J/kg),
- *                   and the ideal self-propelled exhaust velocity (m/s) at η = 1.
+ * Fusion energetics for a given fuel cycle.
+ * @param {string} [fuelType='d2'] - 'd2' (deuterium) or 'dhe3' (deuterium + helium-3).
+ * @returns {object} energy per reaction (J), reactions per kg, specific energy (J/kg),
+ *                   ideal self-propelled exhaust velocity (m/s) at η = 1, and whether
+ *                   the cycle is aneutronic.
  */
-export function deuteriumFusionConstants() {
-  const energyPerReactionJ = 3.60e6 * ELECTRONVOLT_J;                 // ≈ 5.77e-13 J
-  const deuteronMassKg = 2.014101778 * ATOMIC_MASS_UNIT_KG;           // ≈ 3.34e-27 kg
-  const deuteronsPerKg = 1 / deuteronMassKg;
-  const specificEnergyJkg = deuteronsPerKg * energyPerReactionJ;      // ≈ 1.7e14 J/kg
-  const idealExhaustVelocityMs = Math.sqrt(2 * specificEnergyJkg);    // ≈ 1.86e7 m/s ≈ 6% c
+export function fusionConstants(fuelType = 'd2') {
+  const fuel = FUSION_FUELS[fuelType] || FUSION_FUELS.d2;
+  const reactantMassKg = fuel.reactantMassU * ATOMIC_MASS_UNIT_KG;
+  const reactionsPerKg = 1 / reactantMassKg;
+  const specificEnergyJkg = reactionsPerKg * fuel.energyPerReactionJ;
+  const idealExhaustVelocityMs = Math.sqrt(2 * specificEnergyJkg);
   return Object.freeze({
-    energyPerReactionJ,
-    deuteronMassKg,
-    deuteronsPerKg,
+    fuelType: fuelType === 'dhe3' ? 'dhe3' : 'd2',
+    name: fuel.name,
+    energyPerReactionJ: fuel.energyPerReactionJ,
+    reactantMassKg,
+    reactionsPerKg,
     specificEnergyJkg,
+    neutrons: fuel.neutrons,
+    source: fuel.source,
     idealExhaustVelocityMs,
     idealSpecificImpulseS: idealExhaustVelocityMs / G_STANDARD,
     idealExhaustFractionOfC: idealExhaustVelocityMs / SPEED_OF_LIGHT_MS
   });
+}
+
+/**
+ * Backwards-compatible alias for the deuterium (D+D) cycle.
+ * @returns {object} the D+D fusion constants.
+ */
+export function deuteriumFusionConstants() {
+  return fusionConstants('d2');
 }
 
 /**
@@ -134,11 +181,11 @@ export function calculateFusionDrive(input = {}) {
   const specificImpulseS = exhaustVelocityMs / g;
   const burnTimeMinutes = config.propellantMassKg / propellantMassFlowKgS / 60;
 
-  // Reaction mass needed purely to *fuel* the fusion (D+D) at this jet power is
+  // Reaction mass needed purely to *fuel* the fusion cycle at this jet power is
   // negligible — this is the whole point of fusion as a "high Isp" source.
-  const constants = deuteriumFusionConstants();
-  const deuteriumFuelFlowKgS = jetPowerW / constants.specificEnergyJkg;
-  const deuteriumFuelPerHourKg = deuteriumFuelFlowKgS * 3600;
+  const constants = fusionConstants(config.fuelType);
+  const fuelFlowKgS = jetPowerW / constants.specificEnergyJkg;
+  const fuelPerHourKg = fuelFlowKgS * 3600;
 
   // Rocket Δv over the mission propellant budget.
   const initialMassKg = config.dryMassKg + config.propellantMassKg;
@@ -158,8 +205,8 @@ export function calculateFusionDrive(input = {}) {
     propellantMassFlowKgS,
     burnTimeMinutes,
     deltaVMs,
-    deuteriumFuelFlowKgS,
-    deuteriumFuelPerHourKg,
+    fuelFlowKgS,
+    fuelPerHourKg,
     reactorMassEstimateKg,
     exhaustFractionOfC: exhaustVelocityMs / SPEED_OF_LIGHT_MS,
     ideal: constants

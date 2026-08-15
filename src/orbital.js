@@ -108,7 +108,8 @@ export function planPointToPointMission(input = {}) {
     exhaustEfficiency: driveConfig.exhaustEfficiency,
     exhaustVelocityMs: driveConfig.exhaustVelocityMs,
     propellantMassKg: driveConfig.propellantMassKg,
-    dryMassKg: driveConfig.dryMassKg
+    dryMassKg: driveConfig.dryMassKg,
+    fuelType: driveConfig.fuelType
   });
 
   const exhaustVelocityMs = drive.exhaustVelocityMs;
@@ -200,7 +201,8 @@ export function planOrbitalInsertion(input = {}) {
     exhaustEfficiency: driveConfig.exhaustEfficiency,
     exhaustVelocityMs: driveConfig.exhaustVelocityMs,
     propellantMassKg: driveConfig.propellantMassKg,
-    dryMassKg: driveConfig.dryMassKg
+    dryMassKg: driveConfig.dryMassKg,
+    fuelType: driveConfig.fuelType
   });
   const exhaustVelocityMs = drive.exhaustVelocityMs;
   const dryMassKg = driveConfig.dryMassKg;

@@ -10,7 +10,8 @@ export const FUSION_PROPULSION_CONFIG = Object.freeze({
   fusionPowerKw: 12_000,
   exhaustEfficiency: 0.82,
   fusionExhaustVelocityMs: 35_000,
-  propellantMassKg: 120
+  propellantMassKg: 120,
+  fuelType: 'd2'
 });
 
 export const DEFAULT_CONFIG = Object.freeze({
@@ -36,7 +37,8 @@ export const DEFAULT_CONFIG = Object.freeze({
   fusionPowerKw: FUSION_PROPULSION_CONFIG.fusionPowerKw,
   exhaustEfficiency: FUSION_PROPULSION_CONFIG.exhaustEfficiency,
   fusionExhaustVelocityMs: FUSION_PROPULSION_CONFIG.fusionExhaustVelocityMs,
-  propellantMassKg: FUSION_PROPULSION_CONFIG.propellantMassKg
+  propellantMassKg: FUSION_PROPULSION_CONFIG.propellantMassKg,
+  fuelType: FUSION_PROPULSION_CONFIG.fuelType
 });
 
 const LIMITS = Object.freeze({
@@ -182,7 +184,8 @@ export function calculateFlightPhysics(input = {}) {
       exhaustVelocityMs: config.fusionExhaustVelocityMs,
       propellantMassKg: config.propellantMassKg,
       dryMassKg: config.massKg,
-      gravityMs2: config.gravityMs2
+      gravityMs2: config.gravityMs2,
+      fuelType: config.fuelType
     });
     forwardThrustN = fusion.thrustN;
     totalPowerKw = liftPowerKw + drivePowerKw;

@@ -3,17 +3,41 @@ import assert from 'node:assert/strict';
 import {
   calculateFusionDrive,
   deuteriumFusionConstants,
+  fusionConstants,
   DEFAULT_FUSION_CONFIG
 } from '../src/fusionDrive.js';
 import { calculateFlightPhysics, DEFAULT_CONFIG } from '../src/physics.js';
 
 test('deuterium fusion energetics are physically plausible', () => {
   const c = deuteriumFusionConstants();
-  // D+D fusion ~3.6 MeV/reaction, energy density ~1.7e14 J/kg.
+  // D+D fusion ~3.6 MeV/reaction. Two deuterons per reaction: energy density
+  // ≈ 8.6e13 J/kg (~1.9 million × gasoline), ideal exhaust ≈ 4.4% c.
   assert.ok(Math.abs(c.energyPerReactionJ - 3.60e6 * 1.602176634e-19) < 1e-22);
-  assert.ok(c.specificEnergyJkg > 1e14 && c.specificEnergyJkg < 3e14);
-  // Ideal self-propelled exhaust is a few percent of c.
-  assert.ok(c.idealExhaustFractionOfC > 0.03 && c.idealExhaustFractionOfC < 0.1);
+  assert.ok(c.specificEnergyJkg > 8e13 && c.specificEnergyJkg < 9e13);
+  assert.ok(c.idealExhaustFractionOfC > 0.03 && c.idealExhaustFractionOfC < 0.06);
+  assert.equal(c.fuelType, 'd2');
+  assert.equal(c.neutrons, true);
+});
+
+test('helium-3 cycle is ~4× more energetic and aneutronic', () => {
+  const he3 = fusionConstants('dhe3');
+  const d2 = fusionConstants('d2');
+  assert.equal(he3.fuelType, 'dhe3');
+  assert.equal(he3.neutrons, false); // almost all energy to charged particles
+  // D+³He releases ~18.35 MeV per reaction.
+  assert.ok(Math.abs(he3.energyPerReactionJ - 18.35e6 * 1.602176634e-19) < 1e-22);
+  // Energy density and ideal exhaust are higher than D+D (≈3.5e14 J/kg, ≈8.9% c).
+  assert.ok(he3.specificEnergyJkg > 3.4e14 && he3.specificEnergyJkg < 3.6e14);
+  assert.ok(he3.specificEnergyJkg > 3 * d2.specificEnergyJkg);
+  assert.ok(he3.idealExhaustVelocityMs > d2.idealExhaustVelocityMs);
+  assert.ok(he3.idealExhaustFractionOfC > 0.06 && he3.idealExhaustFractionOfC < 0.12);
+});
+
+test('invalid fuel type falls back to deuterium', () => {
+  assert.equal(fusionConstants('nope').fuelType, 'd2');
+  const drive = calculateFusionDrive({ fuelType: 'bogus' });
+  assert.equal(drive.config.fuelType, 'd2');
+  assert.equal(drive.ideal.fuelType, 'd2');
 });
 
 test('rocket relations hold: F = mdot·Ve and Pj = ½·mdot·Ve²', () => {
@@ -42,8 +66,8 @@ test('burn time scales with propellant budget and inverse mass flow', () => {
 test('deuterium fuel flow for fusion is negligible relative to reaction mass', () => {
   const drive = calculateFusionDrive({ thrustN: 12_000 });
   // A 12 MW-class fusion plant consumes only grams of deuterium per hour.
-  assert.ok(drive.deuteriumFuelPerHourKg < 1);
-  assert.ok(drive.deuteriumFuelPerHourKg > 0);
+  assert.ok(drive.fuelPerHourKg < 1);
+  assert.ok(drive.fuelPerHourKg > 0);
 });
 
 test('rocket delta-v increases with exhaust velocity', () => {

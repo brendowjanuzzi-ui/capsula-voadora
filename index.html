@@ -212,6 +212,12 @@
     .drive:hover,.drive.active{border-color:rgba(138,234,240,.42);color:var(--cyan-bright);background:rgba(59,196,202,.1)}
     .drive.active{border-color:var(--lime);color:var(--lime);background:rgba(165,246,143,.08)}
     .drive-note{color:#5c6f70;font:400 8px DM Mono,monospace;letter-spacing:.02em;line-height:1.6;margin:7px 0 0}
+    .fuel-pick{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+    .fuel{border:1px solid rgba(205,248,246,.13);border-radius:2px;background:rgba(255,255,255,.015);padding:7px 4px;color:#718889;font:500 7px DM Mono,monospace;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.2s;line-height:1.5}
+    .fuel:hover,.fuel.active{border-color:rgba(138,234,240,.42);color:var(--cyan-bright);background:rgba(59,196,202,.1)}
+    .fuel.active{border-color:var(--lime);color:var(--lime);background:rgba(165,246,143,.08)}
+    .fusion-fuel{display:none}
+    body.fusion-mode .fusion-fuel{display:grid}
     .fusion-panel{display:none}
     body.fusion-mode .fusion-panel{display:block}
     .orbit-status{margin-top:8px;border:1px solid rgba(165,246,143,.28);background:rgba(165,246,143,.06);color:#bff0a9;font:500 8px DM Mono,monospace;letter-spacing:.02em;padding:7px 8px;border-radius:2px;line-height:1.5}
@@ -359,9 +365,13 @@
         <div class="eng-section-title">Sistema propulsivo</div>
         <div class="drive-pick">
           <button class="drive active" data-drive="edf">EDF elétrico</button>
-          <button class="drive" data-drive="fusion">Impulso de fusão D+D</button>
+          <button class="drive" data-drive="fusion">Impulso de fusão</button>
         </div>
-        <p class="drive-note">O impulso de fusão usa exaustão de plasma (deutério), com Isp alto e empuxo baixo — regime de voo orbital, não de cruzeiro atmosférico.</p>
+        <div class="fuel-pick fusion-fuel" aria-label="Combustível de fusão">
+          <button class="fuel active" data-fuel="d2">D + D (deutério)</button>
+          <button class="fuel" data-fuel="dhe3">D + ³He (hélio-3)</button>
+        </div>
+        <p class="drive-note">Impulso de fusão = exaustão de plasma, Isp alto e empuxo baixo — regime de voo orbital, não de cruzeiro atmosférico. O ³He é ~4× mais energético e quase anêutronico (menos blindagem), porém raro na Terra (mineração lunar / gigantes gasosos).</p>
       </section>
 
       <section class="eng-section" aria-label="Parâmetros do casco">
@@ -2014,9 +2024,15 @@
         setText('fusionFlow',numberFormatter(fd.propellantMassFlowKgS*1000,2));
         setText('fusionBurn',numberFormatter(fd.burnTimeMinutes,1));
         setText('fusionDeltaV',numberFormatter(fd.deltaVMs,0));
-        setText('fusionFuel',numberFormatter(fd.deuteriumFuelPerHourKg*1000,2));
+        setText('fusionFuel',numberFormatter(fd.fuelPerHourKg*1000,2));
         const eq=document.getElementById('equationTag');
-        if(eq)eq.innerHTML='<b>IMPULSO DE FUSÃO / EQUAÇÃO DO FOGUETE</b>F = ṁ·Vₑ &nbsp;·&nbsp; P = ½ṁ·Vₑ² &nbsp;·&nbsp; Δv = Vₑ·ln(m₀/m_f)<br>Reator D+D · exaustão de plasma · combustível ≈ 1,7×10¹⁴ J/kg';
+        if(eq){
+          const fuelName=fd.ideal.name;
+          const fuelDens=numberFormatter(fd.ideal.specificEnergyJkg/1e15,2);
+          const idealC=numberFormatter(fd.ideal.idealExhaustFractionOfC*100,1);
+          const neutro=fd.ideal.neutrons?'emite nêutrons (blindagem pesada)':'quase anêutronico (menos blindagem)';
+          eq.innerHTML=`<b>IMPULSO DE FUSÃO / EQUAÇÃO DO FOGUETE</b>F = ṁ·Vₑ &nbsp;·&nbsp; P = ½ṁ·Vₑ² &nbsp;·&nbsp; Δv = Vₑ·ln(m₀/m_f)<br>${fuelName} · exaustão de plasma · ${fuelDens}×10¹⁵ J/kg · ideal ≈ ${idealC}% c · ${neutro}`;
+        }
 
         // Orbital point-to-point mission (fusion impulse, exoatmospheric phase).
         const rangeKm = Number(design.orbitalRangeKm)||926;
@@ -2027,7 +2043,8 @@
           exhaustEfficiency: design.exhaustEfficiency,
           exhaustVelocityMs: design.fusionExhaustVelocityMs,
           propellantMassKg: design.propellantMassKg,
-          dryMassKg: design.massKg
+          dryMassKg: design.massKg,
+          fuelType: design.fuelType
         });
         setText('orbitalBeta',numberFormatter(mission.trajectory.centralAngleDeg,1));
         setText('orbitalDeltaV',numberFormatter(mission.deltaVNeededMs/1000,2));
@@ -2050,7 +2067,8 @@
           exhaustEfficiency: design.exhaustEfficiency,
           exhaustVelocityMs: design.fusionExhaustVelocityMs,
           propellantMassKg: design.propellantMassKg,
-          dryMassKg: design.massKg
+          dryMassKg: design.massKg,
+          fuelType: design.fuelType
         });
         setText('orbitVO',numberFormatter(insertion.regime.orbitalVelocityMs/1000,2));
         setText('orbitVEsc',numberFormatter(insertion.regime.escapeVelocityMs/1000,2));
@@ -2093,6 +2111,13 @@
     document.querySelectorAll('.drive').forEach(button=>button.addEventListener('click',()=>{
       design.propulsionModel=button.dataset.drive;
       document.querySelectorAll('.drive').forEach(item=>item.classList.toggle('active',item===button));
+      updatePhysics();
+    }));
+
+    // Fusion fuel cycle: D+D (deuterium) vs D+³He (helium-3).
+    document.querySelectorAll('.fuel').forEach(button=>button.addEventListener('click',()=>{
+      design.fuelType=button.dataset.fuel;
+      document.querySelectorAll('.fuel').forEach(item=>item.classList.toggle('active',item===button));
       updatePhysics();
     }));
 
