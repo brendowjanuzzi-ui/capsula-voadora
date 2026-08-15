@@ -241,6 +241,8 @@
     .boarding-proc p{margin:0 0 5px;color:#9db6bb;font:400 8px DM Mono,monospace;letter-spacing:.02em;line-height:1.55}
     .boarding-proc p:last-child{margin-bottom:0}
     .boarding-proc b{color:#8ee6ff}
+    .ramp-toggle{margin-top:7px}
+    .ramp-toggle .drive{width:100%}
     .parameter{margin:0 0 11px}.param-copy{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.param-copy label{color:#a6b8b8;font-size:9px;font-weight:600}.param-copy output{color:var(--cyan-bright);font:500 9px DM Mono,monospace}.param-copy output small{margin-left:3px;color:#607a7b;font-size:7px}
     .parameter input{display:block;width:100%;height:12px;margin:0;appearance:none;background:transparent;cursor:ew-resize}
     .parameter input::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:linear-gradient(90deg,var(--cyan) 0 var(--range,50%),rgba(255,255,255,.1) var(--range,50%));box-shadow:0 0 8px rgba(76,218,222,.12)}
@@ -579,7 +581,9 @@
           <p><b>3.</b> Entrada por <b>compartimento pressurizado</b> (equilíbrio de pressão) → <b>cabine blindada</b> sem janelas.</p>
           <p><b>4.</b> Tripulação senta <b>virada para o mastro</b> (pernas na direção do reator), pilotando por <b>telas</b>.</p>
           <p><b>5.</b> Desembarque na chegada: reentrada via <b>EDF</b>, pouso vertical, e só então a escotilha abre.</p>
+          <p><b>Escada retrátil:</b> a rampa é <b>só de embarque em solo</b> — recolhe-se antes de decolar (toggle abaixo) e nunca fica exposta em voo.</p>
         </div>
+        <div class="ramp-toggle"><button id="rampToggle" class="drive active">Escada estendida (solo)</button></div>
       </section>
 
       <section class="eng-section" aria-label="Dimensionamento físico">
@@ -682,14 +686,14 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=12';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=12';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=12';
-    import { sizeCapsule } from './src/sizing.js?v=12';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=13';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=13';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=13';
+    import { sizeCapsule } from './src/sizing.js?v=13';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero', scene:'hangar', period:'day', fusionMode:false };
+    const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero', scene:'hangar', period:'day', fusionMode:false, rampDeployed:true };
     const design = { ...DEFAULT_CONFIG };
     design.orbitalRangeKm = 926;
     design.orbitAltKm = 400;
@@ -1519,28 +1523,28 @@
     }
 
     // Pods laterais: intake com estatores, aletas de refrigeração e bocal vetorial.
-    // Dimensionados como motores reais — corpo ~0,5 m, visíveis nas bordas do casco.
+    // Proporção equilibrada — corpo ~0,42 m, visíveis nas bordas do casco.
     for(const sx of [-1,1]){
-      const pod=new THREE.Group();pod.name=`Pod vetorial ${sx<0?'esquerdo':'direito'}`;pod.position.set(sx*1.52,.6,-1.3);
-      const body=cylinder('corpo pod',[0,0,0],.5,.58,2.1,M.hull,'z',56);pod.add(body);
-      const cap=ellipsoid('carenagem',[0,0,1.05],[.5,.5,.55],M.hullLight,40);pod.add(cap);
-      const ring=torus('intake',[0,0,-1.08],.5,.07,M.titanium);pod.add(ring);
-      for(let i=0;i<4;i++){pod.add(torus('aleta refrigeração',[0,0,.3+i*.26],.52-i*.006,.02,M.graphite))}
-      const stator=new THREE.Group();stator.name='estator de admissão';stator.position.z=-1.12;
-      for(let i=0;i<11;i++){
-        const a=i/11*Math.PI*2;
-        const vane=rounded('palheta',[Math.cos(a)*.24,Math.sin(a)*.24,0],[.42,.09,.03],.012,M.titanium);
+      const pod=new THREE.Group();pod.name=`Pod vetorial ${sx<0?'esquerdo':'direito'}`;pod.position.set(sx*1.5,.58,-1.35);
+      const body=cylinder('corpo pod',[0,0,0],.42,.48,1.85,M.hull,'z',56);pod.add(body);
+      const cap=ellipsoid('carenagem',[0,0,.92],[.42,.42,.46],M.hullLight,40);pod.add(cap);
+      const ring=torus('intake',[0,0,-.95],.42,.06,M.titanium);pod.add(ring);
+      for(let i=0;i<3;i++){pod.add(torus('aleta refrigeração',[0,0,.28+i*.24],.44-i*.006,.018,M.graphite))}
+      const stator=new THREE.Group();stator.name='estator de admissão';stator.position.z=-.98;
+      for(let i=0;i<9;i++){
+        const a=i/9*Math.PI*2;
+        const vane=rounded('palheta',[Math.cos(a)*.2,Math.sin(a)*.2,0],[.36,.075,.026],.01,M.titanium);
         vane.rotation.z=a;stator.add(vane);
       }
-      stator.add(ellipsoid('cone estator',[0,0,-.02],[.12,.12,.1],M.copper,18));
+      stator.add(ellipsoid('cone estator',[0,0,-.02],[.1,.1,.08],M.copper,18));
       pod.add(stator);
-      const dark=cylinder('interior intake',[0,0,-1.15],.42,.42,.06,M.rubber,'z',48);pod.add(dark);
-      const nozzle=cylinder('bocal vetorial',[0,0,1.32],.42,.34,.38,M.titanium,'z',48,true);pod.add(nozzle);
-      pod.add(torus('anel quente do bocal',[0,0,1.5],.32,.03,M.amber));
-      for(let j=0;j<7;j++){
-        const slit=rounded('dissipador',[sx<0?-.54:.54,.08+(j-3)*.1,-.1],[.03,.05,.85],.014,M.graphite);pod.add(slit);
+      const dark=cylinder('interior intake',[0,0,-1.0],.36,.36,.05,M.rubber,'z',48);pod.add(dark);
+      const nozzle=cylinder('bocal vetorial',[0,0,1.16],.36,.29,.34,M.titanium,'z',48,true);pod.add(nozzle);
+      pod.add(torus('anel quente do bocal',[0,0,1.32],.28,.026,M.amber));
+      for(let j=0;j<6;j++){
+        const slit=rounded('dissipador',[sx<0?-.46:.46,.06+(j-2.5)*.09,-.1],[.026,.045,.74],.012,M.graphite);pod.add(slit);
       }
-      const lamp=ellipsoid('luz navegação',[sx<0?-.52:.52,.28,.6],[.06,.1,.2],sx<0?M.navRed:M.navGreen,20);
+      const lamp=ellipsoid('luz navegação',[sx<0?-.44:.44,.24,.5],[.05,.085,.17],sx<0?M.navRed:M.navGreen,20);
       pod.add(lamp);
       prep(pod,'external',[sx*.55,.03,-.05]);
       strobes.push({mat:lamp.material,phase:sx<0?0:1.6,kind:'nav'});
@@ -1694,7 +1698,10 @@
     }
     // Perna de apoio no chão sob a plataforma.
     boardingRamp.add(rod('perna de apoio',[-.4,rampTopY-.1,rampZ1],[.4,rampBottomY,rampZ1],.04,M.graphite));
-    prep(boardingRamp,'external',[.18,-.2,.08]);
+    boardingRamp.userData.basePos=boardingRamp.position.clone();
+    boardingRamp.userData.ramp=true;
+    prep(boardingRamp,'ramp',[.18,-.2,.08]);
+    window.__AURORA_BOARDING_RAMP__=boardingRamp;
     for(const sx of [-1,1]){
       const strip=new THREE.Mesh(new THREE.PlaneGeometry(.56,.2),new THREE.MeshBasicMaterial({map:cautionStripes(),transparent:true,depthWrite:false,toneMapped:false}));
       strip.position.set(sx*1.463,.78,-.72);strip.rotation.y=sx*Math.PI/2;prep(strip,'external',[sx*.18,.06,-.1]);
@@ -2469,6 +2476,15 @@
       updatePhysics();
     }));
 
+    // Escada retrátil: estende em solo, recolhe para voo.
+    const rampToggle=document.getElementById('rampToggle');
+    if(rampToggle)rampToggle.addEventListener('click',()=>{
+      state.rampDeployed=!state.rampDeployed;
+      rampToggle.classList.toggle('active',state.rampDeployed);
+      rampToggle.textContent=state.rampDeployed?'Escada estendida (solo)':'Escada recolhida (voo)';
+      applyMode();
+    });
+
     /* ------------------------- Iluminação ------------------------- *
      *  Dois esquemas coexistem e são trocados pelo seletor de cena:   *
      *  hangar (key de teto, recorte do portão, sódio) e céu aberto    *
@@ -2660,6 +2676,7 @@
         }
         if(c==='field')visible=state.fields?(state.mode==='systems'?.75:state.mode==='engineering'?.14:.4):0;
         if(c==='reactor')visible=(state.fusionMode&&state.mode!=='external')?1:0;
+        if(c==='ramp')visible=state.rampDeployed&&(state.mode==='external'||state.mode==='systems')?1:0;
         setOpacity(obj,visible);
         obj.traverse(o=>{if(o.isMesh&&o.material)o.material.wireframe=state.mode==='engineering'&&c==='shell'});
         const factor=state.mode==='exploded'?1:0;
