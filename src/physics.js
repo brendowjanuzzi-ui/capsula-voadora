@@ -1,4 +1,4 @@
-import { calculateFusionDrive } from './fusionDrive.js?v=18';
+import { calculateFusionDrive } from './fusionDrive.js?v=19';
 
 export const G_STANDARD = 9.80665;
 export const SEA_LEVEL_DENSITY = 1.225;
@@ -22,7 +22,7 @@ export const FUSION_PROPULSION_CONFIG = Object.freeze({
 
 export const DEFAULT_CONFIG = Object.freeze({
   lengthM: 12,
-  beamM: 3.0,
+  beamM: 3.6,
   heightM: 1.8,
   massKg: 1850,
   airDensityKgM3: SEA_LEVEL_DENSITY,
