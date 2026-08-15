@@ -83,6 +83,8 @@ O plasma D+³He queima a ~150 milhões de °C — nenhum material sólido sobrev
 
 **Proteção da tripulação:** piloto na **frente, longe do reator** (a radiação cai com o inverso do quadrado da distância), blindagem de sombra + escudo de nêutrons, e refrigeração a **hélio líquido** mantendo a cabine confortável. O calor residual é rejeitado pelos radiadores de alta temperatura — é por isso que a cápsula precisa deles grandes e quentes.
 
+**No modelo 3D (aplicado na cápsula):** ao selecionar o **Impulso de fusão** no painel, o reator D+³He aparece **fisicamente no modelo** — bobinas REBCO (garrafa magnética), primeira parede de tungstênio com anéis quentes, plasma confinado incandescente, radiadores de alta temperatura e a blindagem de nêutrons entre o reator e a cabine. O halo do plasma pulsa e as bobinas giram em tempo real.
+
 ### Missão orbital · ponto a ponto (uso recomendado do impulso)
 
 Como o impulso de fusão tem **empuxo baixo e Isp alto**, ele não compete com o arrasto atmosférico — o lugar certo é a **transferência exoatmosférica**. No painel de Engenharia, em modo **Impulso de fusão**, a seção **"Missão orbital · ponto a ponto (Terra)"** (`src/orbital.js`) planeja o salto balístico entre dois pontos do planeta:
