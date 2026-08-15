@@ -103,6 +103,35 @@ Uma nave de fusão D+³He impõe uma arquitetura que nada tem a ver com as cabin
 
 O equilíbrio é de extremos: o combustível mais quente do universo no motor, resfriado pelo líquido mais frio da estrutura, com a tripulação protegida por distância, blindagem e telas. No painel, um **diagrama de escala cabine→reator** (SVG) desenha a arquitetura de mastro em escala real e é atualizado em tempo real pelo controle **Distância cabine→reator** (4–40 m), evidenciando como a exposição cai com o inverso do quadrado.
 
+### Envelope atmosférico: qual motor voa onde
+
+Uma dúvida recorrente é "por que não usar a fusão na atmosfera?". A resposta está no **envelope atmosférico** (`atmosphericEnvelope` em `src/physics.js`, painel **Envelope atmosférico · quem voa onde**):
+
+- **EDF (ar):** é um ventilador que empurra ar — funciona até ~**39 km** (onde o ar cai a ~1% do nível do mar). Acima disso não há ar para empurrar.
+- **Fusão > arrasto:** o impulso de fusão tem **empuxo baixo** (~560 N máx.). No ar denso, o arrasto o esmaga (milhares de N a 250 m/s). Ele só passa a vencer o arrasto acima de ~**38 km**.
+- **Órbita LEO:** exige **~7,9 km/s ≈ Mach 23** — uma velocidade que o EDF (e qualquer sistema a ar) jamais atinge.
+
+Ou seja: no nível do mar a fusão perde feio para o ar; acima de ~38–40 km a atmosfera deixa de ser o problema e a fusão assume. A ordem correta é **EDF (subir) → fusão (espaço) → EDF (pousar)** — o mesmo recorte do Starship abaixo.
+
+### Starship (SpaceX) vs. Cápsula AURORA
+
+O Starship usa o conceito de **foguete balístico suborbital ("Earth to Earth")** — e é a prova real do princípio que a cápsula modela:
+
+- **Subida atmosférica:** o Super Heavy usa 33 motores **Raptor** (metano + oxigênio líquido, `methalox`, em ciclo *full-flow staged combustion*) para atravessar a atmosfera densa (~5–9 milhas).
+- **Voo balístico:** o segundo estágio (Starship) alcança velocidade quase orbital, viaja a **~Mach 20+ (~27.000 km/h)** em arco suborbital paralelo à Terra, cobrindo grandes distâncias em minutos (ex.: NY–Londres ~11 min).
+- **Reentrada + pouso vertical:** escudo térmico + aletas, o "belly-flop" para desacelerar e pouso vertical.
+
+| Aspecto | Starship | Cápsula AURORA (modelo) |
+|---|---|---|
+| Subida atmosférica | Raptor (foguete químico) | **EDF elétrico** |
+| Propulsão espacial | Raptor (methalox) | **Impulso de fusão D+³He** |
+| Conceito de viagem | Salto balístico suborbital | Salto balístico ponto a ponto |
+| Isp | ~350 s (químico) | ~3.500–2,7M s (fusão) |
+| Empuxo | Altíssimo | Baixo |
+| Reentrada | Escudo térmico + belly-flop | UHTC + EDF |
+
+**O que o Starship confirma:** a arquitetura "atravessa a atmosfera com um sistema → arco balístico no espaço" funciona de verdade. O Starship usa **um motor só** (Raptor) porque o químico tem empuxo suficiente para subir do chão; a cápsula troca isso por **fusão de alto Isp** (muito mais eficiente no espaço), pagando o preço de precisar do **EDF** para a fase atmosférica. É uma troca física real, não um detalhe de projeto.
+
 ### Missão orbital · ponto a ponto (uso recomendado do impulso)
 
 Como o impulso de fusão tem **empuxo baixo e Isp alto**, ele não compete com o arrasto atmosférico — o lugar certo é a **transferência exoatmosférica**. No painel de Engenharia, em modo **Impulso de fusão**, a seção **"Missão orbital · ponto a ponto (Terra)"** (`src/orbital.js`) planeja o salto balístico entre dois pontos do planeta:
@@ -129,6 +158,6 @@ Além do painel, os controles de **Altitude-alvo** (150–36.000 km) deixam clar
 npm test
 ```
 
-A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, energia e caráter anêutronico do D+³He, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores). Em `tests/thermalProtection.test.mjs` valida o confinamento magnético (`B²/2μ₀`), a margem térmica da primeira parede de tungstênio, a lei T⁴ dos radiadores e a blindagem leve de nêutrons do D+³He.
+A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, energia e caráter anêutronico do D+³He, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores). Em `tests/physics.test.mjs`, o envelope atmosférico valida o teto do EDF, o empuxo baixo da fusão vs. arrasto no nível do mar e a exigência orbital de Mach ~23. Em `tests/thermalProtection.test.mjs` valida o confinamento magnético (`B²/2μ₀`), a margem térmica da primeira parede de tungstênio, a lei T⁴ dos radiadores e a blindagem leve de nêutrons do D+³He.
 
 Para inspecionar o ambiente pelo console do navegador, `window.__AURORA_DEBUG__.snapshot()` devolve o estado corrente da cena — visibilidade de hangar/campo, intensidade do sol, luminárias acesas, neblina, exposição e mapa de ambiente ativo.

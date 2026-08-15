@@ -1,4 +1,4 @@
-import { calculateFusionDrive } from './fusionDrive.js?v=6';
+import { calculateFusionDrive } from './fusionDrive.js?v=7';
 
 export const G_STANDARD = 9.80665;
 export const SEA_LEVEL_DENSITY = 1.225;
@@ -137,6 +137,56 @@ function ellipsoidSurfaceArea(a, b, c) {
  * The craft remains speculative; weight, drag, disk loading, thrust and
  * acceleration are classical mechanics / actuator-disk calculations.
  */
+const SCALE_HEIGHT_M = 8500; // exponential atmosphere scale height
+const EARTH_RADIUS_M = 6_371_000;
+const EARTH_MU_M3S2 = 3.986004418e14;
+const ORBITAL_VELOCITY_MS = Math.sqrt(EARTH_MU_M3S2 / EARTH_RADIUS_M); // ≈ 7.91 km/s
+/**
+ * Atmospheric flight envelope: where each propulsion system can operate.
+ * The EDF is an air-breathing fan (needs dense air), the fusion impulse is a
+ * rocket (needs vacuum). This computes:
+ *   - the EDF practical ceiling (~where air is ~1% of sea level);
+ *   - the orbital velocity requirement (~7.9 km/s, ≈ Mach 23);
+ *   - the altitude where the fusion impulse's max thrust finally exceeds drag
+ *     (the crossover where the atmosphere stops being the dominant problem).
+ */
+export function atmosphericEnvelope(input = {}) {
+  const config = normalizedConfig(input);
+  const seaDensity = config.airDensityKgM3;
+  const frontalAreaM2 = Math.PI * (config.beamM / 2) * (config.heightM / 2);
+  const ceilingRatio = 0.01; // EDF needs at least ~1% of sea-level air
+  const edfCeilingKm = (SCALE_HEIGHT_M / 1000) * Math.log(1 / ceilingRatio);
+
+  const orbitalVelocityKmS = ORBITAL_VELOCITY_MS / 1000;
+  const speedOfSoundMs = 343;
+  const orbitalMach = (orbitalVelocityKmS * 1000) / speedOfSoundMs;
+
+  // Max fusion thrust (full throttle, all reactor power to the jet).
+  const jetPowerW = config.fusionPowerKw * 1000 * config.exhaustEfficiency;
+  const fusionMaxThrustN = (2 * jetPowerW) / config.fusionExhaustVelocityMs;
+  const densityForBalance = h => seaDensity * Math.exp(-h * 1000 / SCALE_HEIGHT_M);
+
+  // Reference cruise speed used to find the fusion drag-balance altitude.
+  const refSpeedMs = Math.max(50, finiteOr(input.referenceSpeedMs, 250));
+  const dragAt = (h, v) => 0.5 * densityForBalance(h) * v ** 2 * config.dragCoefficient * frontalAreaM2;
+  let fusionCrossoverKm = 0;
+  for (let h = 0; h <= 80; h += 0.25) {
+    if (dragAt(h, refSpeedMs) <= fusionMaxThrustN) { fusionCrossoverKm = h; break; }
+  }
+  if (fusionCrossoverKm === 0) fusionCrossoverKm = 80;
+
+  return Object.freeze({
+    edfCeilingKm,
+    airDensityAtCeilingRatio: ceilingRatio,
+    orbitalVelocityKmS,
+    orbitalMach,
+    fusionMaxThrustN,
+    fusionCrossoverKm,
+    referenceSpeedMs: refSpeedMs,
+    region: `EDF até ~${Math.round(edfCeilingKm)} km; fusão vence o arrasto acima de ~${Math.round(fusionCrossoverKm)} km; órbita exige ${orbitalMach.toFixed(0)} Mach.`
+  });
+}
+
 export function calculateFlightPhysics(input = {}) {
   const config = normalizedConfig(input);
   const {

@@ -228,6 +228,15 @@
     .mast-dim{font:400 6.5px DM Mono,monospace;fill:#5c7a80;letter-spacing:.04em}
     .mast-distance{font:700 10px DM Mono,monospace;fill:#8ee6ff;letter-spacing:.03em}
     .mast-shield{font:400 6.5px DM Mono,monospace;fill:#5d8f95;letter-spacing:.06em}
+    .atmo-bars{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+    .atmo-row{display:flex;align-items:center;gap:8px}
+    .atmo-tag{width:96px;font:500 7px DM Mono,monospace;color:#8fb3b8;letter-spacing:.04em;flex:none}
+    .atmo-track{flex:1;height:7px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+    .atmo-track i{display:block;height:100%;border-radius:2px}
+    #atmoEdf{background:linear-gradient(90deg,#3f7d8a,#63a9ff)}
+    #atmoFusion{background:linear-gradient(90deg,#c96a2a,#ff7a30)}
+    #atmoOrbit{background:linear-gradient(90deg,#5a2fd0,#8ee6ff)}
+    .atmo-row b{font:600 7px DM Mono,monospace;color:#cfe6ea;width:56px;text-align:right;flex:none}
     .parameter{margin:0 0 11px}.param-copy{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.param-copy label{color:#a6b8b8;font-size:9px;font-weight:600}.param-copy output{color:var(--cyan-bright);font:500 9px DM Mono,monospace}.param-copy output small{margin-left:3px;color:#607a7b;font-size:7px}
     .parameter input{display:block;width:100%;height:12px;margin:0;appearance:none;background:transparent;cursor:ew-resize}
     .parameter input::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:linear-gradient(90deg,var(--cyan) 0 var(--range,50%),rgba(255,255,255,.1) var(--range,50%));box-shadow:0 0 8px rgba(76,218,222,.12)}
@@ -493,6 +502,16 @@
         <p class="drive-note">Órbita circular em LEO exige ≈ v_orb (≥7,3 km/s) + perdas. Com o reator (~15 t) carregado, o impulso precisa de um tanque muito maior; o painel recalcula a viabilidade. Velocidade de escape = √2 × v_orb.</p>
       </section>
 
+      <section class="eng-section fusion-panel" aria-label="Envelope atmosférico">
+        <div class="eng-section-title">Envelope atmosférico · quem voa onde</div>
+        <div class="atmo-bars">
+          <div class="atmo-row"><span class="atmo-tag">EDF (ar)</span><div class="atmo-track"><i id="atmoEdf" style="width:40%"></i></div><b id="atmoEdfLabel">~39 km</b></div>
+          <div class="atmo-row"><span class="atmo-tag">Fusão > arrasto</span><div class="atmo-track"><i id="atmoFusion" style="width:12%"></i></div><b id="atmoFusionLabel">— km</b></div>
+          <div class="atmo-row"><span class="atmo-tag">Órbita LEO</span><div class="atmo-track"><i id="atmoOrbit" style="width:3%"></i></div><b id="atmoOrbitLabel">Mach 23</b></div>
+        </div>
+        <p class="drive-note" id="atmoRegion">—</p>
+      </section>
+
       <section class="eng-section fusion-panel" aria-label="Reator: garrafa invisível e blindagem térmica">
         <div class="eng-section-title">Reator · confinamento e blindagem</div>
         <div class="metric-grid">
@@ -632,9 +651,9 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, DEFAULT_CONFIG, clamp } from './src/physics.js?v=6';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=6';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=6';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=7';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=7';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=7';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2274,6 +2293,17 @@
         const mastLabel=document.getElementById('mastDistLabel');
         if(mastLabel)mastLabel.textContent=`${numberFormatter(physics.mass.reactorDistanceM,0)} m`;
         updateMastDiagram(physics.mass.reactorDistanceM);
+
+        // Envelope atmosférico: EDF (ar) × fusão × órbita.
+        const env=atmosphericEnvelope({ referenceSpeedMs: 250 });
+        setText('atmoEdfLabel',`~${numberFormatter(env.edfCeilingKm,0)} km`);
+        setText('atmoFusionLabel',`${numberFormatter(env.fusionCrossoverKm,0)} km`);
+        setText('atmoOrbitLabel',`${numberFormatter(env.orbitalMach,0)} Mach`);
+        setText('atmoRegion',`${env.region} · no ar denso a fusão perde feio (empuxo ${numberFormatter(env.fusionMaxThrustN,0)} N × arrasto de milhares de N).`);
+        const elE=document.getElementById('atmoEdf'),elF=document.getElementById('atmoFusion'),elO=document.getElementById('atmoOrbit');
+        if(elE)elE.style.width=`${Math.max(3,Math.min(100,env.edfCeilingKm/50*100))}%`;
+        if(elF)elF.style.width=`${Math.max(3,Math.min(100,env.fusionCrossoverKm/50*100))}%`;
+        if(elO)elO.style.width=`3%`;
         const thStatus=document.getElementById('thStatus');
         if(thStatus){
           const tp=p.thrustToWeight;
