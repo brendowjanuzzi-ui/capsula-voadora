@@ -582,6 +582,25 @@
         </div>
       </section>
 
+      <section class="eng-section" aria-label="Dimensionamento físico">
+        <div class="eng-section-title">Dimensionamento físico (tamanho ideal)</div>
+        <div class="metric-grid">
+          <div class="metric"><span>massa total</span><b><em id="szMass">—</em> kg</b></div>
+          <div class="metric"><span>massa seca</span><b><em id="szDry">—</em> kg</b></div>
+          <div class="metric"><span>volume casco</span><b><em id="szVol">—</em> m³</b></div>
+          <div class="metric"><span>EDF lift</span><b><em id="szLift">—</em> kW</b></div>
+          <div class="metric"><span>disco EDF</span><b><em id="szDisk">—</em> m²</b></div>
+          <div class="metric"><span>carga de disco</span><b><em id="szDiskLoad">—</em> Pa</b></div>
+          <div class="metric"><span>módulo fusão</span><b><em id="szReactor">—</em> t</b></div>
+          <div class="metric"><span>blindagem nêutrons</span><b><em id="szShield">—</em> kg</b></div>
+          <div class="metric"><span>tanque D2</span><b><em id="szTankD2">—</em> m</b></div>
+          <div class="metric"><span>tanque He3</span><b><em id="szTankHe3">—</em> m</b></div>
+          <div class="metric"><span>combustível fusão</span><b><em id="szFuel">—</em> g/h</b></div>
+          <div class="metric"><span>massa reação</span><b><em id="szReaction">—</em> kg</b></div>
+        </div>
+        <p class="drive-note">Dimensionado por densidades reais (compósito ~55 kg/m³, Li-ion ~6 kg/kWh, blindagem LiH/boro ~3,2 kg/kW) e teoria de disco atuador. O EDF sustenta o voo atmosférico; o módulo de fusão D+³He (~4,5 t) é acoplado só no espaço.</p>
+      </section>
+
       <div class="equation" id="equationTag"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
     </div>
   </aside>
@@ -663,9 +682,10 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=9';
-    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=9';
-    import { thermalProtectionDesign } from './src/thermalProtection.js?v=9';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=10';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=10';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=10';
+    import { sizeCapsule } from './src/sizing.js?v=10';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2370,6 +2390,26 @@
       }
       } catch (err) { /* telemetria orbital/fusão é opcional — nunca quebra o painel */ }
       updateTelemetryTrace(p.resultantAccelerationMs2);
+
+      // Dimensionamento físico (tamanho ideal de cada acessório).
+      try {
+        const sz=sizeCapsule({
+          lengthM: design.lengthM, beamM: design.beamM, heightM: design.heightM,
+          batteryKwh: 60, reactionMassKg: design.propellantMassKg
+        });
+        setText('szMass',numberFormatter(sz.mass.totalMassKg,0));
+        setText('szDry',numberFormatter(sz.mass.dryMassKg,0));
+        setText('szVol',numberFormatter(sz.hull.hullVolumeM3,1));
+        setText('szLift',numberFormatter(sz.edf.liftPowerKw,0));
+        setText('szDisk',numberFormatter(sz.edf.diskAreaM2,1));
+        setText('szDiskLoad',numberFormatter(sz.edf.diskLoadingPa,0));
+        setText('szReactor',numberFormatter(sz.reactor.totalMassKg/1000,1));
+        setText('szShield',numberFormatter(sz.reactor.shieldingMassKg,0));
+        setText('szTankD2',numberFormatter(sz.tanks.d2TankRadiusM*2,2));
+        setText('szTankHe3',numberFormatter(sz.tanks.he3TankRadiusM*2,2));
+        setText('szFuel',numberFormatter(sz.reactor.fuelPerHourKg*1000,2));
+        setText('szReaction',numberFormatter(sz.mass.reactionMassKg,0));
+      } catch (err) { /* dimensionamento opcional */ }
     }
 
     const parameterInputs=[...document.querySelectorAll('input[data-param]')];

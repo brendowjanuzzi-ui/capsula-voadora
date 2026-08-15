@@ -1,4 +1,4 @@
-import { calculateFusionDrive } from './fusionDrive.js?v=9';
+import { calculateFusionDrive } from './fusionDrive.js?v=10';
 
 export const G_STANDARD = 9.80665;
 export const SEA_LEVEL_DENSITY = 1.225;
@@ -7,33 +7,32 @@ export const SEA_LEVEL_DENSITY = 1.225;
 // These override DEFAULT_FUSION_CONFIG fields; see fusionDrive.js.
 export const FUSION_PROPULSION_CONFIG = Object.freeze({
   propulsionModel: 'fusion',
-  fusionPowerKw: 12_000,
+  // Reactor sized for the capsule: ~3 MW fusion (D+³He), a bolt-on space module.
+  fusionPowerKw: 3_000,
   exhaustEfficiency: 0.82,
-  fusionExhaustVelocityMs: 35_000,
-  propellantMassKg: 120,
-  fuelType: 'd2',
-  // Mass of the fusion reactor hardware (core + magnets + shielding + radiators)
-  // that the capsule carries when fusion mode is selected. This is the honest
-  // weight of the "invisible bottle" — ~15 t for a ~15 MW D+³He reactor.
-  fusionHardwareMassKg: 15_000,
-  // Distance (m) between the crew cabin and the reactor. A fusion ship keeps the
-  // crew at the opposite end of a long boom so radiation falls off by the inverse
-  // square of the distance. Default ~16 m (the "mast" architecture).
+  fusionExhaustVelocityMs: 50_000,
+  propellantMassKg: 80,
+  fuelType: 'dhe3',
+  // Mass of the bolt-on fusion reactor module (core + REBCO magnets + shielding +
+  // radiators). Sized to ~4.5 t for 3 MW — far more credible than a 15 t reactor.
+  fusionHardwareMassKg: 4_500,
+  // Distance (m) between the crew cabin and the reactor (mast architecture).
   reactorDistanceM: 16
 });
 
 export const DEFAULT_CONFIG = Object.freeze({
   lengthM: 12,
-  beamM: 3.1,
-  heightM: 1.82,
-  massKg: 1240,
+  beamM: 3.0,
+  heightM: 1.8,
+  massKg: 1850,
   airDensityKgM3: SEA_LEVEL_DENSITY,
   airspeedMs: 36,
   liftThrottle: 0.86,
   propulsionThrottle: 0.46,
-  liftPowerMaxKw: 720,
+  // EDF sized to actually lift the ~1850 kg capsule (T/P ≈ 1.15 in hover).
+  liftPowerMaxKw: 1100,
   propulsionPowerMaxKw: 420,
-  liftActuatorAreaM2: 4.4,
+  liftActuatorAreaM2: 6.0,
   propulsionDiskAreaM2: 0.72,
   liftFigureOfMerit: 0.72,
   propulsionEfficiency: 0.78,

@@ -33,20 +33,22 @@ test('helium-3 cycle is ~4× more energetic and aneutronic', () => {
   assert.ok(he3.idealExhaustFractionOfC > 0.06 && he3.idealExhaustFractionOfC < 0.12);
 });
 
-test('fusion mode carries the reactor hardware mass, EDF mode does not', () => {
+test('fusion mode carries the bolt-on reactor module, EDF mode does not', () => {
   const edf = calculateFlightPhysics(DEFAULT_CONFIG);
   const fusion = calculateFlightPhysics({ propulsionModel: 'fusion' });
   assert.equal(edf.mass.effectiveMassKg, edf.mass.baseMassKg); // no reactor in EDF mode
-  assert.ok(fusion.mass.effectiveMassKg > fusion.mass.baseMassKg * 5); // ~15 t reactor
+  assert.ok(fusion.mass.effectiveMassKg > fusion.mass.baseMassKg); // bolt-on module adds mass
+  assert.ok(fusion.mass.effectiveMassKg < fusion.mass.baseMassKg * 4); // ~4.5 t module (credible, not 15 t)
   assert.equal(fusion.mass.fusionHardwareMassKg, fusion.config.fusionHardwareMassKg);
 });
 
-test('reactor mass collapses atmospheric lift-to-weight and shrinks fusion Δv', () => {
+test('fusion module reduces but does not destroy atmospheric lift-to-weight', () => {
   const fusion = calculateFlightPhysics({ propulsionModel: 'fusion' });
-  // A 1.2 t airframe + ~15 t reactor cannot be lifted by the EDF disk.
-  assert.ok(fusion.performance.thrustToWeight < 0.2);
-  // The heavy dry mass reduces the rocket Δv of the small 120 kg tank.
-  assert.ok(fusion.performance.fusion.deltaVMs < 1000);
+  // With the ~4.5 t bolt-on module the EDF can no longer hover (too heavy), but
+  // the base EDF configuration is fully operational — the honest split.
+  const base = calculateFlightPhysics(DEFAULT_CONFIG);
+  assert.ok(base.performance.thrustToWeight > 1); // EDF-only capsule hovers
+  assert.ok(fusion.performance.thrustToWeight < 0.5); // with reactor module it cannot
 });
 
 test('invalid fuel type falls back to deuterium', () => {

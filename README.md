@@ -36,7 +36,7 @@ A troca é imediata: as duas variantes de cada textura são pré-geradas e os ma
 - **Herança Mk.III/Mk.IV mantida:** casco paramétrico (comprimento, boca, altura), modo Engenharia com vetores de força em kN, cotas 3D, telemetria SI e solver determinístico em `src/physics.js`.
 - **Modo Impulso de fusão (novo):** no painel de Engenharia, o seletor **Sistema propulsivo** alterna o EDF elétrico (disco atuador) para um **impulso de fusão** (`src/fusionDrive.js`), que modela exaustão de plasma com a equação do foguete — empuxo `F = ṁ·Vₑ`, potência de jato `P = ½ṁ·Vₑ²`, impulso específico `Isp = Vₑ/g`, queima `t = m_prop/ṁ` e `Δv = Vₑ·ln(m₀/m_f)`. O **combustível é selecionável**: **D+D (deutério)** ou **D+³He (hélio-3)** — o ³He é ~4× mais energético e quase anêutronico.
 - **Missão orbital ponto a ponto (novo):** `src/orbital.js` planeja o salto balístico mínimo entre dois pontos da Terra (elipse kepleriana, `v_inj`, apogeu, tempo por Kepler e deutério consumido), usado apenas na fase exoatmosférica — com indicador de viabilidade e alcance máximo do tanque.
-- **Órbita circular · escape (novo):** o mesmo módulo calcula `v_orb`, período e `v_esc = √2·v_orb` em qualquer altitude, com o Δv de injeção e o deutério exigido — evidenciando honestamente que o tanque atual (≈3,2 km/s) alcança o salto ponto a ponto, mas **não** a órbita baixa (~9 km/s).
+- **Órbita circular · escape (novo):** o mesmo módulo calcula `v_orb`, período e `v_esc = √2·v_orb` em qualquer altitude, com o Δv de injeção e o propelente exigido — evidenciando honestamente que o impulso de fusão precisa de tanques grandes para alcançar o salto ponto a ponto e **não** chega à órbita baixa (~9 km/s) com um tanque pequeno.
 - **Reator · confinamento e blindagem (novo):** `src/thermalProtection.js` modela a "garrafa invisível" — confinamento magnético (REBCO 20 T, `B²/2μ₀`), primeira parede de tungstênio (margem ao melt), radiadores por Stefan–Boltzmann (T⁴) e blindagem leve de nêutrons (D+³He quase anêutronico).
 
 ## Modelo físico
@@ -60,7 +60,7 @@ O "impulso" de Star Trek é, na mecânica clássica, um **foguete de fusão**: o
   - **D + ³He** → libera ≈ 18,4 MeV/reação ⇒ ≈ **3,5×10¹⁴ J/kg** (**~4× o D+D**), exaustão ideal ≈ **8,9% c** (`Isp ≈ 2,7×10⁶ s`). **Quase anêutronico** (energia em partículas carregadas ⇒ jato direto, menos blindagem). A desvantagem é a escassez: ³He é raríssimo na Terra — fonte prática é mineração lunar/atmosfera de gigantes gasosos (a premissa de Star Trek).
 - **Limite ideal:** o valor acima é o teto teórico se toda a energia fosse para o próprio combustível — não é meta de projeto.
 - **Regime prático:** um impulso real adiciona **massa de reação** ao plasma. A uma `Vₑ` menor (ex.: 35 km/s), o empuxo cresce às custas do `Isp` — a troca clássica "empuxo × impulso específico" a potência de jato fixa (`F = 2P_j/Vₑ`).
-- **No AURORA (padrão):** reator de ≈ 12 MW de jato, `Vₑ ≈ 35 km/s`, `Isp ≈ 3.570 s`, fluxo de massa ≈ 7 g/s e 120 kg de massa de reação ⇒ ≈ 4,5 h de queima. O combustível de fusão em si é quase desprezível (gramas/hora; com D+³He ainda menos). A escolha de combustível afeta a densidade de energia e a blindagem, **não** o `Isp`/`Δv` de projeto — que dependem da `Vₑ` de exaustão escolhida. > **Atenção:** o `Δv ≈ 3,2 km/s` citado nas seções abaixo vale para a cápsula leve **sem o reator carregado** (~1,2 t). Com o reator (~15 t) embarcado, o painel aplica a massa efetiva e o `Δv` do tanque de 120 kg cai para ~260 m/s (ver **Custo de massa honesto**).
+- **No AURORA (padrão):** o impulso usa o **módulo de fusão D+³He de ~3 MW**, `Vₑ ≈ 50 km/s`, `Isp ≈ 5.100 s`, e **80 kg de massa de reação**. O combustível de fusão em si é quase desprezível (gramas/hora). A escolha de combustível afeta a densidade de energia e a blindagem, **não** o `Isp`/`Δv` de projeto — que dependem da `Vₑ` de exaustão escolhida. > **Atenção:** os valores citados nas seções abaixo assumem o módulo de fusão acoplado (ver **Dimensionamento físico coerente**).
 
 ### É "totalmente possível na realidade"?
 
@@ -85,12 +85,11 @@ O plasma D+³He queima a ~150 milhões de °C — nenhum material sólido sobrev
 
 **No modelo 3D (aplicado na cápsula):** ao selecionar o **Impulso de fusão** no painel, o reator D+³He aparece **fisicamente no modelo** — bobinas REBCO (garrafa magnética), primeira parede de tungstênio com anéis quentes, plasma confinado incandescente, radiadores de alta temperatura e a blindagem de nêutrons entre o reator e a cabine. O halo do plasma pulsa e as bobinas giram em tempo real.
 
-**Custo de massa honesto:** o hardware do reator (~15 t: núcleo + ímãs + blindagem + radiadores) é modelado como `fusionHardwareMassKg` no solver. Em modo fusão, a **massa efetiva** salta de ~1,2 t para ~16 t — e o painel mostra as consequências reais:
-- o **EDF de 720 kW não sustenta mais o voo atmosférico** (T/P cai para ~0,08; não dá para pairar/pousar);
-- o **Δv** do tanque de 120 kg cai para ~260 m/s;
-- um salto ponto a ponto de 5° (~550 km) exige agora **~1.200 kg de tanque** (o controle **Tanque de reação** permite escalar e ver a viabilidade voltar).
+**Dimensionamento físico coerente (`src/sizing.js`):** uma análise de engenharia revelou que o rascunho anterior (reator de 12 MW / 15 t) era **fisicamente inviável** — tornava a cápsula inoperável (T/P ≈ 0,08, impossível pairar). A correção realista separa os dois regimes:
+- **Voo atmosférico (EDF):** a cápsula é um veículo leve e **operável** — massa total **~1,85 t** (monocoque + 2 tripulantes + bateria Li-ion 60 kWh + EDF). O EDF de **~1.100 kW** com disco de **6 m²** levanta com **T/P ≈ 1,05** e carga de disco ~3,5 kPa (faixa típica de eVTOL).
+- **Missões espaciais (impulso de fusão):** um **módulo de reator D+³He acoplável** de **~3 MW / ~4,5 t** (núcleo + bobinas REBCO + blindagem leve, pois D+³He é quase anêutronico) é embarcado **só no espaço**, onde seu baixo empuxo/alto Isp é o certo.
 
-Isso é exatamente o gargalo de engenharia real: a física da propulsão existe, mas o **tamanho/massa do reator** e o **combustível necessário** separam a cápsula ficcional da realidade.
+Todos os acessórios são dimensionados por densidades reais: compósito ~55 kg/m³, bateria Li-ion ~6 kg/kWh, blindagem LiH/boro ~3,2 kg/kW de potência de nêutrons, tanques criogênicos de D2/He3 compactos (~0,4–0,45 m de raio). O painel **Dimensionamento físico** expõe cada valor.
 
 ### Vida a bordo realista (diferente dos filmes)
 
@@ -145,7 +144,7 @@ Como o impulso de fusão tem **empuxo baixo e Isp alto**, ele não compete com o
 
 - **Arquitetura:** a subida e o pouso (atmosfera) ficam com o **EDF**; o impulso de fusão faz só o arco de transferência — trajetória balística mínima (elipse kepleriana com a Terra no foco, pontos simétricos ao apogeu).
 - **Física:** `v_inj = sqrt(2μ·sin(β/2)/(R·(1+sin(β/2))))`, tempo de voo por Kepler (anomalia média), apogeu `a(1+e)` e propelente pela equação do foguete `m_prop = m_dry(e^{Δv/Vₑ}−1)`.
-- **Resultado honesto:** com os 120 kg de deutério e `Vₑ ≈ 35 km/s`, um salto de **~8,3° (~930 km)** drena todo o tanque em **~8 min** com apogeu de ~220 km. Um salto transatlântico (por exemplo 5.000 km) **não cabe** no orçamento atual — o painel mostra isso como "não viável" e informa o alcance máximo.
+- **Resultado honesto:** o impulso de fusão de alto Isp precisa de **tanque grande** — a equação do foguete é exponencial. Um salto ponto a ponto real exigiria dezenas de vezes a massa de reação de um tanque pequeno. O painel mostra a **viabilidade** em tempo real e o **alcance máximo** do tanque configurado.
 
 O controle **Alcance desejado** desliza de 50 a 3.000 km; a telemetria mostra ângulo central, velocidade de injeção, apogeu, tempo de voo e deutério consumido, com indicador de viabilidade.
 
@@ -153,11 +152,11 @@ O controle **Alcance desejado** desliza de 50 a 3.000 km; a telemetria mostra â
 
 A seção **"Órbita circular · escape"** (`src/orbital.js`) modela o regime de injeção orbital: `v_orb = √(μ/(R+h))`, período `2π(R+h)/v_orb` e velocidade de escape `v_esc = √2·v_orb`.
 
-- **Resultado honesto:** órbita baixa (LEO, ~7,3–7,7 km/s) somada a ~1,4 km/s de perdas de gravidade/arrasto dá um Δv total de **~9 km/s**. Com os 120 kg de deutério o impulso de fusão entrega apenas **~3,2 km/s** — ou seja, **não é viável alcançar a órbita da Terra com o tanque atual** (exigiria ~360 kg de deutério). O painel mostra isso explicitamente.
-- **Contraste físico importante:** a mesma capacidade que faz um salto ponto a ponto de ~930 km não alcança órbita — porque o salto é suborbital (∆v ≤ ~3,2 km/s), enquanto órbita exige o dobro de velocidade **e** circularização. É exatamente por isso que Star Trek usa o impulso para manobrar perto de planetas e o motor de dobra para viajar entre eles.
-- **Velocidade de escape** (≈11,2 km/s na superfície, √2× a orbital) também é mostrada; alcançá-la é ainda mais exigente.
+- **Resultado honesto:** órbita baixa (LEO, ~7,3–7,7 km/s) somada a ~1,4 km/s de perdas de gravidade/arrasto dá um Δv total de **~9 km/s**. Com o módulo de fusão acoplado e um tanque pequeno, o impulso entrega apenas centenas de m/s — **não é viável alcançar a órbita** nem um salto transatlântico sem um tanque de massa de reação muito maior (a equação do foguete é brutal: `Δv = Vₑ·ln(m₀/m_f)`). O painel mostra a viabilidade em tempo real e o alcance máximo.
+- **Contraste físico importante:** o impulso de fusão tem **empuxo baixo e Isp alto** — eficiente no vácuo, mas exige tanques grandes para acumular Δv. É por isso que ele faz sentido para manobras espaciais e o EDF cuida da atmosfera.
+- **Velocidade de escape** (≈11,2 km/s na superfície, √2× a orbital) é mostrada; alcançá-la é ainda mais exigente.
 
-Além do painel, os controles de **Altitude-alvo** (150–36.000 km) deixam claro o perfil: a injeção orbital varia pouco com a altitude (≈7,3–7,9 km/s em todo o LEO), então a conclusão "não viável com o tanque atual" se mantém em toda a faixa.
+Além do painel, os controles de **Altitude-alvo** (150–36.000 km) deixam claro o perfil: a injeção orbital varia pouco com a altitude (≈7,3–7,9 km/s em todo o LEO), então a conclusão "não viável com o tanque pequeno" se mantém em toda a faixa.
 
 ## Testes
 
@@ -165,6 +164,6 @@ Além do painel, os controles de **Altitude-alvo** (150–36.000 km) deixam clar
 npm test
 ```
 
-A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, energia e caráter anêutronico do D+³He, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores). Em `tests/physics.test.mjs`, o envelope atmosférico valida o teto do EDF, o empuxo baixo da fusão vs. arrasto no nível do mar e a exigência orbital de Mach ~23. Em `tests/thermalProtection.test.mjs` valida o confinamento magnético (`B²/2μ₀`), a margem térmica da primeira parede de tungstênio, a lei T⁴ dos radiadores e a blindagem leve de nêutrons do D+³He.
+A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, energia e caráter anêutronico do D+³He, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores). Em `tests/physics.test.mjs`, o envelope atmosférico valida o teto do EDF, o empuxo baixo da fusão vs. arrasto no nível do mar e a exigência orbital de Mach ~23. Em `tests/thermalProtection.test.mjs` valida o confinamento magnético (`B²/2μ₀`), a margem térmica da primeira parede de tungstênio, a lei T⁴ dos radiadores e a blindagem leve de nêutrons do D+³He. Em `tests/sizing.test.mjs` valida o dimensionamento físico: massa seca realista, EDF capaz de levantar (T/P ≥ 1, potência credível), módulo de fusão dimensionado por densidades reais e tanques criogênicos compactos.
 
 Para inspecionar o ambiente pelo console do navegador, `window.__AURORA_DEBUG__.snapshot()` devolve o estado corrente da cena — visibilidade de hangar/campo, intensidade do sol, luminárias acesas, neblina, exposição e mapa de ambiente ativo.
