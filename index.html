@@ -455,6 +455,10 @@
           <div class="param-copy"><label for="orbitalRangeInput">Alcance desejado</label><output id="orbitalRangeOutput">926<small>km</small></output></div>
           <input id="orbitalRangeInput" data-param="orbitalRangeKm" data-output="orbitalRangeOutput" data-unit="km" data-decimals="0" type="range" min="50" max="3000" step="10" value="926" />
         </div>
+        <div class="parameter">
+          <div class="param-copy"><label for="propellantInput">Tanque de reação</label><output id="propellantOutput">120<small>kg</small></output></div>
+          <input id="propellantInput" data-param="propellantMassKg" data-output="propellantOutput" data-unit="kg" data-decimals="0" type="range" min="50" max="5000" step="10" value="120" />
+        </div>
         <div class="metric-grid">
           <div class="metric"><span>ângulo central</span><b><em id="orbitalBeta">—</em> °</b></div>
           <div class="metric"><span>injeção</span><b><em id="orbitalDeltaV">—</em> km/s</b></div>
@@ -480,14 +484,16 @@
           <div class="metric"><span>deutério p/ órbita</span><b><em id="orbitProp">—</em> kg</b></div>
         </div>
         <div class="orbit-status" id="orbitInsertStatus">—</div>
-        <p class="drive-note">Órbita circular em LEO exige ≈ v_orb (≥7,3 km/s) + perdas. Com 120 kg de deutério o impulso entrega ≈ 3,2 km/s — suficiente para salto ponto a ponto, mas <b>não</b> para alcançar órbita baixa. Velocidade de escape = √2 × v_orb.</p>
+        <p class="drive-note">Órbita circular em LEO exige ≈ v_orb (≥7,3 km/s) + perdas. Com o reator (~15 t) carregado, o impulso precisa de um tanque muito maior; o painel recalcula a viabilidade. Velocidade de escape = √2 × v_orb.</p>
       </section>
 
       <section class="eng-section fusion-panel" aria-label="Reator: garrafa invisível e blindagem térmica">
         <div class="eng-section-title">Reator · confinamento e blindagem</div>
         <div class="metric-grid">
-          <div class="metric"><span>plasma</span><b><em id="thPlasma">—</em> °C</b></div>
+          <div class="metric"><span>plasma</span><b><em id="thPlasma">—</em> M°C</b></div>
           <div class="metric"><span>campo magnético</span><b><em id="thField">—</em> T</b></div>
+          <div class="metric"><span>massa carregada</span><b><em id="thMass">—</em> t</b></div>
+          <div class="metric"><span>reator</span><b><em id="thMassReactor">—</em> t</b></div>
           <div class="metric"><span>pressão magnética</span><b><em id="thPmag">—</em> atm</b></div>
           <div class="metric"><span>plasma contido</span><b><em id="thPplas">—</em> atm</b></div>
           <div class="metric"><span>1ª parede (W)</span><b><em id="thWall">—</em> °C</b></div>
@@ -497,7 +503,7 @@
           <div class="metric"><span>blindagem nêutrons</span><b><em id="thShield">—</em> kg</b></div>
         </div>
         <div class="orbit-status" id="thStatus">—</div>
-        <p class="drive-note">Plasma a ~150 milhões °C é preso por ímãs REBCO (20 T): <b>garrafa invisível</b> — o combustível nunca toca o metal. Tungstênio na primeira parede, radiadores de alta temperatura para rejeitar calor no vácuo e blindagem leve de nêutrons (D+³He é quase anêutronico).</p>
+        <p class="drive-note">Plasma a ~150 milhões °C é preso por ímãs REBCO (20 T): <b>garrafa invisível</b> — o combustível nunca toca o metal. Tungstênio na primeira parede, radiadores de alta temperatura para rejeitar calor no vácuo e blindagem leve de nêutrons. <b>Custo real:</b> o reator (~15 t) domina a massa — com ele carregado o EDF não sustenta voo atmosférico e o impulso exige tanque grande.</p>
       </section>
 
       <div class="equation" id="equationTag"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
@@ -2110,7 +2116,7 @@
           exhaustEfficiency: design.exhaustEfficiency,
           exhaustVelocityMs: design.fusionExhaustVelocityMs,
           propellantMassKg: design.propellantMassKg,
-          dryMassKg: design.massKg,
+          dryMassKg: physics.mass.effectiveMassKg,
           fuelType: design.fuelType
         });
         setText('orbitalBeta',numberFormatter(mission.trajectory.centralAngleDeg,1));
@@ -2134,7 +2140,7 @@
           exhaustEfficiency: design.exhaustEfficiency,
           exhaustVelocityMs: design.fusionExhaustVelocityMs,
           propellantMassKg: design.propellantMassKg,
-          dryMassKg: design.massKg,
+          dryMassKg: physics.mass.effectiveMassKg,
           fuelType: design.fuelType
         });
         setText('orbitVO',numberFormatter(insertion.regime.orbitalVelocityMs/1000,2));
@@ -2164,10 +2170,16 @@
         setText('thRad',numberFormatter(th.radiators.at900K.areaM2,0));
         setText('thRad300',numberFormatter(th.radiators.at300K.areaM2,0));
         setText('thShield',numberFormatter(th.shieldingMassKg,0));
+        setText('thMass',numberFormatter(physics.mass.effectiveMassKg/1000,1));
+        setText('thMassReactor',numberFormatter(physics.mass.fusionHardwareMassKg/1000,1));
         const thStatus=document.getElementById('thStatus');
         if(thStatus){
-          thStatus.textContent=`Plasma ${numberFormatter((th.plasmaTemperatureK-273.15)/1e6,0)} milhões °C · ${th.wall.safe?'primeira parede segura':'parede em risco'} · radiador ${th.radiators.at900K.areaM2<150?'compacto (900 K)':th.radiators.at900K.areaM2<1000?'moderado':'inviável'} · blindagem leve (${numberFormatter(th.shieldingMassKg,0)} kg)`;
-          thStatus.classList.toggle('alert',!th.wall.safe);
+          const tp=p.thrustToWeight;
+          const liftMsg=tp<1
+            ? `alerta: com ${numberFormatter(physics.mass.effectiveMassKg/1000,1)} t, o EDF não sustenta voo atmosférico (T/P ${tp.toFixed(2)})`
+            : 'sustentação atmosférica viável';
+          thStatus.textContent=`Plasma ${numberFormatter((th.plasmaTemperatureK-273.15)/1e6,0)} milhões °C · ${th.wall.safe?'1ª parede segura':'parede em risco'} · radiador ${th.radiators.at900K.areaM2<150?'compacto (900 K)':th.radiators.at900K.areaM2<1000?'moderado':'inviável'} · ${liftMsg}`;
+          thStatus.classList.toggle('alert',!th.wall.safe||tp<1);
         }
       }
       } catch (err) { /* telemetria orbital/fusão é opcional — nunca quebra o painel */ }

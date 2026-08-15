@@ -60,7 +60,7 @@ O "impulso" de Star Trek é, na mecânica clássica, um **foguete de fusão**: o
   - **D + ³He** → libera ≈ 18,4 MeV/reação ⇒ ≈ **3,5×10¹⁴ J/kg** (**~4× o D+D**), exaustão ideal ≈ **8,9% c** (`Isp ≈ 2,7×10⁶ s`). **Quase anêutronico** (energia em partículas carregadas ⇒ jato direto, menos blindagem). A desvantagem é a escassez: ³He é raríssimo na Terra — fonte prática é mineração lunar/atmosfera de gigantes gasosos (a premissa de Star Trek).
 - **Limite ideal:** o valor acima é o teto teórico se toda a energia fosse para o próprio combustível — não é meta de projeto.
 - **Regime prático:** um impulso real adiciona **massa de reação** ao plasma. A uma `Vₑ` menor (ex.: 35 km/s), o empuxo cresce às custas do `Isp` — a troca clássica "empuxo × impulso específico" a potência de jato fixa (`F = 2P_j/Vₑ`).
-- **No AURORA (padrão):** reator de ≈ 12 MW de jato, `Vₑ ≈ 35 km/s`, `Isp ≈ 3.570 s`, fluxo de massa ≈ 7 g/s, 120 kg de massa de reação ⇒ ≈ 4,5 h de queima e `Δv ≈ 3,2 km/s`. O combustível de fusão em si é quase desprezível (gramas/hora; com D+³He ainda menos). A escolha de combustível afeta a densidade de energia e a blindagem, **não** o `Isp`/`Δv` de projeto — que dependem da `Vₑ` de exaustão escolhida.
+- **No AURORA (padrão):** reator de ≈ 12 MW de jato, `Vₑ ≈ 35 km/s`, `Isp ≈ 3.570 s`, fluxo de massa ≈ 7 g/s e 120 kg de massa de reação ⇒ ≈ 4,5 h de queima. O combustível de fusão em si é quase desprezível (gramas/hora; com D+³He ainda menos). A escolha de combustível afeta a densidade de energia e a blindagem, **não** o `Isp`/`Δv` de projeto — que dependem da `Vₑ` de exaustão escolhida. > **Atenção:** o `Δv ≈ 3,2 km/s` citado nas seções abaixo vale para a cápsula leve **sem o reator carregado** (~1,2 t). Com o reator (~15 t) embarcado, o painel aplica a massa efetiva e o `Δv` do tanque de 120 kg cai para ~260 m/s (ver **Custo de massa honesto**).
 
 ### É "totalmente possível na realidade"?
 
@@ -84,6 +84,13 @@ O plasma D+³He queima a ~150 milhões de °C — nenhum material sólido sobrev
 **Proteção da tripulação:** piloto na **frente, longe do reator** (a radiação cai com o inverso do quadrado da distância), blindagem de sombra + escudo de nêutrons, e refrigeração a **hélio líquido** mantendo a cabine confortável. O calor residual é rejeitado pelos radiadores de alta temperatura — é por isso que a cápsula precisa deles grandes e quentes.
 
 **No modelo 3D (aplicado na cápsula):** ao selecionar o **Impulso de fusão** no painel, o reator D+³He aparece **fisicamente no modelo** — bobinas REBCO (garrafa magnética), primeira parede de tungstênio com anéis quentes, plasma confinado incandescente, radiadores de alta temperatura e a blindagem de nêutrons entre o reator e a cabine. O halo do plasma pulsa e as bobinas giram em tempo real.
+
+**Custo de massa honesto:** o hardware do reator (~15 t: núcleo + ímãs + blindagem + radiadores) é modelado como `fusionHardwareMassKg` no solver. Em modo fusão, a **massa efetiva** salta de ~1,2 t para ~16 t — e o painel mostra as consequências reais:
+- o **EDF de 720 kW não sustenta mais o voo atmosférico** (T/P cai para ~0,08; não dá para pairar/pousar);
+- o **Δv** do tanque de 120 kg cai para ~260 m/s;
+- um salto ponto a ponto de 5° (~550 km) exige agora **~1.200 kg de tanque** (o controle **Tanque de reação** permite escalar e ver a viabilidade voltar).
+
+Isso é exatamente o gargalo de engenharia real: a física da propulsão existe, mas o **tamanho/massa do reator** e o **combustível necessário** separam a cápsula ficcional da realidade.
 
 ### Missão orbital · ponto a ponto (uso recomendado do impulso)
 

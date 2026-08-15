@@ -11,7 +11,11 @@ export const FUSION_PROPULSION_CONFIG = Object.freeze({
   exhaustEfficiency: 0.82,
   fusionExhaustVelocityMs: 35_000,
   propellantMassKg: 120,
-  fuelType: 'd2'
+  fuelType: 'd2',
+  // Mass of the fusion reactor hardware (core + magnets + shielding + radiators)
+  // that the capsule carries when fusion mode is selected. This is the honest
+  // weight of the "invisible bottle" — ~15 t for a ~15 MW D+³He reactor.
+  fusionHardwareMassKg: 15_000
 });
 
 export const DEFAULT_CONFIG = Object.freeze({
@@ -38,7 +42,8 @@ export const DEFAULT_CONFIG = Object.freeze({
   exhaustEfficiency: FUSION_PROPULSION_CONFIG.exhaustEfficiency,
   fusionExhaustVelocityMs: FUSION_PROPULSION_CONFIG.fusionExhaustVelocityMs,
   propellantMassKg: FUSION_PROPULSION_CONFIG.propellantMassKg,
-  fuelType: FUSION_PROPULSION_CONFIG.fuelType
+  fuelType: FUSION_PROPULSION_CONFIG.fuelType,
+  fusionHardwareMassKg: FUSION_PROPULSION_CONFIG.fusionHardwareMassKg
 });
 
 const LIMITS = Object.freeze({
@@ -70,10 +75,12 @@ function normalizedConfig(input = {}) {
   for (const key of [
     'liftPowerMaxKw', 'propulsionPowerMaxKw', 'liftActuatorAreaM2',
     'propulsionDiskAreaM2', 'energyCapacityKwh', 'gravityMs2',
-    'fusionPowerKw', 'fusionExhaustVelocityMs', 'propellantMassKg'
+    'fusionPowerKw', 'fusionExhaustVelocityMs', 'propellantMassKg',
+    'fusionHardwareMassKg'
   ]) {
     config[key] = Math.max(0.0001, finiteOr(config[key], DEFAULT_CONFIG[key]));
   }
+  config.fusionHardwareMassKg = clamp(config.fusionHardwareMassKg, 0, 1_000_000);
 
   config.liftFigureOfMerit = clamp(finiteOr(config.liftFigureOfMerit, DEFAULT_CONFIG.liftFigureOfMerit), 0.05, 1);
   config.propulsionEfficiency = clamp(finiteOr(config.propulsionEfficiency, DEFAULT_CONFIG.propulsionEfficiency), 0.05, 1);
@@ -138,7 +145,13 @@ export function calculateFlightPhysics(input = {}) {
   const wettedAreaM2 = ellipsoidSurfaceArea(semiLength, semiBeam, semiHeight);
   const frontalAreaM2 = Math.PI * semiBeam * semiHeight;
 
-  const weightN = massKg * gravityMs2;
+  // Effective mass: in fusion mode the craft carries the reactor hardware
+  // (core + magnets + shielding + radiators). This is the honest consequence of
+  // adding a ~15 t fusion reactor to a ~1.2 t airframe.
+  const fusionHardwareMassKg = config.propulsionModel === 'fusion' ? config.fusionHardwareMassKg : 0;
+  const effectiveMassKg = massKg + fusionHardwareMassKg;
+
+  const weightN = effectiveMassKg * gravityMs2;
   const dynamicPressurePa = 0.5 * rho * airspeedMs ** 2;
   const dragN = dynamicPressurePa * config.dragCoefficient * frontalAreaM2;
 
@@ -183,7 +196,7 @@ export function calculateFlightPhysics(input = {}) {
       exhaustEfficiency: config.exhaustEfficiency,
       exhaustVelocityMs: config.fusionExhaustVelocityMs,
       propellantMassKg: config.propellantMassKg,
-      dryMassKg: config.massKg,
+      dryMassKg: effectiveMassKg,
       gravityMs2: config.gravityMs2,
       fuelType: config.fuelType
     });
@@ -198,13 +211,18 @@ export function calculateFlightPhysics(input = {}) {
   const verticalNetForceN = liftN - weightN;
   const horizontalNetForceN = forwardThrustN - dragN;
   const netForceN = Math.hypot(verticalNetForceN, horizontalNetForceN);
-  const verticalAccelerationMs2 = verticalNetForceN / massKg;
-  const horizontalAccelerationMs2 = horizontalNetForceN / massKg;
-  const resultantAccelerationMs2 = netForceN / massKg;
+  const verticalAccelerationMs2 = verticalNetForceN / effectiveMassKg;
+  const horizontalAccelerationMs2 = horizontalNetForceN / effectiveMassKg;
+  const resultantAccelerationMs2 = netForceN / effectiveMassKg;
   const thrustToWeight = liftN / weightN;
 
   return Object.freeze({
     config: Object.freeze(config),
+    mass: Object.freeze({
+      baseMassKg: massKg,
+      fusionHardwareMassKg,
+      effectiveMassKg
+    }),
     geometry: Object.freeze({
       hullVolumeM3,
       wettedAreaM2,

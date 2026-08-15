@@ -33,6 +33,22 @@ test('helium-3 cycle is ~4× more energetic and aneutronic', () => {
   assert.ok(he3.idealExhaustFractionOfC > 0.06 && he3.idealExhaustFractionOfC < 0.12);
 });
 
+test('fusion mode carries the reactor hardware mass, EDF mode does not', () => {
+  const edf = calculateFlightPhysics(DEFAULT_CONFIG);
+  const fusion = calculateFlightPhysics({ propulsionModel: 'fusion' });
+  assert.equal(edf.mass.effectiveMassKg, edf.mass.baseMassKg); // no reactor in EDF mode
+  assert.ok(fusion.mass.effectiveMassKg > fusion.mass.baseMassKg * 5); // ~15 t reactor
+  assert.equal(fusion.mass.fusionHardwareMassKg, fusion.config.fusionHardwareMassKg);
+});
+
+test('reactor mass collapses atmospheric lift-to-weight and shrinks fusion Δv', () => {
+  const fusion = calculateFlightPhysics({ propulsionModel: 'fusion' });
+  // A 1.2 t airframe + ~15 t reactor cannot be lifted by the EDF disk.
+  assert.ok(fusion.performance.thrustToWeight < 0.2);
+  // The heavy dry mass reduces the rocket Δv of the small 120 kg tank.
+  assert.ok(fusion.performance.fusion.deltaVMs < 1000);
+});
+
 test('invalid fuel type falls back to deuterium', () => {
   assert.equal(fusionConstants('nope').fuelType, 'd2');
   const drive = calculateFusionDrive({ fuelType: 'bogus' });
@@ -98,7 +114,9 @@ test('fusion endurance is propellant-limited, not battery-limited', () => {
   const fusion = calculateFlightPhysics({ propulsionModel: 'fusion', propulsionThrottle: 0.5 });
   assert.ok(fusion.performance.enduranceMinutes > 0);
   assert.ok(Number.isFinite(fusion.performance.fusion.deltaVMs));
-  // Still self-consistent force/acceleration balance.
-  const expected = fusion.forces.horizontalNetForceN / DEFAULT_CONFIG.massKg;
+  // Still self-consistent force/acceleration balance using the effective mass
+  // (base airframe + fusion reactor hardware carried in fusion mode).
+  const expected = fusion.forces.horizontalNetForceN / fusion.mass.effectiveMassKg;
   assert.ok(Math.abs(fusion.performance.horizontalAccelerationMs2 - expected) < 1e-9);
+  assert.ok(fusion.mass.effectiveMassKg > fusion.mass.baseMassKg);
 });
