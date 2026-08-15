@@ -207,6 +207,42 @@
     .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
     .preset{border:1px solid rgba(205,248,246,.13);border-radius:2px;background:rgba(255,255,255,.015);padding:7px 4px;color:#718889;font:500 7px DM Mono,monospace;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:.2s}
     .preset:hover,.preset.active{border-color:rgba(138,234,240,.42);color:var(--cyan-bright);background:rgba(59,196,202,.1)}
+    .drive-pick{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+    .drive{border:1px solid rgba(205,248,246,.13);border-radius:2px;background:rgba(255,255,255,.015);padding:7px 4px;color:#718889;font:500 7px DM Mono,monospace;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.2s;line-height:1.5}
+    .drive:hover,.drive.active{border-color:rgba(138,234,240,.42);color:var(--cyan-bright);background:rgba(59,196,202,.1)}
+    .drive.active{border-color:var(--lime);color:var(--lime);background:rgba(165,246,143,.08)}
+    .drive-note{color:#5c6f70;font:400 8px DM Mono,monospace;letter-spacing:.02em;line-height:1.6;margin:7px 0 0}
+    .fuel-pick{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+    .fuel{border:1px solid rgba(205,248,246,.13);border-radius:2px;background:rgba(255,255,255,.015);padding:7px 4px;color:#718889;font:500 7px DM Mono,monospace;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.2s;line-height:1.5}
+    .fuel:hover,.fuel.active{border-color:rgba(138,234,240,.42);color:var(--cyan-bright);background:rgba(59,196,202,.1)}
+    .fuel.active{border-color:var(--lime);color:var(--lime);background:rgba(165,246,143,.08)}
+    .fusion-fuel{display:none}
+    body.fusion-mode .fusion-fuel{display:grid}
+    .fusion-panel{display:none}
+    body.fusion-mode .fusion-panel{display:block}
+    .orbit-status{margin-top:8px;border:1px solid rgba(165,246,143,.28);background:rgba(165,246,143,.06);color:#bff0a9;font:500 8px DM Mono,monospace;letter-spacing:.02em;padding:7px 8px;border-radius:2px;line-height:1.5}
+    .orbit-status.alert{border-color:rgba(255,159,87,.35);background:rgba(255,159,87,.07);color:#ffb27d}
+    .mast-diagram{margin-top:9px;background:rgba(4,9,11,.5);border:1px solid rgba(142,230,255,.14);border-radius:3px;padding:6px}
+    .mast-diagram svg{width:100%;height:auto;display:block}
+    .mast-label{font:600 8px DM Mono,monospace;fill:#8fb3b8;letter-spacing:.05em}
+    .mast-dim{font:400 6.5px DM Mono,monospace;fill:#5c7a80;letter-spacing:.04em}
+    .mast-distance{font:700 10px DM Mono,monospace;fill:#8ee6ff;letter-spacing:.03em}
+    .mast-shield{font:400 6.5px DM Mono,monospace;fill:#5d8f95;letter-spacing:.06em}
+    .atmo-bars{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+    .atmo-row{display:flex;align-items:center;gap:8px}
+    .atmo-tag{width:96px;font:500 7px DM Mono,monospace;color:#8fb3b8;letter-spacing:.04em;flex:none}
+    .atmo-track{flex:1;height:7px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+    .atmo-track i{display:block;height:100%;border-radius:2px}
+    #atmoEdf{background:linear-gradient(90deg,#3f7d8a,#63a9ff)}
+    #atmoFusion{background:linear-gradient(90deg,#c96a2a,#ff7a30)}
+    #atmoOrbit{background:linear-gradient(90deg,#5a2fd0,#8ee6ff)}
+    .atmo-row b{font:600 7px DM Mono,monospace;color:#cfe6ea;width:56px;text-align:right;flex:none}
+    .boarding-proc{margin-top:7px;border:1px solid rgba(142,230,255,.13);border-radius:3px;background:rgba(255,255,255,.015);padding:8px 9px}
+    .boarding-proc p{margin:0 0 5px;color:#9db6bb;font:400 8px DM Mono,monospace;letter-spacing:.02em;line-height:1.55}
+    .boarding-proc p:last-child{margin-bottom:0}
+    .boarding-proc b{color:#8ee6ff}
+    .ramp-toggle{margin-top:7px}
+    .ramp-toggle .drive{width:100%}
     .parameter{margin:0 0 11px}.param-copy{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.param-copy label{color:#a6b8b8;font-size:9px;font-weight:600}.param-copy output{color:var(--cyan-bright);font:500 9px DM Mono,monospace}.param-copy output small{margin-left:3px;color:#607a7b;font-size:7px}
     .parameter input{display:block;width:100%;height:12px;margin:0;appearance:none;background:transparent;cursor:ew-resize}
     .parameter input::-webkit-slider-runnable-track{height:2px;border-radius:2px;background:linear-gradient(90deg,var(--cyan) 0 var(--range,50%),rgba(255,255,255,.1) var(--range,50%));box-shadow:0 0 8px rgba(76,218,222,.12)}
@@ -346,11 +382,24 @@
         </div>
       </section>
 
+      <section class="eng-section" aria-label="Sistema propulsivo">
+        <div class="eng-section-title">Sistema propulsivo</div>
+        <div class="drive-pick">
+          <button class="drive active" data-drive="edf">EDF elétrico</button>
+          <button class="drive" data-drive="fusion">Impulso de fusão</button>
+        </div>
+        <div class="fuel-pick fusion-fuel" aria-label="Combustível de fusão">
+          <button class="fuel active" data-fuel="d2">D + D (deutério)</button>
+          <button class="fuel" data-fuel="dhe3">D + ³He (hélio-3)</button>
+        </div>
+        <p class="drive-note">Impulso de fusão = exaustão de plasma, Isp alto e empuxo baixo — regime de voo orbital, não de cruzeiro atmosférico. O ³He é ~4× mais energético e quase anêutronico (menos blindagem), porém raro na Terra (mineração lunar / gigantes gasosos).</p>
+      </section>
+
       <section class="eng-section" aria-label="Parâmetros do casco">
         <div class="eng-section-title">Envelope paramétrico</div>
         <div class="parameter">
-          <div class="param-copy"><label for="lengthInput">Comprimento</label><output id="lengthOutput">4,80<small>m</small></output></div>
-          <input id="lengthInput" data-param="lengthM" data-output="lengthOutput" data-unit="m" data-decimals="2" type="range" min="4.20" max="5.80" step="0.05" value="4.80" />
+          <div class="param-copy"><label for="lengthInput">Comprimento (mastro)</label><output id="lengthOutput">12,00<small>m</small></output></div>
+          <input id="lengthInput" data-param="lengthM" data-output="lengthOutput" data-unit="m" data-decimals="2" type="range" min="6.00" max="24.00" step="0.10" value="12.00" />
         </div>
         <div class="parameter">
           <div class="param-copy"><label for="beamInput">Boca máxima</label><output id="beamOutput">3,10<small>m</small></output></div>
@@ -409,7 +458,167 @@
         </div>
       </section>
 
-      <div class="equation"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
+      <section class="eng-section fusion-panel" aria-label="Telemetria do impulso de fusão">
+        <div class="eng-section-title">Impulso de fusão (plasma de deutério)</div>
+        <div class="metric-grid">
+          <div class="metric"><span>vel. exaustão</span><b><em id="fusionVe">—</em> km/s</b></div>
+          <div class="metric"><span>impulso específico</span><b><em id="fusionIsp">—</em> s</b></div>
+          <div class="metric"><span>fluxo de massa</span><b><em id="fusionFlow">—</em> g/s</b></div>
+          <div class="metric"><span>autonomia (combustível)</span><b><em id="fusionBurn">—</em> min</b></div>
+          <div class="metric"><span>Δv (equação do foguete)</span><b><em id="fusionDeltaV">—</em> m/s</b></div>
+          <div class="metric"><span>combustível de fusão</span><b><em id="fusionFuel">—</em> g/h</b></div>
+        </div>
+      </section>
+
+      <section class="eng-section fusion-panel" aria-label="Missão orbital ponto a ponto">
+        <div class="eng-section-title">Missão orbital · ponto a ponto (Terra)</div>
+        <div class="parameter">
+          <div class="param-copy"><label for="orbitalRangeInput">Alcance desejado</label><output id="orbitalRangeOutput">926<small>km</small></output></div>
+          <input id="orbitalRangeInput" data-param="orbitalRangeKm" data-output="orbitalRangeOutput" data-unit="km" data-decimals="0" type="range" min="50" max="3000" step="10" value="926" />
+        </div>
+        <div class="parameter">
+          <div class="param-copy"><label for="propellantInput">Tanque de reação</label><output id="propellantOutput">120<small>kg</small></output></div>
+          <input id="propellantInput" data-param="propellantMassKg" data-output="propellantOutput" data-unit="kg" data-decimals="0" type="range" min="50" max="5000" step="10" value="120" />
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><span>ângulo central</span><b><em id="orbitalBeta">—</em> °</b></div>
+          <div class="metric"><span>injeção</span><b><em id="orbitalDeltaV">—</em> km/s</b></div>
+          <div class="metric"><span>apogeu</span><b><em id="orbitalApogee">—</em> km</b></div>
+          <div class="metric"><span>tempo de voo</span><b><em id="orbitalTime">—</em> min</b></div>
+          <div class="metric"><span>combustível</span><b><em id="orbitalProp">—</em> kg</b></div>
+        </div>
+        <div class="orbit-status" id="orbitStatus">—</div>
+        <p class="drive-note">A subida e o pouso (atmosfera) ficam com o EDF; a transferência exoatmosférica usa o impulso de fusão — trajetória balística mínima entre dois pontos da Terra.</p>
+      </section>
+
+      <section class="eng-section fusion-panel" aria-label="Inserção orbital e velocidade de escape">
+        <div class="eng-section-title">Órbita circular · escape</div>
+        <div class="parameter">
+          <div class="param-copy"><label for="orbitAltInput">Altitude-alvo</label><output id="orbitAltOutput">400<small>km</small></output></div>
+          <input id="orbitAltInput" data-param="orbitAltKm" data-output="orbitAltOutput" data-unit="km" data-decimals="0" type="range" min="150" max="36000" step="50" value="400" />
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><span>vel. orbital</span><b><em id="orbitVO">—</em> km/s</b></div>
+          <div class="metric"><span>vel. de escape</span><b><em id="orbitVEsc">—</em> km/s</b></div>
+          <div class="metric"><span>período orbital</span><b><em id="orbitPeriod">—</em> min</b></div>
+          <div class="metric"><span>Δv de injeção</span><b><em id="orbitDeltaV">—</em> km/s</b></div>
+          <div class="metric"><span>deutério p/ órbita</span><b><em id="orbitProp">—</em> kg</b></div>
+        </div>
+        <div class="orbit-status" id="orbitInsertStatus">—</div>
+        <p class="drive-note">Órbita circular em LEO exige ≈ v_orb (≥7,3 km/s) + perdas. Com o reator (~15 t) carregado, o impulso precisa de um tanque muito maior; o painel recalcula a viabilidade. Velocidade de escape = √2 × v_orb.</p>
+      </section>
+
+      <section class="eng-section fusion-panel" aria-label="Envelope atmosférico">
+        <div class="eng-section-title">Envelope atmosférico · quem voa onde</div>
+        <div class="atmo-bars">
+          <div class="atmo-row"><span class="atmo-tag">EDF (ar)</span><div class="atmo-track"><i id="atmoEdf" style="width:40%"></i></div><b id="atmoEdfLabel">~39 km</b></div>
+          <div class="atmo-row"><span class="atmo-tag">Fusão > arrasto</span><div class="atmo-track"><i id="atmoFusion" style="width:12%"></i></div><b id="atmoFusionLabel">— km</b></div>
+          <div class="atmo-row"><span class="atmo-tag">Órbita LEO</span><div class="atmo-track"><i id="atmoOrbit" style="width:3%"></i></div><b id="atmoOrbitLabel">Mach 23</b></div>
+        </div>
+        <p class="drive-note" id="atmoRegion">—</p>
+      </section>
+
+      <section class="eng-section fusion-panel" aria-label="Reator: garrafa invisível e blindagem térmica">
+        <div class="eng-section-title">Reator · confinamento e blindagem</div>
+        <div class="metric-grid">
+          <div class="metric"><span>plasma</span><b><em id="thPlasma">—</em> M°C</b></div>
+          <div class="metric"><span>campo magnético</span><b><em id="thField">—</em> T</b></div>
+          <div class="metric"><span>massa carregada</span><b><em id="thMass">—</em> t</b></div>
+          <div class="metric"><span>reator</span><b><em id="thMassReactor">—</em> t</b></div>
+          <div class="metric"><span>pressão magnética</span><b><em id="thPmag">—</em> atm</b></div>
+          <div class="metric"><span>plasma contido</span><b><em id="thPplas">—</em> atm</b></div>
+          <div class="metric"><span>1ª parede (W)</span><b><em id="thWall">—</em> °C</b></div>
+          <div class="metric"><span>margem ao melt</span><b><em id="thWallMargin">—</em> °C</b></div>
+          <div class="metric"><span>radiador 900 K</span><b><em id="thRad">—</em> m²</b></div>
+          <div class="metric"><span>radiador 300 K</span><b><em id="thRad300">—</em> m²</b></div>
+          <div class="metric"><span>blindagem nêutrons</span><b><em id="thShield">—</em> kg</b></div>
+          <div class="metric"><span>hélio líquido</span><b><em id="thHe">—</em> °C</b></div>
+          <div class="metric"><span>fluxo de He</span><b><em id="thHeFlow">—</em> kg/s</b></div>
+          <div class="metric"><span>IA do reator</span><b><em id="thAI">—</em> ms</b></div>
+          <div class="metric"><span>cabine→reator</span><b><em id="thDist">—</em> m</b></div>
+        </div>
+
+        <div class="parameter">
+          <div class="param-copy"><label for="reactorDistInput">Distância cabine→reator</label><output id="reactorDistOutput">16<small>m</small></output></div>
+          <input id="reactorDistInput" data-param="reactorDistanceM" data-output="reactorDistOutput" data-unit="m" data-decimals="0" type="range" min="4" max="40" step="1" value="16" />
+        </div>
+
+        <!-- Diagrama de escala: arquitetura de mastro cabine→reator. -->
+        <div class="mast-diagram">
+          <svg id="mastSvg" viewBox="0 0 320 96" role="img" aria-label="Diagrama de escala cabine-reator" preserveAspectRatio="xMidYMid meet">
+            <line x1="6" y1="72" x2="314" y2="72" stroke="#27434a" stroke-width="1"/>
+            <!-- cabine (proa) -->
+            <path d="M18,50 Q18,30 34,30 L70,30 Q86,30 86,50 L86,66 Q86,72 70,72 L34,72 Q18,72 18,50 Z" fill="#1d2c2f" stroke="#63a9ff" stroke-width="1.2"/>
+            <text x="52" y="55" text-anchor="middle" class="mast-label">cabine</text>
+            <text x="52" y="84" text-anchor="middle" class="mast-dim">pilotos · telas</text>
+            <!-- mastro / longarina (rede desenhada dinamicamente) -->
+            <line id="mastBoomTop" x1="86" y1="34" x2="226" y2="34" stroke="#7a8890" stroke-width="3"/>
+            <line id="mastBoomBot" x1="86" y1="66" x2="226" y2="66" stroke="#7a8890" stroke-width="3"/>
+            <path id="mastDash" d="M156,26 L156,74" stroke="#44555c" stroke-width="1" stroke-dasharray="3 3"/>
+            <!-- reator (popa) -->
+            <g id="mastReactor">
+              <rect x="226" y="26" width="52" height="48" rx="6" fill="#3a1a12" stroke="#ff7a30" stroke-width="1.4"/>
+              <circle cx="252" cy="50" r="12" fill="none" stroke="#ff5a20" stroke-width="2"/>
+              <circle cx="252" cy="50" r="6" fill="#ff7a30"/>
+              <text x="252" y="84" text-anchor="middle" class="mast-dim">reator D+³He</text>
+            </g>
+            <!-- cotas da distância -->
+            <path id="mastDimLine" d="M86,20 L226,20" stroke="#8ee6ff" stroke-width="1" marker-start="url(#mArrowL)" marker-end="url(#mArrowR)"/>
+            <text id="mastDistLabel" x="156" y="14" text-anchor="middle" class="mast-distance">— m</text>
+            <text id="mastShield" x="156" y="66" text-anchor="middle" class="mast-shield">distância ∝ 1/r²</text>
+            <defs>
+              <marker id="mArrowL" markerWidth="8" markerHeight="8" refX="0" refY="4" orient="auto"><path d="M8,0 L0,4 L8,8" fill="none" stroke="#8ee6ff" stroke-width="1"/></marker>
+              <marker id="mArrowR" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#8ee6ff" stroke-width="1"/></marker>
+            </defs>
+          </svg>
+        </div>
+        <div class="orbit-status" id="thStatus">—</div>
+        <p class="drive-note">Plasma a ~150 milhões °C preso por ímãs REBCO (20 T) — <b>garrafa invisível</b> — resfriado por <b>hélio líquido (−269 °C)</b>; sem ele os ímãs desligam e a nave derrete. O reator é controlado por <b>IA</b> (milissegundos; humano planeja rotas). Cabine blindada, <b>sem janelas</b>, na ponta oposta ao reator. <b>Custo real:</b> ~15 t de reator dominam a massa.</p>
+        <div class="eng-section-title" style="margin-top:10px">Embarque</div>
+        <div class="boarding-proc">
+          <p><b>1.</b> Acesso pela <b>escotilha lateral da proa</b> (rampa de embarque) — o lado <b>mais distante do reator</b> no mastro.</p>
+          <p><b>2.</b> O reator (popa) fica <b>isolado</b> atrás da blindagem e do mastro; ninguém se aproxima dele em solo.</p>
+          <p><b>3.</b> Entrada por <b>compartimento pressurizado</b> (equilíbrio de pressão) → <b>cabine blindada</b> sem janelas.</p>
+          <p><b>4.</b> Tripulação senta <b>virada para o mastro</b> (pernas na direção do reator), pilotando por <b>telas</b>.</p>
+          <p><b>5.</b> Desembarque na chegada: reentrada via <b>EDF</b>, pouso vertical, e só então a escotilha abre.</p>
+          <p><b>Escada retrátil:</b> a rampa é <b>só de embarque em solo</b> — recolhe-se antes de decolar (toggle abaixo) e nunca fica exposta em voo.</p>
+        </div>
+        <div class="ramp-toggle"><button id="rampToggle" class="drive active">Escada estendida (solo)</button></div>
+      </section>
+
+      <section class="eng-section" aria-label="Tripulação e IA">
+        <div class="eng-section-title">Tripulação, IA e sensores</div>
+        <div class="metric-grid">
+          <div class="metric"><span>assentos</span><b><em>3</em> lugares</b></div>
+          <div class="metric"><span>tripulação</span><b><em>piloto + 2</em> ocupantes</b></div>
+          <div class="metric"><span>IA de cabine</span><b><em id="aiCabin">—</em></b></div>
+          <div class="metric"><span>IA do reator</span><b><em id="aiReactor">—</em> ms</b></div>
+          <div class="metric"><span>câmeras externas</span><b><em>9</em> EO/IR</b></div>
+          <div class="metric"><span>piloto</span><b><em>telas</em> (sem janelas)</b></div>
+        </div>
+        <p class="drive-note">Cabine para <b>3 ocupantes</b> (piloto central + copiloto + passageiro). Uma <b>IA de cabine</b> assiste no planejamento de rota e monitora sistemas; a <b>IA do reator</b> controla os ímãs em milissegundos. A visão é por <b>9 câmeras EO/IR</b> externas projetadas nas telas.</p>
+      </section>
+
+      <section class="eng-section" aria-label="Dimensionamento físico">
+        <div class="eng-section-title">Dimensionamento físico (tamanho ideal)</div>
+        <div class="metric-grid">
+          <div class="metric"><span>massa total</span><b><em id="szMass">—</em> kg</b></div>
+          <div class="metric"><span>massa seca</span><b><em id="szDry">—</em> kg</b></div>
+          <div class="metric"><span>volume casco</span><b><em id="szVol">—</em> m³</b></div>
+          <div class="metric"><span>EDF lift</span><b><em id="szLift">—</em> kW</b></div>
+          <div class="metric"><span>disco EDF</span><b><em id="szDisk">—</em> m²</b></div>
+          <div class="metric"><span>carga de disco</span><b><em id="szDiskLoad">—</em> Pa</b></div>
+          <div class="metric"><span>módulo fusão</span><b><em id="szReactor">—</em> t</b></div>
+          <div class="metric"><span>blindagem nêutrons</span><b><em id="szShield">—</em> kg</b></div>
+          <div class="metric"><span>tanque D2</span><b><em id="szTankD2">—</em> m</b></div>
+          <div class="metric"><span>tanque He3</span><b><em id="szTankHe3">—</em> m</b></div>
+          <div class="metric"><span>combustível fusão</span><b><em id="szFuel">—</em> g/h</b></div>
+          <div class="metric"><span>massa reação</span><b><em id="szReaction">—</em> kg</b></div>
+        </div>
+        <p class="drive-note">Dimensionado por densidades reais (compósito ~55 kg/m³, Li-ion ~6 kg/kWh, blindagem LiH/boro ~3,2 kg/kW) e teoria de disco atuador. O EDF sustenta o voo atmosférico; o módulo de fusão D+³He (~4,5 t) é acoplado só no espaço.</p>
+      </section>
+
+      <div class="equation" id="equationTag"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
     </div>
   </aside>
 
@@ -465,6 +674,22 @@
     }, 6500);
   </script>
 
+  <script>
+    // Error capture overlay: makes any runtime error visible on screen so it can
+    // be reported, instead of leaving a blank page.
+    (function () {
+      function show(message) {
+        if (document.getElementById('auroraErrorOverlay')) return;
+        var el = document.createElement('div');
+        el.id = 'auroraErrorOverlay';
+        el.style.cssText = 'position:fixed;z-index:99999;top:0;left:0;right:0;background:rgba(10,10,14,.96);color:#ff8f8f;font:12px/1.6 monospace;padding:14px 18px;white-space:pre-wrap;border-bottom:1px solid #ff6f61;max-height:40vh;overflow:auto;';
+        el.textContent = message;
+        document.body.appendChild(el);
+      }
+      window.addEventListener('error', function (e) { show('ERRO: ' + (e.message || 'desconhecido') + (e.filename ? '\n' + e.filename + ':' + e.lineno : '')); });
+      window.addEventListener('unhandledrejection', function (e) { show('ERRO (promessa): ' + (e.reason && e.reason.message ? e.reason.message : e.reason)); });
+    })();
+  </script>
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -474,12 +699,17 @@
     import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-    import { calculateFlightPhysics, DEFAULT_CONFIG, clamp } from './src/physics.js';
+    import { calculateFlightPhysics, atmosphericEnvelope, DEFAULT_CONFIG, clamp } from './src/physics.js?v=20';
+    import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=20';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=20';
+    import { sizeCapsule } from './src/sizing.js?v=20';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero', scene:'hangar', period:'day' };
+    const state = { mode:'external', fields:true, labels:true, motion:!reducedMotion, vectors:false, view:'hero', scene:'hangar', period:'day', fusionMode:false, rampDeployed:true };
     const design = { ...DEFAULT_CONFIG };
+    design.orbitalRangeKm = 926;
+    design.orbitAltKm = 400;
     const BASE_DIMENSIONS = { lengthM:DEFAULT_CONFIG.lengthM, beamM:DEFAULT_CONFIG.beamM, heightM:DEFAULT_CONFIG.heightM };
     let physics = calculateFlightPhysics(design);
     const telemetryHistory = Array(20).fill(physics.performance.resultantAccelerationMs2);
@@ -1165,6 +1395,15 @@
       duct:new THREE.MeshPhysicalMaterial({color:0x45dfe6,emissive:0x0f8699,emissiveIntensity:1.1,transparent:true,opacity:.4,roughness:.18,side:THREE.DoubleSide}),
       screen:new THREE.MeshBasicMaterial({color:0x8efff9,transparent:true,opacity:.86,toneMapped:false}),
       seam:new THREE.MeshStandardMaterial({color:0x060b0d,metalness:.4,roughness:.6,envMapIntensity:.6}),
+      tungsten:new THREE.MeshPhysicalMaterial({color:0xb9bec0,metalness:.98,roughness:.34,envMapIntensity:1.2}),
+      tungstenHot:new THREE.MeshPhysicalMaterial({color:0xd8b9a8,metalness:.85,roughness:.4,emissive:0xff5a20,emissiveIntensity:.55,envMapIntensity:1.1}),
+      magnetCoil:new THREE.MeshPhysicalMaterial({color:0x3a2a4a,metalness:.6,roughness:.4,emissive:0x5a2fd0,emissiveIntensity:.5,envMapIntensity:1}),
+      radiatorHot:new THREE.MeshStandardMaterial({color:0x1a1110,roughness:.8,emissive:0xff3d00,emissiveIntensity:.55,metalness:.3}),
+      shieldBoron:new THREE.MeshStandardMaterial({color:0x242a2b,metalness:.35,roughness:.7,envMapIntensity:.6}),
+      heliumLine:new THREE.MeshPhysicalMaterial({color:0xbfe9ff,metalness:.6,roughness:.18,emissive:0x3fc7ff,emissiveIntensity:.35,envMapIntensity:1}),
+      aiCore:new THREE.MeshPhysicalMaterial({color:0x0b1b20,metalness:.5,roughness:.3,emissive:0x2fe0ff,emissiveIntensity:1.4,transparent:true,opacity:.9,toneMapped:false}),
+      darkVoid:new THREE.MeshStandardMaterial({color:0x020405,metalness:.6,roughness:.85}),
+      doorLit:new THREE.MeshBasicMaterial({color:0xbfe9ff,transparent:true,opacity:.85,toneMapped:false}),
       beacon:new THREE.MeshBasicMaterial({color:0xff6a3a,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,side:THREE.DoubleSide})
     };
 
@@ -1221,8 +1460,8 @@
     }
 
     // Silhueta monolítica em duas conchas com microsuperfície real.
-    prep(ellipsoid('Monocoque inferior',[0,.48,0],[1.48,.62,1.92],M.shell,96),'shell',[0,-.22,0]);
-    const upper=ellipsoid('Ombros aeroespaciais',[0,.82,-.02],[1.42,.66,1.84],M.shell,96);
+    prep(ellipsoid('Monocoque inferior',[0,.48,0],[1.72,.62,2.6],M.shell,96),'shell',[0,-.22,0]);
+    const upper=ellipsoid('Ombros aeroespaciais',[0,.82,-.02],[1.66,.66,2.5],M.shell,96);
     upper.scale.y=.69;prep(upper,'shell',[0,.25,.03]);
 
     // Costuras de painel reais seguindo as conchas (em vez de tinta plana).
@@ -1233,14 +1472,14 @@
       const pts=[];
       for(let i=0;i<=26;i++){
         const a=-.45+i/26*1.85*Math.PI*.82;
-        const rx=1.42*Math.cos(a),y=.82+.455*Math.sin(a),rz=1.84*Math.cos(a);
+        const rx=1.42*Math.cos(a),y=.82+.455*Math.sin(a),rz=2.5*Math.cos(a);
         pts.push([rx*Math.sin(phi),y,rz*Math.cos(phi)-.02]);
       }
       prep(tube('Junta meridiana',pts,.0048,M.seam,false,64),'shell',[0,.18,.02]);
     }
 
     // Faixa estrutural em carbono, rebites instanciados e placas de proa.
-    const belt=tube('Cinta estrutural',ringPath(1.455,1.76,.63,0,100),.047,M.carbon,true,120);prep(belt,'external',[0,0,.14]);
+    const belt=tube('Cinta estrutural',ringPath(1.7,1.95,.63,0,100),.047,M.carbon,true,120);prep(belt,'external',[0,0,.14]);
     const fasteners=new THREE.Group();fasteners.name='Fixadores do monocoque';
     const boltGeo=new THREE.CylinderGeometry(.016,.016,.016,10);boltGeo.rotateX(Math.PI/2);
     const boltMesh=new THREE.InstancedMesh(boltGeo,M.titanium,64);
@@ -1257,9 +1496,9 @@
     boltMesh.instanceMatrix.needsUpdate=true;
     fasteners.add(boltMesh);
     prep(fasteners,'external',[0,.08,.09]);
-    prep(ellipsoid('Proa reforçada',[0,.59,1.72],[.76,.36,.35],M.hullLight,64),'external',[0,0,.32]);
-    prep(rounded('Placa dorsal',[0,1.28,-.48],[.76,.045,.92],.08,M.carbon),'external',[0,.28,-.08]);
-    prep(rounded('Espinha dorsal',[0,1.44,-.84],[.16,.1,1.15],.05,M.hullLight),'external',[0,.3,-.12]);
+    prep(ellipsoid('Proa reforçada',[0,.59,2.1],[.76,.36,.5],M.hullLight,64),'external',[0,0,.35]);
+    prep(rounded('Placa dorsal',[0,1.28,-.6],[.76,.045,1.4],.08,M.carbon),'external',[0,.28,-.08]);
+    prep(rounded('Espinha dorsal',[0,1.44,-.9],[.16,.1,1.7],.05,M.hullLight),'external',[0,.3,-.12]);
 
     // Suíte de sensores: domo EO/IR, pitots, antenas, radar de nariz.
     const sensors=new THREE.Group();sensors.name='Suíte de sensores ASEA';
@@ -1279,10 +1518,30 @@
     antennas.add(ellipsoid('radome GPS',[0,1.5,-.2],[.07,.035,.1],M.hullLight,24));
     prep(antennas,'external',[0,.34,-.14]);
 
-    // Canopy âmbar com moldura, travessas e vedação interna.
-    const canopy=ellipsoid('Canopy eletrocrômico',[0,1.19,.35],[.91,.55,1.13],M.glass,88);prep(canopy,'external',[0,.5,.24]);
-    prep(tube('Moldura do canopy',ringPath(.91,1.1,1.17,.34,90),.034,M.graphite,true,120),'external',[0,.48,.2]);
+    // Pilotagem por telas: sem janelas de vidro. O canopy é um invólucro
+    // opaco e blindado; a visão vem de câmeras externas e sensores de calor
+    // projetados em telas de alta definição no painel.
+    const canopy=ellipsoid('Involucro blindado (sem janelas)',[0,1.19,.35],[1.1,.58,1.13],M.shieldBoron,88);prep(canopy,'external',[0,.5,.24]);
+    prep(tube('Moldura do canopy',ringPath(1.1,1.1,1.17,.34,90),.034,M.graphite,true,120),'external',[0,.48,.2]);
     prep(tube('Arco central do canopy',[[0,1.13,1.44],[0,1.67,.55],[0,1.24,-.75]],.025,M.titanium,false,72),'external',[0,.48,.18]);
+    // Fita de sensores de câmera externa (EO/IR) ao longo do nariz.
+    const camStrip=tube('Barra de câmeras externas',[[-.7,1.05,1.9],[-.2,1.12,2.2],[.2,1.12,2.2],[.7,1.05,1.9]],.028,M.titanium,false,48);
+    prep(camStrip,'external',[0,.44,.22]);
+    // Câmeras externas de pilotagem (EO/IR) ao longo do casco — lentes visíveis.
+    const externalCams=new THREE.Group();externalCams.name='Câmeras de pilotagem externa';
+    const camPositions=[
+      [0,1.15,2.3],[1.1,.95,1.9],[-1.1,.95,1.9],  // proa / dianteiras
+      [1.7,.95,.4],[-1.7,.95,.4],                  // laterais meio
+      [1.62,.95,-1.6],[-1.62,.95,-1.6],            // laterais traseiras
+      [.5,1.05,-2.5],[-.5,1.05,-2.5]               // traseiras
+    ];
+    for(const [cx,cy,cz] of camPositions){
+      const cam=new THREE.Group();cam.position.set(cx,cy,cz);
+      cam.add(ellipsoid('câmera',[0,0,0],[.055,.055,.12],M.graphite,16));
+      cam.add(ellipsoid('lente',[0,0,.07],[.03,.03,.03],M.glassDark,12));
+      externalCams.add(cam);
+    }
+    prep(externalCams,'external',[0,.2,.15]);
     prep(tube('Vedação interna',ringPath(.855,1.04,1.16,.34,84),.02,M.rubber,true,110),'internal',[0,.4,.2]);
     for(const sx of [-1,1]){
       const rail=tube('Trilho lateral do canopy',[[sx*.73,1.03,1.07],[sx*.9,1.21,.35],[sx*.65,1.09,-.58]],.023,M.titanium,false,64);
@@ -1292,27 +1551,28 @@
     }
 
     // Pods laterais: intake com estatores, aletas de refrigeração e bocal vetorial.
+    // Proporção equilibrada — corpo ~0,42 m, visíveis nas bordas do casco.
     for(const sx of [-1,1]){
-      const pod=new THREE.Group();pod.name=`Pod vetorial ${sx<0?'esquerdo':'direito'}`;pod.position.set(sx*1.47,.55,-.12);
-      const body=cylinder('corpo pod',[0,0,0],.24,.29,1.25,M.hull,'z',56);pod.add(body);
-      const cap=ellipsoid('carenagem',[0,0,.62],[.245,.245,.3],M.hullLight,40);pod.add(cap);
-      const ring=torus('intake',[0,0,-.63],.245,.038,M.titanium);pod.add(ring);
-      for(let i=0;i<3;i++){pod.add(torus('aleta refrigeração',[0,0,.18+i*.16],.262-i*.004,.012,M.graphite))}
-      const stator=new THREE.Group();stator.name='estator de admissão';stator.position.z=-.655;
+      const pod=new THREE.Group();pod.name=`Pod vetorial ${sx<0?'esquerdo':'direito'}`;pod.position.set(sx*1.85,.58,-1.35);
+      const body=cylinder('corpo pod',[0,0,0],.42,.48,1.85,M.hull,'z',56);pod.add(body);
+      const cap=ellipsoid('carenagem',[0,0,.92],[.42,.42,.46],M.hullLight,40);pod.add(cap);
+      const ring=torus('intake',[0,0,-.95],.42,.06,M.titanium);pod.add(ring);
+      for(let i=0;i<3;i++){pod.add(torus('aleta refrigeração',[0,0,.28+i*.24],.44-i*.006,.018,M.graphite))}
+      const stator=new THREE.Group();stator.name='estator de admissão';stator.position.z=-.98;
       for(let i=0;i<9;i++){
         const a=i/9*Math.PI*2;
-        const vane=rounded('palheta',[Math.cos(a)*.11,Math.sin(a)*.11,0],[.2,.045,.018],.008,M.titanium);
+        const vane=rounded('palheta',[Math.cos(a)*.2,Math.sin(a)*.2,0],[.36,.075,.026],.01,M.titanium);
         vane.rotation.z=a;stator.add(vane);
       }
-      stator.add(ellipsoid('cone estator',[0,0,-.01],[.055,.055,.05],M.copper,18));
+      stator.add(ellipsoid('cone estator',[0,0,-.02],[.1,.1,.08],M.copper,18));
       pod.add(stator);
-      const dark=cylinder('interior intake',[0,0,-.68],.19,.19,.05,M.rubber,'z',48);pod.add(dark);
-      const nozzle=cylinder('bocal vetorial',[0,0,.78],.2,.16,.22,M.titanium,'z',48,true);pod.add(nozzle);
-      pod.add(torus('anel quente do bocal',[0,0,.86],.15,.014,M.amber));
-      for(let j=0;j<5;j++){
-        const slit=rounded('dissipador',[sx<0?-.255:.255,.04+(j-2)*.07,-.12],[.018,.035,.49],.009,M.graphite);pod.add(slit);
+      const dark=cylinder('interior intake',[0,0,-1.0],.36,.36,.05,M.rubber,'z',48);pod.add(dark);
+      const nozzle=cylinder('bocal vetorial',[0,0,1.16],.36,.29,.34,M.titanium,'z',48,true);pod.add(nozzle);
+      pod.add(torus('anel quente do bocal',[0,0,1.32],.28,.026,M.amber));
+      for(let j=0;j<6;j++){
+        const slit=rounded('dissipador',[sx<0?-.46:.46,.06+(j-2.5)*.09,-.1],[.026,.045,.74],.012,M.graphite);pod.add(slit);
       }
-      const lamp=ellipsoid('luz navegação',[sx<0?-.25:.25,.13,.38],[.035,.055,.11],sx<0?M.navRed:M.navGreen,20);
+      const lamp=ellipsoid('luz navegação',[sx<0?-.44:.44,.24,.5],[.05,.085,.17],sx<0?M.navRed:M.navGreen,20);
       pod.add(lamp);
       prep(pod,'external',[sx*.55,.03,-.05]);
       strobes.push({mat:lamp.material,phase:sx<0?0:1.6,kind:'nav'});
@@ -1355,69 +1615,125 @@
     }
     prep(ringStruts,'levitation',[0,-.42,0]);
 
+    // Carenagem de transição cônica entre o casco e a turbina da popa,
+    // dando a silhueta aerodinâmica de dirigível com motor na traseira.
+    prep(cylinder('Carenagem de popa',[0,.58,-2.78],.62,.78,.7,M.hullLight,'z',72,true),'external',[0,0,-.35]);
+
     // Turbina EDF traseira em camadas: rotor, estator, pétalas e grade.
-    const engine=new THREE.Group();engine.name='EDF vetorial de 12 fases';engine.position.set(0,.58,-1.88);
-    engine.add(cylinder('carcaça EDF',[0,0,0],.5,.46,.58,M.graphite,'z',72));
-    engine.add(torus('aro externo',[0,0,-.3],.48,.052,M.titanium));
-    engine.add(torus('halo quente',[0,0,-.315],.38,.022,M.amber));
-    engine.add(cylinder('fundo',[0,0,-.325],.34,.34,.025,M.rubber,'z',64));
-    const fan=new THREE.Group();fan.name='Rotor cerâmico';fan.position.z=-.35;
-    fan.add(ellipsoid('hub',[0,0,0],[.14,.14,.09],M.gravium,28));
+    // Posicionada para além do casco (popa), visível por fora.
+    const engine=new THREE.Group();engine.name='EDF vetorial de 12 fases';engine.position.set(0,.6,-3.12);
+    engine.add(cylinder('carcaça EDF',[0,0,0],.5,.45,.62,M.graphite,'z',72));
+    engine.add(torus('aro externo',[0,0,-.32],.48,.055,M.titanium));
+    engine.add(torus('halo quente',[0,0,-.36],.4,.025,M.amber));
+    engine.add(cylinder('fundo',[0,0,-.38],.36,.36,.025,M.rubber,'z',64));
+    // Bocal de exaustão cônico (titânio) + anel de reforço.
+    engine.add(cylinder('bocal exaustão',[0,0,.34],.37,.5,.36,M.titanium,'z',56,true));
+    engine.add(torus('anel reforço',[0,0,.32],.37,.03,M.tungsten));
+    const fan=new THREE.Group();fan.name='Rotor cerâmico';fan.position.z=-.38;
+    fan.add(ellipsoid('hub',[0,0,0],[.16,.16,.09],M.gravium,28));
     for(let i=0;i<18;i++){
       const a=i/18*Math.PI*2;
-      const blade2=rounded('pá',[Math.cos(a)*.235,Math.sin(a)*.235,0],[.08,.31,.024],.014,M.titanium);
+      const blade2=rounded('pá',[Math.cos(a)*.26,Math.sin(a)*.26,0],[.085,.34,.026],.014,M.titanium);
       blade2.rotation.z=a-.38;fan.add(blade2);
     }
     engine.add(fan);engine.userData.fan=fan;
-    const stator2=new THREE.Group();stator2.name='Estator endireitador';stator2.position.z=.12;
+    const stator2=new THREE.Group();stator2.name='Estator endireitador';stator2.position.z=.14;
     for(let i=0;i<12;i++){
       const a=i/12*Math.PI*2;
-      const v=rounded('pá estator',[Math.cos(a)*.27,Math.sin(a)*.27,0],[.3,.05,.02],.008,M.copper);
+      const v=rounded('pá estator',[Math.cos(a)*.3,Math.sin(a)*.3,0],[.34,.05,.022],.009,M.copper);
       v.rotation.z=a+.22;stator2.add(v);
     }
-    stator2.add(ellipsoid('núcleo estator',[0,0,0],[.11,.11,.07],M.titanium,24));
+    stator2.add(ellipsoid('núcleo estator',[0,0,0],[.12,.12,.075],M.titanium,24));
     engine.add(stator2);
     for(let i=0;i<16;i++){ // pétalas do bocal
       const a=i/16*Math.PI*2;
-      const petal=rounded('pétala',[Math.cos(a)*.47,Math.sin(a)*.47,-.3],[.045,.14,.16],.012,M.graphite);
+      const petal=rounded('pétala',[Math.cos(a)*.48,Math.sin(a)*.48,-.32],[.05,.15,.17],.012,M.graphite);
       petal.rotation.z=a;petal.rotation.y=.16;engine.add(petal);
     }
-    prep(engine,'engine',[0,.05,-.7]);
+    prep(engine,'engine',[0,.05,-1.2]);
 
-    // Estabilizadores traseiros articulados.
+    // Estabilizadores traseiros: ancorados na lateral do casco (à frente dos
+    // pods), inclinados para fora e para cima, terminando acima e atrás.
     for(const sx of [-1,1]){
-      const a=[sx*.82,.64,-1.32], b=[sx*1.72,.76,-2.03];
-      prep(rod('Braço estabilizador',a,b,.052,M.gravium),'external',[sx*.35,.12,-.45]);
-      prep(ellipsoid('Micropropulsor',[...b],[.14,.14,.18],M.graphite,32),'external',[sx*.38,.14,-.5]);
-      prep(torus('Halo estabilizador',[b[0],b[1],b[2]-.15],.1,.018,M.amber),'external',[sx*.4,.14,-.55]);
-      prep(cylinder('barbatana',[b[0]+sx*.1,b[1]+.1,b[2]+.28],.012,.07,.3,M.hullLight,'y',4),'external',[sx*.3,.2,-.4]);
+      const a=[sx*1.15,.95,-.5], b=[sx*2.35,1.6,-2.6];
+      prep(rod('Braço estabilizador',a,b,.07,M.gravium),'external',[sx*.35,.12,-.45]);
+      prep(ellipsoid('Micropropulsor',[...b],[.24,.24,.3],M.graphite,32),'external',[sx*.38,.14,-.5]);
+      prep(torus('Halo estabilizador',[b[0],b[1],b[2]-.18],.16,.03,M.amber),'external',[sx*.4,.14,-.55]);
+      prep(cylinder('barbatana',[b[0]+sx*.16,b[1]+.18,b[2]+.4],.02,.12,.5,M.hullLight,'y',4),'external',[sx*.3,.2,-.4]);
     }
 
     // Linhas de fluxo luminescentes nas laterais.
     for(const sx of [-1,1]){
-      prep(tube('Costura lateral',[[sx*1.33,.68,1.1],[sx*1.47,.64,.05],[sx*1.23,.61,-1.22]],.008,M.cyan,false,72),'external',[sx*.16,0,0]);
+      prep(tube('Costura lateral',[[sx*1.6,.68,1.7],[sx*1.68,.64,.05],[sx*1.5,.61,-2.3]],.008,M.cyan,false,72),'external',[sx*.16,0,0]);
     }
 
-    // Trem de pouso retrátil de emergência (quatro patas amortecidas).
+    // Trem de pouso retrátil (quatro patas amortecidas tocando o chão),
+    // distribuídas na proa e na popa do casco alongado.
     for(let i=0;i<4;i++){
       const a=i/4*Math.PI*2+Math.PI/4;
       const skid=new THREE.Group();skid.name='Pata de pouso';
       const ax=Math.cos(a),az=Math.sin(a);
-      skid.add(rod('amortecedor',[ax*.82,.16,az*.86],[ax*1.06,-.34,az*1.1],.028,M.titanium));
-      skid.add(rod('braço',[ax*.62,.1,az*.66],[ax*.9,-.3,az*.94],.02,M.graphite));
-      const foot=ellipsoid('sapata',[ax*1.08,-.36,az*1.12],[.09,.035,.13],M.rubber,20);
+      const baseZ=az<0?-2.3:2.1; // patas traseiras e dianteiras (não no meio)
+      skid.add(rod('amortecedor',[ax*.85,.6,baseZ],[ax*1.05,-.42,baseZ+az*.15],.03,M.titanium));
+      skid.add(rod('braço',[ax*.7,.5,baseZ],[ax*.95,-.42,baseZ+az*.12],.022,M.graphite));
+      const foot=ellipsoid('sapata',[ax*1.05,-.5,baseZ+az*.16],[.1,.05,.14],M.rubber,20);
       foot.rotation.y=-a;skid.add(foot);
-      prep(skid,'external',[ax*.3,-.24,az*.3]);
+      prep(skid,'external',[ax*.3,-.3,az*.35]);
     }
 
     // Decalques técnicos independentes mantêm nitidez sobre os painéis.
     const decalMat=new THREE.MeshBasicMaterial({map:decalPlate(),transparent:true,depthWrite:false,toneMapped:false});
-    const decal=new THREE.Mesh(new THREE.PlaneGeometry(.5,.5),decalMat);decal.position.set(-1.449,.82,.18);decal.rotation.y=-Math.PI/2;decal.rotation.z=-.06;decal.scale.y=.62;prep(decal,'external',[-.19,.05,.02]);
-    const hatch=new THREE.Mesh(new THREE.PlaneGeometry(.4,.4),new THREE.MeshBasicMaterial({map:hatchPlate(),transparent:true,depthWrite:false,toneMapped:false}));
-    hatch.position.set(1.449,.8,.3);hatch.rotation.y=Math.PI/2;hatch.rotation.z=.07;hatch.scale.y=.8;prep(hatch,'external',[.19,.05,.02]);
+    const decal=new THREE.Mesh(new THREE.PlaneGeometry(.5,.5),decalMat);decal.position.set(-1.78,.82,.18);decal.rotation.y=-Math.PI/2;decal.rotation.z=-.06;decal.scale.y=.62;prep(decal,'external',[-.19,.05,.02]);
+    // --- Abertura real da cabine (portal de entrada do piloto) ---
+    // Um vão escuro (o interior) com moldura metálica e luz de soleira no lado
+    // direito da proa, na lateral do módulo da tripulação.
+    const cabinDoor=new THREE.Group();cabinDoor.name='Portal de entrada da cabine';
+    cabinDoor.position.set(1.78,.8,.5);
+    // Interior escuro do vão (parece entrar para dentro da cabine).
+    cabinDoor.add(rounded('vão da porta',[0,0,0],[.06,1.0,.78],.03,M.darkVoid));
+    // Luz de soleira/interior (cabine pressurizada e acesa).
+    const doorInterior=rounded('luz interior',[.05,0,0],[.02,.84,.6],.01,M.doorLit);
+    doorInterior.rotation.y=.06;cabinDoor.add(doorInterior);
+    // Moldura da abertura (três lados + ombreiras).
+    cabinDoor.add(rod('ombreira A',[-.39,.5,-.02],[-.39,-.5,-.02],.045,M.titanium));
+    cabinDoor.add(rod('ombreira B',[.39,.5,-.02],[.39,-.5,-.02],.045,M.titanium));
+    cabinDoor.add(rod('lintel',[-.39,.5,-.02],[.39,.5,-.02],.05,M.titanium));
+    cabinDoor.add(rod('soleira',[-.39,-.5,-.02],[.39,-.5,-.02],.06,M.titanium));
+    prep(cabinDoor,'external',[.28,.06,.05]);
+
+    // Escada de embarque realista na lateral direita, à proa — do chão até o
+    // portal da cabine. Estrutura de duas longarinas inclinadas + degraus,
+    // corrimão contínuo, plataforma e perna de apoio apoiada no solo.
+    const boardingRamp=new THREE.Group();boardingRamp.name='Rampa de embarque (proa)';
+    boardingRamp.position.set(1.82,.05,.6);
+    const rampTopY=.8, rampBottomY=-.55, rampZ0=-.55, rampZ1=.5;
+    // Longarinas laterais (stringers) inclinadas do chão até a plataforma.
+    for(const sx of [-1,1])boardingRamp.add(rod('longarina',[sx*.5,rampBottomY,rampZ0],[sx*.5,rampTopY,rampZ1],.05,M.titanium));
+    // Degraus horizontais reais ao longo da inclinação.
+    const nSteps=10;
+    for(let i=0;i<=nSteps;i++){
+      const t=i/nSteps;
+      const y=rampBottomY+t*(rampTopY-rampBottomY);
+      const z=rampZ0+t*(rampZ1-rampZ0);
+      const step=rounded('degrau',[0,y,z],[1.0,.045,.3],.02,M.graphite);
+      step.rotation.x=.06;boardingRamp.add(step);
+    }
+    // Plataforma superior na soleira do portal.
+    boardingRamp.add(rounded('plataforma',[0,rampTopY+.05,rampZ1],[1.1,.05,.4],.03,M.titanium));
+    // Corrimão contínuo nas duas laterais.
+    for(const sx of [-1,1]){
+      boardingRamp.add(rod('corrimão',[sx*.55,rampTopY+.5,rampZ1-.05],[sx*.55,rampBottomY+.9,rampZ0+.05],.022,M.titanium));
+      for(let i=0;i<=nSteps;i+=2){const t=i/nSteps;const y=rampBottomY+t*(rampTopY-rampBottomY);const z=rampZ0+t*(rampZ1-rampZ0);boardingRamp.add(rod('balústre',[sx*.52,y,rampZ0+t*(rampZ1-rampZ0)],[sx*.55,y+.5,rampZ0+t*(rampZ1-rampZ0)+.02],.012,M.titanium));}
+    }
+    // Perna de apoio no chão sob a plataforma.
+    boardingRamp.add(rod('perna de apoio',[-.4,rampTopY-.1,rampZ1],[.4,rampBottomY,rampZ1],.04,M.graphite));
+    boardingRamp.userData.basePos=boardingRamp.position.clone();
+    boardingRamp.userData.ramp=true;
+    prep(boardingRamp,'ramp',[.18,-.2,.08]);
+    window.__AURORA_BOARDING_RAMP__=boardingRamp;
     for(const sx of [-1,1]){
       const strip=new THREE.Mesh(new THREE.PlaneGeometry(.56,.2),new THREE.MeshBasicMaterial({map:cautionStripes(),transparent:true,depthWrite:false,toneMapped:false}));
-      strip.position.set(sx*1.463,.78,-.72);strip.rotation.y=sx*Math.PI/2;prep(strip,'external',[sx*.18,.06,-.1]);
+      strip.position.set(sx*1.78,.78,-.72);strip.rotation.y=sx*Math.PI/2;prep(strip,'external',[sx*.18,.06,-.1]);
     }
     const registry=new THREE.Mesh(new THREE.PlaneGeometry(.72,.18),canvasTextureMesh('AGT-M5 · 2046 / FLIGHT RESEARCH',34,'rgba(160,240,238,.85)'));
     registry.position.set(0,1.34,-1.28);registry.rotation.x=-.5;prep(registry,'external',[0,.3,-.2]);
@@ -1439,25 +1755,53 @@
     prep(beaconGroup,'external',[0,.36,-.16]);
     strobes.push({mat:beaconGroup.children[0].material,phase:0,kind:'beacon'});
 
-    // Interior monolugar: banco, cintos, painel holográfico e comandos.
+    // Interior tripulado: três assentos (piloto central + copiloto + passageiro),
+    // cintos, painel de telas e núcleo de IA de cabine. A cápsula alongada acomoda.
     const cockpit=new THREE.Group();cockpit.name='Habitáculo pressurizado';
-    cockpit.add(rounded('assento',[0,.72,.26],[.62,.18,.72],.12,M.leather));
-    const back=rounded('encosto',[0,1.04,-.13],[.61,.74,.16],.12,M.leather);back.rotation.x=-.18;cockpit.add(back);
-    cockpit.add(rounded('apoio de cabeça',[0,1.45,-.2],[.4,.23,.18],.09,M.leather));
+    // Assento do piloto (central).
+    cockpit.add(rounded('assento piloto',[0,.72,.26],[.5,.18,.66],.12,M.leather));
+    const pback=rounded('encosto piloto',[0,1.04,-.13],[.49,.7,.15],.12,M.leather);pback.rotation.x=-.18;cockpit.add(pback);
+    cockpit.add(rounded('apoio de cabeça piloto',[0,1.45,-.2],[.34,.22,.17],.09,M.leather));
+    // Assento do copiloto (direita, recuado) — folga clara no canopy.
+    cockpit.add(rounded('assento copiloto',[.48,.7,.34],[.44,.17,.6],.11,M.leather));
+    const cback=rounded('encosto copiloto',[.48,1.0,-.05],[.43,.64,.14],.11,M.leather);cback.rotation.x=-.18;cockpit.add(cback);
+    cockpit.add(rounded('apoio de cabeça copiloto',[.48,1.4,-.13],[.3,.2,.15],.08,M.leather));
+    // Assento do passageiro (esquerda, mais atrás) — folga clara no canopy.
+    cockpit.add(rounded('assento passageiro',[-.48,.7,.28],[.44,.17,.6],.11,M.leather));
+    const sback=rounded('encosto passageiro',[-.48,1.0,-.01],[.43,.64,.14],.11,M.leather);sback.rotation.x=-.18;cockpit.add(sback);
+    cockpit.add(rounded('apoio de cabeça passageiro',[-.48,1.4,-.09],[.3,.2,.15],.08,M.leather));
+    // Apoios laterais e cintos para cada assento.
     for(const sx of [-1,1]){
       cockpit.add(rounded('apoio lateral',[sx*.34,.83,.18],[.1,.1,.5],.05,M.leather));
       const strap=tube('cinto',[[sx*.22,1.39,-.12],[sx*.17,1.05,.02],[sx*.08,.8,.26]],.025,M.amber,false,38);cockpit.add(strap);
     }
-    const dash=rounded('painel',[0,.9,.98],[.92,.12,.34],.08,M.graphite);dash.rotation.x=-.12;cockpit.add(dash);
-    const screen=rounded('HUD',[0,1.03,.87],[.62,.016,.22],.035,M.screen);screen.rotation.x=-.54;cockpit.add(screen);
-    const combiner=new THREE.Mesh(new THREE.PlaneGeometry(.4,.24),new THREE.MeshPhysicalMaterial({color:0x8afff6,transparent:true,opacity:.16,roughness:.05,metalness:0,side:THREE.DoubleSide}));
+    for(const sx of [-.48,.48]){
+      const strap=tube('cinto lateral',[[sx+.14,1.32,-.02],[sx+.1,1.0,.08],[sx+.04,.78,.28]],.02,M.amber,false,38);cockpit.add(strap);
+    }
+    // Painel de telas e HUD (pilotagem por câmeras).
+    const dash=rounded('painel',[0,.9,.98],[1.6,.12,.34],.08,M.graphite);dash.rotation.x=-.12;cockpit.add(dash);
+    const screen=rounded('HUD principal',[0,1.03,.87],[1.2,.016,.22],.035,M.screen);screen.rotation.x=-.54;cockpit.add(screen);
+    const combiner=new THREE.Mesh(new THREE.PlaneGeometry(.8,.24),new THREE.MeshPhysicalMaterial({color:0x8afff6,transparent:true,opacity:.16,roughness:.05,metalness:0,side:THREE.DoubleSide}));
     combiner.name='combiner HUD';combiner.position.set(0,1.22,1.02);combiner.rotation.x=-.35;cockpit.add(combiner);
+    // Núcleo de IA de cabine (assistente de voo / planejamento de rota).
+    const cabinAI=ellipsoid('IA de cabine',[0,1.5,.62],[.14,.14,.14],M.aiCore,20);
+    cabinAI.name='IA de cabine';cockpit.add(cabinAI);
+    cockpit.add(torus('anel IA',[0,1.5,.62],.2,.02,M.cyan));
+    // Comandos (manche central + manches laterais).
+    cockpit.add(rod('manche central',[0,.9,.6],[0,1.12,.5],.022,M.graphite));
+    cockpit.add(ellipsoid('empunhadura central',[0,1.12,.5],[.05,.06,.05],M.rubber,16));
     for(const sx of [-1,1]){
       cockpit.add(rod('manche',[sx*.3,.82,.62],[sx*.24,1.0,.5],.018,M.graphite));
       cockpit.add(ellipsoid('empunhadura',[sx*.24,1.0,.5],[.035,.05,.035],M.rubber,16));
       cockpit.add(rounded('pedal',[sx*.18,.52,1.18],[.14,.03,.2],.02,M.graphite));
     }
-    for(let i=0;i<5;i++){const led=ellipsoid('controle',[(i-2)*.11,.975,1.145],[.018,.018,.018],i===2?M.amber:M.cyan,12);cockpit.add(led)}
+    for(let i=0;i<7;i++){const led=ellipsoid('controle',[(i-3)*.12,.975,1.145],[.018,.018,.018],i===2?M.amber:M.cyan,12);cockpit.add(led)}
+    // Luz de cabine: ilumina o interior tripulado (visão interna não escura).
+    const cabinLight=new THREE.PointLight(0xbfe9ff,22,5,2);
+    cabinLight.position.set(0,1.9,1.0);cockpit.add(cabinLight);
+    // Luz de painel (tom quente) para leitura das telas.
+    const panelLight=new THREE.PointLight(0xffd9a0,14,4,2);
+    panelLight.position.set(0,1.1,1.2);cockpit.add(panelLight);
     prep(cockpit,'internal',[0,.55,.56]);
 
     const cage=new THREE.Group();cage.name='Berço estrutural em carbono';
@@ -1476,6 +1820,54 @@
     core.add(ellipsoid('isolador A',[0,0,.5],[.18,.18,.12],M.cyan,24));
     core.add(ellipsoid('isolador B',[0,0,-.5],[.18,.18,.12],M.cyan,24));
     prep(core,'internal',[0,.1,-.62]);
+
+    /* Hardware do reator de fusão D+³He — a "garrafa invisível" aplicada na
+     * cápsula: bobinas REBCO de confinamento, primeira parede de tungstênio,
+     * plasma preso, radiadores de alta temperatura e blindagem de nêutrons.
+     * Fica visível quando o impulso de fusão está selecionado. */
+    const fusionHardware=new THREE.Group();fusionHardware.name='Reator de fusão D+³He (confinamento e blindagem)';
+    // Popa: logo à frente do EDF, no extremo oposto à cabine (proa).
+    fusionHardware.position.set(0,.56,-2.62);
+    // 1) Garrafa magnética: bobinas supercondutoras REBCO (anéis toroidais).
+    const fusionCoils=new THREE.Group();fusionCoils.name='Bobinas REBCO de confinamento';
+    for(const z of [-.55,-.33,-.11,.11,.33,.55])fusionCoils.add(torus('bobina REBCO',[0,0,z],.42,.04,M.magnetCoil));
+    fusionHardware.add(fusionCoils);
+    // 2) Primeira parede de tungstênio (casca aberta) + anéis quentes.
+    fusionHardware.add(cylinder('primeira parede W',[0,0,0],.30,.30,.92,M.tungsten,'z',64,true));
+    for(const z of [-.46,0,.46])fusionHardware.add(torus('anel quente W',[0,0,z],.30,.018,M.tungstenHot));
+    // 3) Plasma confinado (núcleo incandescente preso pelo campo magnético).
+    fusionHardware.add(ellipsoid('plasma confinado',[0,0,0],[.16,.16,.5],M.amber,40));
+    // 4) Radiadores de alta temperatura (abas traseiras, incandescentes).
+    for(const sx of [-1,1])fusionHardware.add(rounded('radiador 900K',[sx*.62,.02,0],[.16,.04,.78],.015,M.radiatorHot));
+    // 5) Blindagem de nêutrons (LiH/boro) entre o reator e a cabine.
+    fusionHardware.add(rounded('blindagem de nêutrons',[0,0,.52],[.5,.34,.16],.03,M.shieldBoron));
+    // 6) Circuito de hélio líquido: linhas criogênicas frias (azul) levando He
+    //    às bobinas REBCO; sem ele os ímãs desligam e o plasma derrete a nave.
+    const heliumLoop=new THREE.Group();heliumLoop.name='Circuito de hélio líquido (4,2 K)';
+    for(const sx of [-1,1])heliumLoop.add(tube('linha de hélio',[[sx*.5,.55,.55],[sx*.42,.2,0],[sx*.5,-.2,-.5],[sx*.3,.55,-.9]],.022,M.heliumLine,false,56));
+    heliumLoop.add(rounded('reservatório He',[0,.7,.5],[.16,.1,.26],.03,M.heliumLine));
+    fusionHardware.add(heliumLoop);
+    // 7) Núcleo de IA: controla os ímãs em milissegundos (o humano planeja rotas).
+    const aiCore=ellipsoid('Núcleo de IA de reator',[0,.5,.62],[.1,.07,.08],M.aiCore,20);fusionHardware.add(aiCore);
+    // 8) Mastro / longarina: estrutura longa e visível que liga o reator (popa)
+    //    à cabine (proa), evidenciando a separação física tripulação-reator.
+    const mastBoom=new THREE.Group();mastBoom.name='Mastro de separação cabine-reator';
+    for(const sx of [-1,1]){
+      mastBoom.add(rod('longarina',[sx*.5,.5,-.15],[sx*.5,.5,3.3],.032,M.titanium));
+      for(const z of [.3,1.2,2.1,2.9])mastBoom.add(rod('travessa',[sx*.5,.38,z],[sx*.5,.62,z],.022,M.titanium));
+    }
+    fusionHardware.add(mastBoom);
+    // 9) Tanques criogênicos de propelente (D2 e ³He), dimensionados em ~0,4-0,45 m.
+    const cryoTanks=new THREE.Group();cryoTanks.name='Tanques criogênicos (D2 + ³He)';
+    cryoTanks.add(ellipsoid('tanque D2',[.34,.72,-.42],[.24,.24,.3],M.titanium,32));
+    cryoTanks.add(ellipsoid('tanque ³He',[-.34,.72,-.42],[.22,.22,.26],M.graphite,32));
+    for(const sx of [-1,1])cryoTanks.add(torus('banda tanque',[sx*.34,.72,-.42],.22,.02,M.carbon));
+    fusionHardware.add(cryoTanks);
+    // 10) Halo do plasma (pulsa na animação).
+    const fusionGlow=new THREE.Mesh(new THREE.SphereGeometry(.55,24,18),new THREE.MeshBasicMaterial({color:0xff7a30,transparent:true,opacity:.12,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
+    fusionGlow.name='halo plasma';fusionGlow.position.set(0,0,.05);fusionHardware.add(fusionGlow);
+    prep(fusionHardware,'reactor',[0,.1,-.62]);
+    fusionHardware.visible=false;
 
     for(const sx of [-1,1]){
       const cell=new THREE.Group();cell.name='Célula de energia';cell.position.set(sx*.72,.48,-.52);
@@ -1892,6 +2284,34 @@
     }
 
     function setText(id,text){const el=document.getElementById(id);if(el)el.textContent=text}
+    // Redesenha o diagrama de escala cabine→reator conforme a distância.
+    // Escala: 12,5 unidades SVG por metro, ancorado na cabine (proa).
+    function updateMastDiagram(dist){
+      const svg=document.getElementById('mastSvg');
+      if(!svg)return;
+      const u=12.5;
+      let center=52+dist*u;
+      let left=center-26;
+      left=Math.max(left,92);center=left+26;
+      const right=center+26;
+      const w=Math.max(320,right+16);
+      svg.setAttribute('viewBox',`0 0 ${w} 96`);
+      const reac=document.getElementById('mastReactor');
+      if(reac)reac.setAttribute('transform',`translate(${left-226},0)`);
+      const mid=(86+left)/2;
+      const bt=document.getElementById('mastBoomTop');
+      const bb=document.getElementById('mastBoomBot');
+      const dl=document.getElementById('mastDimLine');
+      if(bt)bt.setAttribute('x2',left);
+      if(bb)bb.setAttribute('x2',left);
+      if(dl)dl.setAttribute('d',`M86,20 L${left},20`);
+      const dash=document.getElementById('mastDash');
+      if(dash)dash.setAttribute('d',`M${mid},26 L${mid},74`);
+      const lb=document.getElementById('mastDistLabel');
+      if(lb){lb.setAttribute('x',mid);lb.textContent=`${dist} m`;}
+      const sh=document.getElementById('mastShield');
+      if(sh)sh.setAttribute('x',mid);
+    }
     function updateRange(input){
       const range=(Number(input.value)-Number(input.min))/(Number(input.max)-Number(input.min))*100;
       input.style.setProperty('--range',`${range}%`);
@@ -1937,7 +2357,151 @@
       setText('flightRegime',design.airspeedMs<3?'HOVER':p.verticalAccelerationMs2>1?'CLIMB':'CRUISE');
       setText('solverStatus',p.thrustToWeight<.94?'déficit de sustentação':p.thrustToWeight>1.22?'carga elevada':'modelo convergente');
       document.getElementById('solverStatus').classList.toggle('alert',p.thrustToWeight<.94||p.thrustToWeight>1.22);
+
+      const isFusion = p.propulsionModel==='fusion';
+      document.body.classList.toggle('fusion-mode',isFusion);
+      state.fusionMode=isFusion;
+      if(fusionHardware){fusionHardware.visible=isFusion&&state.mode!=='external'}
+      try {
+      if(isFusion&&p.fusion){
+        const fd=p.fusion;
+        setText('fusionVe',numberFormatter(fd.exhaustVelocityMs/1000,1));
+        setText('fusionIsp',numberFormatter(fd.specificImpulseS,0));
+        setText('fusionFlow',numberFormatter(fd.propellantMassFlowKgS*1000,2));
+        setText('fusionBurn',numberFormatter(fd.burnTimeMinutes,1));
+        setText('fusionDeltaV',numberFormatter(fd.deltaVMs,0));
+        setText('fusionFuel',numberFormatter(fd.fuelPerHourKg*1000,2));
+        const eq=document.getElementById('equationTag');
+        if(eq){
+          const fuelName=fd.ideal.name;
+          const fuelDens=numberFormatter(fd.ideal.specificEnergyJkg/1e15,2);
+          const idealC=numberFormatter(fd.ideal.idealExhaustFractionOfC*100,1);
+          const neutro=fd.ideal.neutrons?'emite nêutrons (blindagem pesada)':'quase anêutronico (menos blindagem)';
+          eq.innerHTML=`<b>IMPULSO DE FUSÃO / EQUAÇÃO DO FOGUETE</b>F = ṁ·Vₑ &nbsp;·&nbsp; P = ½ṁ·Vₑ² &nbsp;·&nbsp; Δv = Vₑ·ln(m₀/m_f)<br>${fuelName} · exaustão de plasma · ${fuelDens}×10¹⁵ J/kg · ideal ≈ ${idealC}% c · ${neutro}`;
+        }
+
+        // Orbital point-to-point mission (fusion impulse, exoatmospheric phase).
+        const rangeKm = Number(design.orbitalRangeKm)||926;
+        const centralAngleDeg = (rangeKm*1000/EARTH_RADIUS_M)*(180/Math.PI);
+        const mission = planPointToPointMission({
+          centralAngleDeg,
+          fusionPowerKw: design.fusionPowerKw,
+          exhaustEfficiency: design.exhaustEfficiency,
+          exhaustVelocityMs: design.fusionExhaustVelocityMs,
+          propellantMassKg: design.propellantMassKg,
+          dryMassKg: physics.mass.effectiveMassKg,
+          fuelType: design.fuelType
+        });
+        setText('orbitalBeta',numberFormatter(mission.trajectory.centralAngleDeg,1));
+        setText('orbitalDeltaV',numberFormatter(mission.deltaVNeededMs/1000,2));
+        setText('orbitalApogee',numberFormatter(mission.trajectory.apogeeAltitudeKm,0));
+        setText('orbitalTime',numberFormatter(mission.trajectory.flightMinutes,1));
+        setText('orbitalProp',numberFormatter(mission.propellantRequiredKg,1));
+        const orbitStatus=document.getElementById('orbitStatus');
+        if(orbitStatus){
+          orbitStatus.textContent=mission.feasible
+            ? `viável · sobram ${numberFormatter(mission.propellantAfterKg,1)} kg de deutério · alcance máximo ${numberFormatter(mission.maxRange.rangeKm,0)} km`
+            : `não viável · alcance máximo do impulso: ${numberFormatter(mission.maxRange.rangeKm,0)} km`;
+          orbitStatus.classList.toggle('alert',!mission.feasible);
+        }
+
+        // Circular orbit / escape regime at the target altitude.
+        const altKm = Number(design.orbitAltKm)||400;
+        const insertion = planOrbitalInsertion({
+          altitudeKm: altKm,
+          fusionPowerKw: design.fusionPowerKw,
+          exhaustEfficiency: design.exhaustEfficiency,
+          exhaustVelocityMs: design.fusionExhaustVelocityMs,
+          propellantMassKg: design.propellantMassKg,
+          dryMassKg: physics.mass.effectiveMassKg,
+          fuelType: design.fuelType
+        });
+        setText('orbitVO',numberFormatter(insertion.regime.orbitalVelocityMs/1000,2));
+        setText('orbitVEsc',numberFormatter(insertion.regime.escapeVelocityMs/1000,2));
+        setText('orbitPeriod',numberFormatter(insertion.regime.periodMinutes,1));
+        setText('orbitDeltaV',numberFormatter(insertion.deltaVTotalMs/1000,2));
+        setText('orbitProp',numberFormatter(insertion.propellantRequiredKg,0));
+        const insStatus=document.getElementById('orbitInsertStatus');
+        if(insStatus){
+          insStatus.textContent=insertion.feasible
+            ? `viável · sobram ${numberFormatter(insertion.propellantAfterKg,1)} kg de deutério`
+            : `não viável · tanque de ${numberFormatter(insertion.propellantAvailableKg,0)} kg entrega ${numberFormatter(insertion.maxDeltaVMs/1000,2)} km/s; órbita exige ${numberFormatter(insertion.propellantRequiredKg,0)} kg`;
+          insStatus.classList.toggle('alert',!insertion.feasible);
+        }
+
+        // Fusion reactor confinement & thermal protection (the "invisible bottle").
+        const th = thermalProtectionDesign({
+          fusionPowerKw: design.fusionPowerKw * 1.25, // 12 MW jet ⇒ ~15 MW fusion
+          jetEfficiency: design.exhaustEfficiency,
+          crewDistanceM: physics.mass.reactorDistanceM
+        });
+        setText('thPlasma',numberFormatter((th.plasmaTemperatureK-273.15)/1e6,0)+'M');
+        setText('thField',numberFormatter(th.containment.fieldT,0));
+        setText('thPmag',numberFormatter(th.containment.magneticPressureAtm,0));
+        setText('thPplas',numberFormatter(th.containment.plasmaPressureAtm,0));
+        setText('thWall',numberFormatter(th.wall.surfaceTempC,0));
+        setText('thWallMargin',numberFormatter(th.wall.marginToMeltC,0));
+        setText('thRad',numberFormatter(th.radiators.at900K.areaM2,0));
+        setText('thRad300',numberFormatter(th.radiators.at300K.areaM2,0));
+        setText('thShield',numberFormatter(th.shieldingMassKg,0));
+        setText('thMass',numberFormatter(physics.mass.effectiveMassKg/1000,1));
+        setText('thMassReactor',numberFormatter(physics.mass.fusionHardwareMassKg/1000,1));
+        setText('thHe',numberFormatter(th.helium.boilingTempC,0));
+        setText('thHeFlow',numberFormatter(th.helium.flowKgS,2));
+        setText('thAI',numberFormatter(th.ai.responseMs,1));
+        setText('thDist',numberFormatter(physics.mass.reactorDistanceM,0));
+        const mastLabel=document.getElementById('mastDistLabel');
+        if(mastLabel)mastLabel.textContent=`${numberFormatter(physics.mass.reactorDistanceM,0)} m`;
+        updateMastDiagram(physics.mass.reactorDistanceM);
+
+        // Envelope atmosférico: EDF (ar) × fusão × órbita.
+        const env=atmosphericEnvelope({ referenceSpeedMs: 250 });
+        setText('atmoEdfLabel',`~${numberFormatter(env.edfCeilingKm,0)} km`);
+        setText('atmoFusionLabel',`${numberFormatter(env.fusionCrossoverKm,0)} km`);
+        setText('atmoOrbitLabel',`${numberFormatter(env.orbitalMach,0)} Mach`);
+        setText('atmoRegion',`${env.region} · no ar denso a fusão perde feio (empuxo ${numberFormatter(env.fusionMaxThrustN,0)} N × arrasto de milhares de N).`);
+        const elE=document.getElementById('atmoEdf'),elF=document.getElementById('atmoFusion'),elO=document.getElementById('atmoOrbit');
+        if(elE)elE.style.width=`${Math.max(3,Math.min(100,env.edfCeilingKm/50*100))}%`;
+        if(elF)elF.style.width=`${Math.max(3,Math.min(100,env.fusionCrossoverKm/50*100))}%`;
+        if(elO)elO.style.width=`3%`;
+        const thStatus=document.getElementById('thStatus');
+        if(thStatus){
+          const tp=p.thrustToWeight;
+          const liftMsg=tp<1
+            ? `alerta: com ${numberFormatter(physics.mass.effectiveMassKg/1000,1)} t, o EDF não sustenta voo atmosférico (T/P ${tp.toFixed(2)})`
+            : 'sustentação atmosférica viável';
+          thStatus.textContent=`Plasma ${numberFormatter((th.plasmaTemperatureK-273.15)/1e6,0)} milhões °C · ${th.wall.safe?'1ª parede segura':'parede em risco'} · radiador ${th.radiators.at900K.areaM2<150?'compacto (900 K)':th.radiators.at900K.areaM2<1000?'moderado':'inviável'} · ${liftMsg}`;
+          thStatus.classList.toggle('alert',!th.wall.safe||tp<1);
+        }
+      }
+      } catch (err) { /* telemetria orbital/fusão é opcional — nunca quebra o painel */ }
+      // Tripulação e IA (sempre visível, independente do modo de propulsão).
+      try {
+        setText('aiCabin','ativo · rota e monitoramento');
+        const fdr=physics?.performance?.fusion;
+        setText('aiReactor',fdr?numberFormatter(fdr.specificImpulseS,0)+'·'+(fdr.burnTimeMinutes|0)+'min':'em espera (EDF)');
+      } catch (err) { /* IA opcional */ }
       updateTelemetryTrace(p.resultantAccelerationMs2);
+
+      // Dimensionamento físico (tamanho ideal de cada acessório).
+      try {
+        const sz=sizeCapsule({
+          lengthM: design.lengthM, beamM: design.beamM, heightM: design.heightM,
+          batteryKwh: 60, reactionMassKg: design.propellantMassKg
+        });
+        setText('szMass',numberFormatter(sz.mass.totalMassKg,0));
+        setText('szDry',numberFormatter(sz.mass.dryMassKg,0));
+        setText('szVol',numberFormatter(sz.hull.hullVolumeM3,1));
+        setText('szLift',numberFormatter(sz.edf.liftPowerKw,0));
+        setText('szDisk',numberFormatter(sz.edf.diskAreaM2,1));
+        setText('szDiskLoad',numberFormatter(sz.edf.diskLoadingPa,0));
+        setText('szReactor',numberFormatter(sz.reactor.totalMassKg/1000,1));
+        setText('szShield',numberFormatter(sz.reactor.shieldingMassKg,0));
+        setText('szTankD2',numberFormatter(sz.tanks.d2TankRadiusM*2,2));
+        setText('szTankHe3',numberFormatter(sz.tanks.he3TankRadiusM*2,2));
+        setText('szFuel',numberFormatter(sz.reactor.fuelPerHourKg*1000,2));
+        setText('szReaction',numberFormatter(sz.mass.reactionMassKg,0));
+      } catch (err) { /* dimensionamento opcional */ }
     }
 
     const parameterInputs=[...document.querySelectorAll('input[data-param]')];
@@ -1960,6 +2524,29 @@
       document.querySelectorAll('.preset').forEach(item=>item.classList.toggle('active',item===button));
       updatePhysics();
     }));
+
+    // Propulsion model: electric EDF (actuator disk) vs deuterium-fusion impulse drive.
+    document.querySelectorAll('.drive').forEach(button=>button.addEventListener('click',()=>{
+      design.propulsionModel=button.dataset.drive;
+      document.querySelectorAll('.drive').forEach(item=>item.classList.toggle('active',item===button));
+      updatePhysics();
+    }));
+
+    // Fusion fuel cycle: D+D (deuterium) vs D+³He (helium-3).
+    document.querySelectorAll('.fuel').forEach(button=>button.addEventListener('click',()=>{
+      design.fuelType=button.dataset.fuel;
+      document.querySelectorAll('.fuel').forEach(item=>item.classList.toggle('active',item===button));
+      updatePhysics();
+    }));
+
+    // Escada retrátil: estende em solo, recolhe para voo.
+    const rampToggle=document.getElementById('rampToggle');
+    if(rampToggle)rampToggle.addEventListener('click',()=>{
+      state.rampDeployed=!state.rampDeployed;
+      rampToggle.classList.toggle('active',state.rampDeployed);
+      rampToggle.textContent=state.rampDeployed?'Escada estendida (solo)':'Escada recolhida (voo)';
+      applyMode();
+    });
 
     /* ------------------------- Iluminação ------------------------- *
      *  Dois esquemas coexistem e são trocados pelo seletor de cena:   *
@@ -2151,6 +2738,8 @@
           if(c==='engine'||c==='levitation')visible=1;
         }
         if(c==='field')visible=state.fields?(state.mode==='systems'?.75:state.mode==='engineering'?.14:.4):0;
+        if(c==='reactor')visible=(state.fusionMode&&state.mode!=='external')?1:0;
+        if(c==='ramp')visible=state.rampDeployed&&(state.mode==='external'||state.mode==='systems')?1:0;
         setOpacity(obj,visible);
         obj.traverse(o=>{if(o.isMesh&&o.material)o.material.wireframe=state.mode==='engineering'&&c==='shell'});
         const factor=state.mode==='exploded'?1:0;
@@ -2158,6 +2747,8 @@
       }
       labelRoot.visible=state.labels;
       hotspots.core.visible=state.mode!=='external';
+      hotspots.reactor.visible=state.fusionMode&&state.mode!=='external'&&state.labels;
+      hotspots.boarding.visible=state.labels;
       dimensionGroup.visible=state.mode==='engineering';
       forceGroup.visible=state.vectors;
       engineeringOverlay.visible=dimensionGroup.visible||forceGroup.visible;
@@ -2173,11 +2764,13 @@
       const o=new CSS2DObject(el);o.position.set(...pos);labelRoot.add(o);return o;
     }
     const hotspots={
-      canopy:hotspot('Canopy âmbar','iridescente · eletrocrômico',[.75,1.68,.72]),
+      canopy:hotspot('Cabine tripulada','3 assentos · IA · telas sem janelas',[.75,1.68,.72]),
       core:hotspot('Núcleo toroidal','720 kW · FM 0,72',[.52,.87,-1.02]),
       ring:hotspot('Anel Gravium-7','Aeq 4,40 m²',[-1.32,-.2,.78]),
-      edf:hotspot('EDF cerâmico','estator 12 pás',[.56,.74,-2.2]),
-      sensors:hotspot('Suíte ASEA','EO/IR + pitot digital',[.62,.62,2.2])
+      edf:hotspot('EDF cerâmico','estator 12 pás',[.66,.82,-3.15]),
+      sensors:hotspot('Suíte ASEA','EO/IR + pitot digital',[.62,.62,2.2]),
+      reactor:hotspot('Reator de fusão','D+³He · popa · isolado no mastro',[.7,.9,-2.62]),
+      boarding:hotspot('Embarque','portal da cabine · proa',[1.95,.9,.5])
     };
 
     document.querySelectorAll('.mode').forEach(btn=>btn.addEventListener('click',()=>{
@@ -2275,6 +2868,10 @@
       if(cameraTween>.002){camera.position.lerp(camTarget,.055);controls.target.lerp(lookTarget,.055);cameraTween*=.94}
       engine.userData.fan.rotation.z-=dt*(state.mode==='external'?1.8:4.8);
       core.rotation.z+=dt*.7;
+      if(fusionHardware&&fusionHardware.visible){
+        fusionCoils.rotation.z+=dt*.55;
+        fusionGlow.scale.setScalar(1+Math.max(0,Math.sin(elapsed*2.3))*.16);
+      }
       fieldParts.forEach((f,i)=>{f.rotation.z+=dt*(i%2?-.08:.055)});
       aurora.position.y=state.mode==='engineering'?.16:.16+Math.sin(elapsed*.85)*.018;
       engineeringOverlay.position.copy(aurora.position);engineeringOverlay.rotation.y=aurora.rotation.y;

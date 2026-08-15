@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   actuatorDiskThrust,
   calculateFlightPhysics,
+  atmosphericEnvelope,
   DEFAULT_CONFIG,
   G_STANDARD
 } from '../src/physics.js';
@@ -46,4 +47,23 @@ test('unsafe and non-finite UI inputs are clamped to solver limits', () => {
   assert.equal(result.config.massKg, 500);
   assert.equal(result.config.liftThrottle, 1);
   assert.equal(result.config.airspeedMs, DEFAULT_CONFIG.airspeedMs);
+});
+
+test('atmospheric envelope: EDF is a low-flying fan, orbit needs Mach ~23', () => {
+  const e = atmosphericEnvelope();
+  assert.ok(e.edfCeilingKm >= 30 && e.edfCeilingKm <= 50); // practical fan ceiling
+  assert.ok(e.orbitalVelocityKmS > 7 && e.orbitalVelocityKmS < 8); // ≈ 7.9 km/s
+  assert.ok(e.orbitalMach > 20); // ≈ Mach 23
+  // Fusion max thrust is low; it only beats drag high up.
+  assert.ok(e.fusionMaxThrustN < 2000);
+  assert.ok(e.fusionCrossoverKm > 15); // needs thin air to win
+});
+
+test('fusion impulse thrust is far below sea-level drag at low speed', () => {
+  const e = atmosphericEnvelope({ referenceSpeedMs: 100 });
+  // At 100 m/s the drag in dense air dwarfs the fusion thrust.
+  const config = DEFAULT_CONFIG;
+  const frontalArea = Math.PI * (config.beamM / 2) * (config.heightM / 2);
+  const dragSeaLevel = 0.5 * config.airDensityKgM3 * 100 ** 2 * config.dragCoefficient * frontalArea;
+  assert.ok(dragSeaLevel > 10 * e.fusionMaxThrustN); // air dominates at sea level
 });
