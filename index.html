@@ -483,6 +483,23 @@
         <p class="drive-note">Órbita circular em LEO exige ≈ v_orb (≥7,3 km/s) + perdas. Com 120 kg de deutério o impulso entrega ≈ 3,2 km/s — suficiente para salto ponto a ponto, mas <b>não</b> para alcançar órbita baixa. Velocidade de escape = √2 × v_orb.</p>
       </section>
 
+      <section class="eng-section fusion-panel" aria-label="Reator: garrafa invisível e blindagem térmica">
+        <div class="eng-section-title">Reator · confinamento e blindagem</div>
+        <div class="metric-grid">
+          <div class="metric"><span>plasma</span><b><em id="thPlasma">—</em> °C</b></div>
+          <div class="metric"><span>campo magnético</span><b><em id="thField">—</em> T</b></div>
+          <div class="metric"><span>pressão magnética</span><b><em id="thPmag">—</em> atm</b></div>
+          <div class="metric"><span>plasma contido</span><b><em id="thPplas">—</em> atm</b></div>
+          <div class="metric"><span>1ª parede (W)</span><b><em id="thWall">—</em> °C</b></div>
+          <div class="metric"><span>margem ao melt</span><b><em id="thWallMargin">—</em> °C</b></div>
+          <div class="metric"><span>radiador 900 K</span><b><em id="thRad">—</em> m²</b></div>
+          <div class="metric"><span>radiador 300 K</span><b><em id="thRad300">—</em> m²</b></div>
+          <div class="metric"><span>blindagem nêutrons</span><b><em id="thShield">—</em> kg</b></div>
+        </div>
+        <div class="orbit-status" id="thStatus">—</div>
+        <p class="drive-note">Plasma a ~150 milhões °C é preso por ímãs REBCO (20 T): <b>garrafa invisível</b> — o combustível nunca toca o metal. Tungstênio na primeira parede, radiadores de alta temperatura para rejeitar calor no vácuo e blindagem leve de nêutrons (D+³He é quase anêutronico).</p>
+      </section>
+
       <div class="equation" id="equationTag"><b>DISCO ATUADOR / MOMENTUM THEORY</b>P = 2ρA·vᵢ·(V + vᵢ)² &nbsp;·&nbsp; D = ½ρV²CᴅA<br>Integração determinística em unidades SI; sem aleatoriedade.</div>
     </div>
   </aside>
@@ -566,6 +583,7 @@
     import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
     import { calculateFlightPhysics, DEFAULT_CONFIG, clamp } from './src/physics.js?v=6';
     import { planPointToPointMission, planOrbitalInsertion, orbitRegime, EARTH_RADIUS_M } from './src/orbital.js?v=6';
+    import { thermalProtectionDesign } from './src/thermalProtection.js?v=6';
 
     const stage = document.getElementById('stage');
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2098,6 +2116,26 @@
             ? `viável · sobram ${numberFormatter(insertion.propellantAfterKg,1)} kg de deutério`
             : `não viável · tanque de ${numberFormatter(insertion.propellantAvailableKg,0)} kg entrega ${numberFormatter(insertion.maxDeltaVMs/1000,2)} km/s; órbita exige ${numberFormatter(insertion.propellantRequiredKg,0)} kg`;
           insStatus.classList.toggle('alert',!insertion.feasible);
+        }
+
+        // Fusion reactor confinement & thermal protection (the "invisible bottle").
+        const th = thermalProtectionDesign({
+          fusionPowerKw: design.fusionPowerKw * 1.25, // 12 MW jet ⇒ ~15 MW fusion
+          jetEfficiency: design.exhaustEfficiency
+        });
+        setText('thPlasma',numberFormatter((th.plasmaTemperatureK-273.15)/1e6,0)+'M');
+        setText('thField',numberFormatter(th.containment.fieldT,0));
+        setText('thPmag',numberFormatter(th.containment.magneticPressureAtm,0));
+        setText('thPplas',numberFormatter(th.containment.plasmaPressureAtm,0));
+        setText('thWall',numberFormatter(th.wall.surfaceTempC,0));
+        setText('thWallMargin',numberFormatter(th.wall.marginToMeltC,0));
+        setText('thRad',numberFormatter(th.radiators.at900K.areaM2,0));
+        setText('thRad300',numberFormatter(th.radiators.at300K.areaM2,0));
+        setText('thShield',numberFormatter(th.shieldingMassKg,0));
+        const thStatus=document.getElementById('thStatus');
+        if(thStatus){
+          thStatus.textContent=`Plasma ${numberFormatter((th.plasmaTemperatureK-273.15)/1e6,0)} milhões °C · ${th.wall.safe?'primeira parede segura':'parede em risco'} · radiador ${th.radiators.at900K.areaM2<150?'compacto (900 K)':th.radiators.at900K.areaM2<1000?'moderado':'inviável'} · blindagem leve (${numberFormatter(th.shieldingMassKg,0)} kg)`;
+          thStatus.classList.toggle('alert',!th.wall.safe);
         }
       }
       } catch (err) { /* telemetria orbital/fusão é opcional — nunca quebra o painel */ }

@@ -37,6 +37,7 @@ A troca é imediata: as duas variantes de cada textura são pré-geradas e os ma
 - **Modo Impulso de fusão (novo):** no painel de Engenharia, o seletor **Sistema propulsivo** alterna o EDF elétrico (disco atuador) para um **impulso de fusão** (`src/fusionDrive.js`), que modela exaustão de plasma com a equação do foguete — empuxo `F = ṁ·Vₑ`, potência de jato `P = ½ṁ·Vₑ²`, impulso específico `Isp = Vₑ/g`, queima `t = m_prop/ṁ` e `Δv = Vₑ·ln(m₀/m_f)`. O **combustível é selecionável**: **D+D (deutério)** ou **D+³He (hélio-3)** — o ³He é ~4× mais energético e quase anêutronico.
 - **Missão orbital ponto a ponto (novo):** `src/orbital.js` planeja o salto balístico mínimo entre dois pontos da Terra (elipse kepleriana, `v_inj`, apogeu, tempo por Kepler e deutério consumido), usado apenas na fase exoatmosférica — com indicador de viabilidade e alcance máximo do tanque.
 - **Órbita circular · escape (novo):** o mesmo módulo calcula `v_orb`, período e `v_esc = √2·v_orb` em qualquer altitude, com o Δv de injeção e o deutério exigido — evidenciando honestamente que o tanque atual (≈3,2 km/s) alcança o salto ponto a ponto, mas **não** a órbita baixa (~9 km/s).
+- **Reator · confinamento e blindagem (novo):** `src/thermalProtection.js` modela a "garrafa invisível" — confinamento magnético (REBCO 20 T, `B²/2μ₀`), primeira parede de tungstênio (margem ao melt), radiadores por Stefan–Boltzmann (T⁴) e blindagem leve de nêutrons (D+³He quase anêutronico).
 
 ## Modelo físico
 
@@ -71,6 +72,17 @@ O "impulso" de Star Trek é, na mecânica clássica, um **foguete de fusão**: o
 
 Ou seja: dá para modelar e calcular com rigor — e o projeto faz isso —, mas "aplicar" num veículo pessoal hoje esbarra no reator compacto e na blindagem, não na equação do foguete.
 
+### A "garrafa invisível": confinamento e blindagem térmica do reator
+
+O plasma D+³He queima a ~150 milhões de °C — nenhum material sólido sobrevive em contato. A proteção não é um metal resistente, mas sim **quatro sistemas** (`src/thermalProtection.js`, modelados no painel em **Reator · confinamento e blindagem**):
+
+1. **Garrafa magnética (ímãs supercondutores REBCO):** um campo de **20 T** gera pressão magnética `B²/2μ₀ ≈ 1570 atm`, suficiente para conter ~**80 atm de plasma** (β = 5%) sem tocar as paredes. O plasma fica "flutuando", preso pelo magnetismo.
+2. **Primeira parede de tungstênio:** mesmo confinado, o plasma irradia calor. A **~10 MW/m²** de fluxo no divertor, o tungstênio chega a ~1.200 °C — com **>2.000 °C de margem** antes de derreter (3.422 °C). Compósitos de carbono/grafeno espalham o calor.
+3. **Radiadores de alta temperatura:** no vácuo o calor só sai por radiação, que escala com **T⁴** (Stefan–Boltzmann). Rejeitar 3,4 MW exige **~8.200 m² a 300 K** (inviável) mas só **~100 m² a 900 K** — por isso radiadores quentes são essenciais.
+4. **Blindagem de nêutrons leve:** D+³He é quase anêutronico — só ~1–3% da potência sai como nêutrons (ramo D–D). A blindagem é de **~1,5 t** (LiH/boro), muito menor que o cofre que um reator D+D exigiria.
+
+**Proteção da tripulação:** piloto na **frente, longe do reator** (a radiação cai com o inverso do quadrado da distância), blindagem de sombra + escudo de nêutrons, e refrigeração a **hélio líquido** mantendo a cabine confortável. O calor residual é rejeitado pelos radiadores de alta temperatura — é por isso que a cápsula precisa deles grandes e quentes.
+
 ### Missão orbital · ponto a ponto (uso recomendado do impulso)
 
 Como o impulso de fusão tem **empuxo baixo e Isp alto**, ele não compete com o arrasto atmosférico — o lugar certo é a **transferência exoatmosférica**. No painel de Engenharia, em modo **Impulso de fusão**, a seção **"Missão orbital · ponto a ponto (Terra)"** (`src/orbital.js`) planeja o salto balístico entre dois pontos do planeta:
@@ -97,6 +109,6 @@ Além do painel, os controles de **Altitude-alvo** (150–36.000 km) deixam clar
 npm test
 ```
 
-A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, energia e caráter anêutronico do D+³He, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores).
+A suíte cobre peso em SI, lei quadrática do arrasto, resposta do disco atuador à potência, consistência força/aceleração, impacto da geometria paramétrica e limites de entrada. Em `tests/fusionDrive.test.mjs` também valida a física do impulso de fusão: energia do deutério, energia e caráter anêutronico do D+³He, relações `F = ṁ·Vₑ` e `P = ½ṁ·Vₑ²`, troca empuxo × `Isp`, queima, `Δv` e o acoplamento do solver (`propulsionModel: 'fusion'`). Em `tests/orbital.test.mjs` valida a missão ponto a ponto (relação alcance × ângulo central, injeção sempre abaixo da velocidade orbital, equação de Tsiolkovsky, viabilidade e alcance máximo) e o regime orbital/escape (`v_esc = √2·v_orb`, injeção de LEO inviável com o tanque atual, consistência da equação do foguete para tanques maiores). Em `tests/thermalProtection.test.mjs` valida o confinamento magnético (`B²/2μ₀`), a margem térmica da primeira parede de tungstênio, a lei T⁴ dos radiadores e a blindagem leve de nêutrons do D+³He.
 
 Para inspecionar o ambiente pelo console do navegador, `window.__AURORA_DEBUG__.snapshot()` devolve o estado corrente da cena — visibilidade de hangar/campo, intensidade do sol, luminárias acesas, neblina, exposição e mapa de ambiente ativo.
